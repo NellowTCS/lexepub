@@ -26,7 +26,7 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 thiserror = "1.0"
 bytes = "1.0"
-diplomat = { version = "0.7", optional = true }
+diplomat = "0.7"
 diplomat-runtime = "0.7"
 
 [dev-dependencies]
@@ -37,7 +37,7 @@ default = []
 # css = ["cssparser"]
 # js = ["quickjs-rs"]
 wasm = []
-c-ffi = ["diplomat"]
+c-ffi = []
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "0.2"

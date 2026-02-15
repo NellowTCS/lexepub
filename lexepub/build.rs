@@ -3,16 +3,15 @@ fn main() {
     println!("cargo:rerun-if-changed=src/ffi.rs");
     println!("cargo:rerun-if-changed=diplomat.toml");
 
-    // Only generate C bindings when c-ffi feature is enabled
-    if std::env::var("CARGO_FEATURE_C_FFI").is_ok() {
-        // Create include directory if it doesn't exist
-        std::fs::create_dir_all("include").expect("Failed to create include directory");
+    // Always generate C bindings for distribution
+    // Create include directory if it doesn't exist
+    std::fs::create_dir_all("include").expect("Failed to create include directory");
 
-        // Run diplomat-tool to generate C bindings
-        match std::process::Command::new("diplomat-tool")
-            .args(["c", "."])
-            .output()
-        {
+    // Run diplomat-tool to generate C bindings
+    match std::process::Command::new("diplomat-tool")
+        .args(["c", "."])
+        .output()
+    {
             Ok(output) if output.status.success() => {
                 println!("Diplomat C bindings generated successfully!");
 
@@ -43,5 +42,4 @@ fn main() {
                 println!("Continuing build without generated C bindings");
             }
         }
-    }
 }

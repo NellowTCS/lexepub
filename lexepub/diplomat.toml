@@ -15,4 +15,4 @@ diplomat = "0.7"
 diplomat-runtime = "0.7"
 
 [output]
-c = { path = "generated/", library = "EpubInfo" }
+c = { path = "generated/", library = "EpubExtractor" }

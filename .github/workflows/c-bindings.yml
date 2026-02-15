@@ -26,16 +26,13 @@ jobs:
         run: cargo install diplomat-tool
 
       - name: Build with C FFI feature
-        run: cd lexepub && cargo build --release --features c-ffi
-
-      - name: Generate C bindings
-        run: cd lexepub && diplomat-tool c .
+        run: cd lexepub && cargo build --features c-ffi
 
       - name: Verify C bindings exist
         run: |
           cd lexepub
           ls -la include/
-          if [ ! -f include/EpubInfo.h ]; then
+          if [ ! -f include/EpubExtractor.h ]; then
             echo "C header not generated!"
             exit 1
           fi
