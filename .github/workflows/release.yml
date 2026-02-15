@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  release:
+    name: Release lexepub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: lexepub
+
+      - name: Run tests
+        run: cd lexepub && cargo test --release
+
+      - name: Run clippy
+        run: cd lexepub && cargo clippy --release --all-features -- -D warnings
+
+      - name: Check formatting
+        run: cd lexepub && cargo fmt --check
+
+      - name: Build release
+        run: cd lexepub && cargo build --release
+
+      - name: Generate C bindings
+        run: |
+          cd lexepub
+          cargo build --release --features c-ffi
+          if command -v diplomat-tool >/dev/null 2>&1; then
+            diplomat-tool c .
+          fi
+
+      - name: Create release archive
+        run: |
+          cd lexepub
+          tar -czf ../lexepub-${{ github.ref_name }}.tar.gz \
+            target/release/liblexepub.so \
+            target/release/liblexepub.dylib \
+            target/release/liblexepub.a \
+            include/ \
+            README.md \
+            LICENSE
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: lexepub-${{ github.ref_name }}.tar.gz
+          generate_release_notes: true

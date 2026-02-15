@@ -1,0 +1,47 @@
+name: Build C Bindings
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  c-bindings:
+    name: Build C FFI Bindings
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: lexepub
+
+      - name: Install diplomat-tool
+        run: cargo install diplomat-tool
+
+      - name: Build with C FFI feature
+        run: cd lexepub && cargo build --release --features c-ffi
+
+      - name: Generate C bindings
+        run: cd lexepub && diplomat-tool c .
+
+      - name: Verify C bindings exist
+        run: |
+          cd lexepub
+          ls -la include/
+          if [ ! -f include/EpubInfo.h ]; then
+            echo "C header not generated!"
+            exit 1
+          fi
+
+      - name: Upload C bindings
+        uses: actions/upload-artifact@v4
+        with:
+          name: c-bindings
+          path: lexepub/include/

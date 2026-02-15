@@ -1,0 +1,18 @@
+[package]
+name = "lexepub"
+version = "0.1.0"
+authors = ["NellowTCS"]
+license = "Apache-2.0"
+description = "Fast and streaming EPUB parser library"
+
+[library]
+name = "lexepub"
+crate-type = ["cdylib", "rlib"]
+features = ["c-ffi"]
+
+[dependencies]
+diplomat = "0.7"
+diplomat-runtime = "0.7"
+
+[output]
+c = { path = "generated/", library = "EpubInfo" }

@@ -1,74 +1,9 @@
+use crate::core::chapter::{AstNode, Chapter, ParsedChapter};
 use crate::error::Result;
 use scraper::Html;
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/// Represents a raw EPUB chapter
-#[derive(Debug, Clone)]
-pub struct Chapter {
-    pub href: String,
-    pub id: String,
-    pub media_type: String,
-    pub content: Vec<u8>,
-}
-
-/// AST node representation for parsed HTML
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
-pub enum AstNode {
-    Element {
-        tag: String,
-        attrs: HashMap<String, String>,
-        children: Vec<AstNode>,
-    },
-    Text {
-        content: String,
-    },
-    Comment {
-        content: String,
-    },
-}
-
-/// Parsed chapter with metadata and content
-#[derive(Debug, Clone)]
-pub struct ParsedChapter {
-    pub chapter_info: Chapter,
-    pub content: String,
-    pub ast: Option<AstNode>,
-    pub word_count: usize,
-    pub char_count: usize,
-}
-
-/// Chapter stream for async iteration
-pub struct ChapterStream {
-    chapters: Vec<ParsedChapter>,
-    index: usize,
-}
-
-impl ChapterStream {
-    pub fn new(chapters: Vec<ParsedChapter>) -> Self {
-        Self { chapters, index: 0 }
-    }
-}
-
-impl futures::Stream for ChapterStream {
-    type Item = Result<ParsedChapter>;
-
-    fn poll_next(
-        mut self: std::pin::Pin<&mut Self>,
-        _cx: &mut std::task::Context<'_>,
-    ) -> std::task::Poll<Option<Self::Item>> {
-        if self.index < self.chapters.len() {
-            let chapter = self.chapters[self.index].clone();
-            self.index += 1;
-            std::task::Poll::Ready(Some(Ok(chapter)))
-        } else {
-            std::task::Poll::Ready(None)
-        }
-    }
-}
-
-/// Clean chapter parser with configurable strategies
+/// Configurable chapter parser
 #[derive(Clone)]
 pub struct ChapterParser {
     pub text_only: bool,
@@ -141,7 +76,7 @@ impl ChapterParser {
 }
 
 /// Extract clean text content from HTML using scraper
-fn extract_text_content(html: &str) -> Result<String> {
+pub fn extract_text_content(html: &str) -> Result<String> {
     let fragment = Html::parse_fragment(html);
 
     let mut text = String::new();
@@ -195,17 +130,19 @@ fn element_to_ast(element: &scraper::ElementRef) -> AstNode {
 
     let children: Vec<AstNode> = element
         .children()
-        .map(|child| match child.value() {
-            scraper::Node::Text(text_node) => AstNode::Text {
+        .filter_map(|child| match child.value() {
+            scraper::Node::Text(text_node) => Some(AstNode::Text {
                 content: text_node.to_string(),
-            },
-            scraper::Node::Comment(comment_node) => AstNode::Comment {
+            }),
+            scraper::Node::Comment(comment_node) => Some(AstNode::Comment {
                 content: comment_node.to_string(),
-            },
-            scraper::Node::Element(_) => element_to_ast(&scraper::ElementRef::wrap(child).unwrap()),
-            _ => AstNode::Text {
+            }),
+            scraper::Node::Element(_) => {
+                scraper::ElementRef::wrap(child).map(|elem| element_to_ast(&elem))
+            }
+            _ => Some(AstNode::Text {
                 content: String::new(),
-            },
+            }),
         })
         .collect();
 

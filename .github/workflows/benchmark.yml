@@ -1,4 +1,4 @@
-name: Test
+name: Benchmark
 
 on:
   push:
@@ -6,12 +6,9 @@ on:
   pull_request:
     branches: [ "main", "master" ]
 
-env:
-  CARGO_TERM_COLOR: always
-
 jobs:
-  test:
-    name: Test lexepub
+  benchmark:
+    name: Benchmark lexepub
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -25,5 +22,8 @@ jobs:
         with:
           workspaces: lexepub
 
-      - name: Run tests
-        run: cd lexepub && cargo test --release --all-features
+      - name: Install cargo-criterion
+        run: cargo install cargo-criterion
+
+      - name: Run benchmarks
+        run: cd lexepub && cargo criterion --all-features
