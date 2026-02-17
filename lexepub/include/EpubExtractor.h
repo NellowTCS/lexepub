@@ -15,11 +15,11 @@
 
 
 
-EpubExtractor* EpubExtractor_create(void);
+EpubExtractor* EpubExtractor_create(DiplomatStringView path);
 
-size_t EpubExtractor_get_total_word_count(const EpubExtractor* self);
+size_t EpubExtractor_get_total_word_count(EpubExtractor* self);
 
-size_t EpubExtractor_get_total_char_count(const EpubExtractor* self);
+size_t EpubExtractor_get_total_char_count(EpubExtractor* self);
 
 void EpubExtractor_destroy(EpubExtractor* self);
 
