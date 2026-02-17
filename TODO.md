@@ -10,10 +10,6 @@
   - [ ] Add `chapter_count: usize` for number of chapters
   - [ ] Rename `date` to `publication_date` for API consistency
 
-- [ ] Expand FFI interface, Add metadata extraction, chapter access, etc.
-
-- [ ] Handle async API, Create sync wrappers or use diplomat's async support
-
 - [ ] Proper WASM support
 
 - [ ] Add cover image support

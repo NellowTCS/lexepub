@@ -3,7 +3,7 @@ use crate::core::container::ContainerParser;
 use crate::core::extractor::EpubExtractor;
 use crate::core::html_parser::extract_text_content;
 use crate::core::opf_parser::OpfParser;
-use crate::error::Result;
+use crate::error::{LexEpubError, Result};
 use bytes::Bytes;
 use std::path::Path;
 
@@ -43,9 +43,42 @@ impl LexEpub {
         })
     }
 
+    /// Synchronous wrapper for `open` (used by FFI and sync callers)
+    pub fn open_sync<P: AsRef<Path>>(path: P) -> Result<Self> {
+        futures::executor::block_on(LexEpub::open(path))
+    }
+
     /// Create an EPUB from bytes
     pub async fn from_bytes(data: Bytes) -> Result<Self> {
         let extractor = EpubExtractor::from_bytes(data).await?;
+        Ok(Self {
+            extractor,
+            metadata: None,
+            chapters: None,
+        })
+    }
+
+    /// Create an EPUB from an async reader (streaming, does not copy the whole
+    /// archive into memory). Useful for SD/LittleFS/flash-backed readers.
+    pub async fn from_reader<R>(reader: R) -> Result<Self>
+    where
+        R: futures::AsyncBufRead + futures::AsyncSeek + Unpin + Send + 'static,
+    {
+        let extractor = EpubExtractor::from_reader(reader)?;
+        Ok(Self {
+            extractor,
+            metadata: None,
+            chapters: None,
+        })
+    }
+
+    /// Create an EPUB from a blocking reader by wrapping it with
+    /// `futures::io::AllowStdIo` (convenience for platforms with sync FS APIs).
+    pub fn from_sync_reader<R>(reader: R) -> Result<Self>
+    where
+        R: std::io::Read + std::io::Seek + Send + 'static,
+    {
+        let extractor = EpubExtractor::from_sync_reader(reader)?;
         Ok(Self {
             extractor,
             metadata: None,
@@ -111,10 +144,20 @@ impl LexEpub {
         Ok(chapters.iter().map(|c| c.word_count).sum())
     }
 
+    /// Synchronous wrapper for `total_word_count`
+    pub fn total_word_count_sync(&mut self) -> Result<usize> {
+        futures::executor::block_on(self.total_word_count())
+    }
+
     /// Get total character count across all chapters
     pub async fn total_char_count(&mut self) -> Result<usize> {
         let chapters = self.extract_chapters().await?;
         Ok(chapters.iter().map(|c| c.char_count).sum())
+    }
+
+    /// Synchronous wrapper for `total_char_count`
+    pub fn total_char_count_sync(&mut self) -> Result<usize> {
+        futures::executor::block_on(self.total_char_count())
     }
 
     // TODO: implement has_cover() method, check OPF manifest for cover image
@@ -206,4 +249,140 @@ pub async fn extract_ast<P: AsRef<Path>>(path: P) -> Result<Vec<ParsedChapter>> 
 pub async fn get_metadata<P: AsRef<Path>>(path: P) -> Result<EpubMetadata> {
     let mut epub = LexEpub::open(path).await?;
     epub.get_metadata().await
+}
+
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+pub struct AnalysisReport {
+    pub metadata: Option<EpubMetadata>,
+    pub chapter_count: usize,
+    pub total_words: usize,
+    pub total_chars: usize,
+    pub first_chapter_preview: Option<String>,
+}
+
+/// Analyze an EPUB from an async reader (streaming, does not require full-copy).
+pub async fn analyze_reader<R>(reader: R) -> Result<AnalysisReport>
+where
+    R: futures::AsyncRead + futures::AsyncSeek + Unpin + Send + 'static,
+{
+    use async_zip::base::read::seek::ZipFileReader;
+    use futures::AsyncReadExt;
+
+    let reader = futures::io::BufReader::new(reader);
+    let mut archive = ZipFileReader::new(reader)
+        .await
+        .map_err(LexEpubError::Zip)?;
+
+    // helper to read an entry by path
+    async fn read_entry<Rdr>(archive: &mut ZipFileReader<Rdr>, path: &str) -> Result<Vec<u8>>
+    where
+        Rdr: futures::AsyncBufRead + futures::AsyncSeek + Unpin,
+    {
+        let entries = archive.file().entries();
+        let entry_index = entries
+            .iter()
+            .enumerate()
+            .find_map(|(i, entry)| {
+                entry
+                    .filename()
+                    .as_str()
+                    .ok()
+                    .and_then(|filename| (filename == path).then_some(i))
+            })
+            .ok_or_else(|| {
+                crate::error::LexEpubError::MissingFile(format!(
+                    "File '{}' not found in EPUB",
+                    path
+                ))
+            })?;
+
+        let mut entry_reader = archive
+            .reader_without_entry(entry_index)
+            .await
+            .map_err(LexEpubError::Zip)?;
+        let mut buf = Vec::new();
+        entry_reader
+            .read_to_end(&mut buf)
+            .await
+            .map_err(LexEpubError::Io)?;
+        Ok(buf)
+    }
+
+    // Read container.xml
+    let container_data = read_entry(&mut archive, "META-INF/container.xml").await?;
+    let mut container_parser = ContainerParser::new();
+    let opf_path = container_parser
+        .parse_container(&container_data)?
+        .rootfile_path;
+
+    // Read OPF
+    let opf_data = read_entry(&mut archive, &opf_path).await?;
+    let mut opf_parser = OpfParser::new();
+    let spine = opf_parser.parse_spine(&opf_data)?;
+    let metadata = opf_parser.parse_metadata(&opf_data)?;
+
+    // Extract chapter data
+    let mut chapters_parsed = Vec::new();
+    let opf_base = std::path::Path::new(&opf_path)
+        .parent()
+        .unwrap_or(std::path::Path::new(""));
+
+    for item_id in spine {
+        if let Some(href) = metadata.manifest.get(&item_id) {
+            let full_path = opf_base.join(href);
+            let full_path_str = full_path.to_string_lossy();
+            if let Ok(content) = read_entry(&mut archive, &full_path_str).await {
+                let html_content = String::from_utf8_lossy(&content);
+                let text_content = extract_text_content(&html_content)?;
+                let word_count = text_content.split_whitespace().count();
+                let char_count = text_content.chars().count();
+
+                chapters_parsed.push((text_content, word_count, char_count));
+            }
+        }
+    }
+
+    let chapter_count = chapters_parsed.len();
+    let total_words: usize = chapters_parsed.iter().map(|(_, w, _)| *w).sum();
+    let total_chars: usize = chapters_parsed.iter().map(|(_, _, c)| *c).sum();
+    let first_chapter_preview = chapters_parsed
+        .first()
+        .map(|(s, _, _)| s.chars().take(300).collect::<String>());
+
+    let epub_metadata = EpubMetadata {
+        title: metadata.title,
+        authors: metadata.creators,
+        description: metadata.description,
+        languages: metadata.languages,
+        subjects: metadata.subjects,
+        publisher: metadata.publisher,
+        date: metadata.date,
+        identifiers: metadata.identifiers,
+        rights: metadata.rights,
+        contributors: metadata.contributors,
+    };
+
+    Ok(AnalysisReport {
+        metadata: Some(epub_metadata),
+        chapter_count,
+        total_words,
+        total_chars,
+        first_chapter_preview,
+    })
+}
+
+/// Analyze from a blocking reader (wraps with `AllowStdIo`)
+pub fn analyze_sync_reader<R>(reader: R) -> Result<AnalysisReport>
+where
+    R: std::io::Read + std::io::Seek + Send + 'static,
+{
+    let allow = futures::io::AllowStdIo::new(reader);
+    futures::executor::block_on(analyze_reader(allow))
+}
+
+/// Convenience: analyze an EPUB from a file path (streaming from disk).
+pub async fn analyze_path<P: AsRef<Path>>(path: P) -> Result<AnalysisReport> {
+    let file = std::fs::File::open(path.as_ref()).map_err(LexEpubError::Io)?;
+    let reader = futures::io::AllowStdIo::new(file);
+    analyze_reader(reader).await
 }

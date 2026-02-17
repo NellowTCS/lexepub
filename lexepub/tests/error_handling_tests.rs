@@ -6,86 +6,98 @@ use std::path::Path;
 mod error_tests {
     use super::*;
 
-    #[tokio::test]
+    #[test]
     // Again, our opening and validation logic is so bad...
-    async fn test_file_not_found() {
-        // open() doesn't validate file existence immediately
-        let epub_result = LexEpub::open("nonexistent.epub").await;
-        assert!(epub_result.is_ok()); // succeeds initially
+    fn test_file_not_found() {
+        futures::executor::block_on(async {
+            // open() doesn't validate file existence immediately
+            let epub_result = LexEpub::open("nonexistent.epub").await;
+            assert!(epub_result.is_ok()); // succeeds initially
 
-        // But fails when trying to read
-        let mut epub = epub_result.unwrap();
-        let result = epub.get_metadata().await;
-        assert!(result.is_err());
-    }
-
-    #[tokio::test]
-    async fn test_invalid_zip_data() {
-        // from_bytes doesn't validate data immediately
-        let invalid_data = bytes::Bytes::from("not a zip file");
-        let epub_result = LexEpub::from_bytes(invalid_data).await;
-        assert!(epub_result.is_ok()); // succeeds initially
-
-        // But fails when trying to read
-        let mut epub = epub_result.unwrap();
-        let result = epub.get_metadata().await;
-        assert!(result.is_err());
-    }
-
-    #[tokio::test]
-    async fn test_missing_container_xml() {
-        // This would require creating a mock EPUB without container.xml
-        // For now, just test that the error handling works
-        let result = std::fs::read("examples/epubs/test-book.epub");
-        if result.is_ok() {
-            let data = bytes::Bytes::from(result.unwrap());
-            let mut epub = LexEpub::from_bytes(data).await.unwrap();
-
-            // This should work for valid EPUBs
-            let _ = epub.get_metadata().await.unwrap();
-        }
-    }
-
-    #[tokio::test]
-    async fn test_invalid_xml_parsing() {
-        // Test with malformed XML would require mocking
-        // For now, test that valid XML works
-        let test_epub = Path::new("examples/epubs/test-book.epub");
-        if test_epub.exists() {
-            let mut epub = LexEpub::open(test_epub).await.unwrap();
+            // But fails when trying to read
+            let mut epub = epub_result.unwrap();
             let result = epub.get_metadata().await;
-            assert!(result.is_ok(), "Valid EPUB should parse correctly");
-        }
+            assert!(result.is_err());
+        });
     }
 
-    #[tokio::test]
-    async fn test_missing_chapter_files() {
-        // This would require a mock EPUB with missing chapter files
-        // For now, test that valid EPUBs work
-        let test_epub = Path::new("examples/epubs/test-book.epub");
-        if test_epub.exists() {
-            let mut epub = LexEpub::open(test_epub).await.unwrap();
-            let result = epub.extract_text_only().await;
-            assert!(result.is_ok(), "Valid EPUB should extract chapters");
-        }
+    #[test]
+    fn test_invalid_zip_data() {
+        futures::executor::block_on(async {
+            // from_bytes doesn't validate data immediately
+            let invalid_data = bytes::Bytes::from("not a zip file");
+            let epub_result = LexEpub::from_bytes(invalid_data).await;
+            assert!(epub_result.is_ok()); // succeeds initially
+
+            // But fails when trying to read
+            let mut epub = epub_result.unwrap();
+            let result = epub.get_metadata().await;
+            assert!(result.is_err());
+        });
     }
 
-    #[tokio::test]
-    async fn test_utf8_error_handling() {
-        // Test with invalid UTF-8 in chapter content
-        // This would require creating mock data with invalid UTF-8
-        // For now, test that valid content works
-        let test_epub = Path::new("examples/epubs/test-book.epub");
-        if test_epub.exists() {
-            let mut epub = LexEpub::open(test_epub).await.unwrap();
-            let result = epub.extract_text_only().await;
-            assert!(result.is_ok());
-            let chapters = result.unwrap();
-            for chapter in chapters {
-                // Ensure all content is valid UTF-8
-                let _ = chapter.as_str();
+    #[test]
+    fn test_missing_container_xml() {
+        futures::executor::block_on(async {
+            // This would require creating a mock EPUB without container.xml
+            // For now, just test that the error handling works
+            let result = std::fs::read("examples/epubs/test-book.epub");
+            if result.is_ok() {
+                let data = bytes::Bytes::from(result.unwrap());
+                let mut epub = LexEpub::from_bytes(data).await.unwrap();
+
+                // This should work for valid EPUBs
+                let _ = epub.get_metadata().await.unwrap();
             }
-        }
+        });
+    }
+
+    #[test]
+    fn test_invalid_xml_parsing() {
+        futures::executor::block_on(async {
+            // Test with malformed XML would require mocking
+            // For now, test that valid XML works
+            let test_epub = Path::new("examples/epubs/test-book.epub");
+            if test_epub.exists() {
+                let mut epub = LexEpub::open(test_epub).await.unwrap();
+                let result = epub.get_metadata().await;
+                assert!(result.is_ok(), "Valid EPUB should parse correctly");
+            }
+        });
+    }
+
+    #[test]
+    fn test_missing_chapter_files() {
+        futures::executor::block_on(async {
+            // This would require a mock EPUB with missing chapter files
+            // For now, test that valid EPUBs work
+            let test_epub = Path::new("examples/epubs/test-book.epub");
+            if test_epub.exists() {
+                let mut epub = LexEpub::open(test_epub).await.unwrap();
+                let result = epub.extract_text_only().await;
+                assert!(result.is_ok(), "Valid EPUB should extract chapters");
+            }
+        });
+    }
+
+    #[test]
+    fn test_utf8_error_handling() {
+        futures::executor::block_on(async {
+            // Test with invalid UTF-8 in chapter content
+            // This would require creating mock data with invalid UTF-8
+            // For now, test that valid content works
+            let test_epub = Path::new("examples/epubs/test-book.epub");
+            if test_epub.exists() {
+                let mut epub = LexEpub::open(test_epub).await.unwrap();
+                let result = epub.extract_text_only().await;
+                assert!(result.is_ok());
+                let chapters = result.unwrap();
+                for chapter in chapters {
+                    // Ensure all content is valid UTF-8
+                    let _ = chapter.as_str();
+                }
+            }
+        });
     }
 
     #[test]
@@ -132,23 +144,25 @@ mod error_tests {
         let _async = LexEpubError::AsyncError("test".to_string());
     }
 
-    #[tokio::test]
-    async fn test_partial_failure_recovery() {
-        // Test that if one chapter fails, others still work
-        // This would require a mock EPUB with some corrupted chapters
-        // For now, test that valid EPUBs work completely
-        let test_epub = Path::new("examples/epubs/test-book.epub");
-        if test_epub.exists() {
-            let mut epub = LexEpub::open(test_epub).await.unwrap();
-            let result = epub.extract_text_only().await;
-            assert!(result.is_ok());
-            let chapters = result.unwrap();
-            assert!(!chapters.is_empty());
+    #[test]
+    fn test_partial_failure_recovery() {
+        futures::executor::block_on(async {
+            // Test that if one chapter fails, others still work
+            // This would require a mock EPUB with some corrupted chapters
+            // For now, test that valid EPUBs work completely
+            let test_epub = Path::new("examples/epubs/test-book.epub");
+            if test_epub.exists() {
+                let mut epub = LexEpub::open(test_epub).await.unwrap();
+                let result = epub.extract_text_only().await;
+                assert!(result.is_ok());
+                let chapters = result.unwrap();
+                assert!(!chapters.is_empty());
 
-            // All chapters should succeed
-            for chapter in chapters {
-                assert!(!chapter.is_empty());
+                // All chapters should succeed
+                for chapter in chapters {
+                    assert!(!chapter.is_empty());
+                }
             }
-        }
+        });
     }
 }
