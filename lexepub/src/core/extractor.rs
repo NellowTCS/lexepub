@@ -4,6 +4,7 @@ use bytes::Bytes;
 use futures::io::{AllowStdIo, BufReader as FuturesBufReader, Cursor as FuturesCursor};
 use futures::lock::Mutex as AsyncMutex;
 use std::path::Path;
+use std::sync::Arc;
 
 // Trait-object helper: combine AsyncBufRead + AsyncSeek + Unpin into one
 // object-safe trait so we can store boxed streaming readers.
@@ -13,16 +14,18 @@ impl<T: futures::AsyncBufRead + futures::AsyncSeek + Unpin> AsyncReadSeek for T 
 /// Low-level EPUB extractor that handles file operations. The extractor can
 /// operate from a file path, an in-memory byte buffer, or a streaming reader
 /// (async or sync wrapped with `AllowStdIo`).
+#[derive(Clone)]
 pub struct EpubExtractor {
     data_source: EpubDataSource,
 }
 
+#[derive(Clone)]
 enum EpubDataSource {
     FilePath(std::path::PathBuf),
     Bytes(Bytes),
-    /// A boxed async reader protected by an async Mutex so multiple `read_file`
-    /// calls can borrow it sequentially.
-    Reader(AsyncMutex<Box<dyn AsyncReadSeek + Send + 'static>>),
+    /// A boxed async reader protected by an Arc<AsyncMutex<...>> so the
+    /// extractor can be cloned and shared across tasks.
+    Reader(Arc<AsyncMutex<Box<dyn AsyncReadSeek + Send + 'static>>>),
 }
 
 impl EpubExtractor {
@@ -48,7 +51,7 @@ impl EpubExtractor {
         R: futures::AsyncBufRead + futures::AsyncSeek + Unpin + Send + 'static,
     {
         Ok(Self {
-            data_source: EpubDataSource::Reader(AsyncMutex::new(Box::new(reader))),
+            data_source: EpubDataSource::Reader(Arc::new(AsyncMutex::new(Box::new(reader)))),
         })
     }
 
@@ -62,7 +65,7 @@ impl EpubExtractor {
         let allow = AllowStdIo::new(reader);
         let buf = FuturesBufReader::new(allow);
         Ok(Self {
-            data_source: EpubDataSource::Reader(AsyncMutex::new(Box::new(buf))),
+            data_source: EpubDataSource::Reader(Arc::new(AsyncMutex::new(Box::new(buf)))),
         })
     }
 

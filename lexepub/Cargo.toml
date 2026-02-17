@@ -35,6 +35,7 @@ default = []
 wasm = []
 c-ffi = []
 embassy = ["embassy-executor"]
+lowmem = []
 
 [dev-dependencies]
 criterion = "0.4"

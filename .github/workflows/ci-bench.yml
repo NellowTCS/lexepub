@@ -1,4 +1,4 @@
-name: CI — tests & size
+name: CI tests & size
 
 on:
   push:

@@ -40,12 +40,63 @@ fn library_memory_within_threshold() {
         before, after, delta_kb
     );
 
-    // Fail if the process RSS grows by more than 3 MB during extraction
-    let threshold_kb = 3 * 1024; // 3 MB
+    // Fail if the process RSS grows by more than 2 MB during extraction
+    let threshold_kb = 2 * 1024;
     assert!(
         delta_kb <= threshold_kb,
         "Memory regression: delta={} KB > {} KB",
         delta_kb,
         threshold_kb
     );
+}
+
+#[cfg(feature = "lowmem")]
+#[test]
+fn lowmem_library_memory_within_threshold() {
+    let test_epub = Path::new("examples/epubs/test-book.epub");
+    if !test_epub.exists() {
+        return;
+    }
+
+    // Measure streaming RSS delta
+    let before_stream = read_rss_kb().unwrap_or(0);
+    let mut epub_stream = futures::executor::block_on(LexEpub::open(test_epub)).unwrap();
+    let mut stream = futures::executor::block_on(epub_stream.extract_chapters_stream()).unwrap();
+
+    futures::executor::block_on(async {
+        use futures::StreamExt;
+        if let Some(ch) = stream.next().await {
+            let _ = ch.unwrap();
+        }
+    });
+
+    let after_stream = read_rss_kb().unwrap_or(0);
+    let streaming_delta_kb = after_stream.saturating_sub(before_stream);
+    eprintln!(
+        "LOWMEM streaming RSS before={} KB, after={} KB, delta={} KB",
+        before_stream, after_stream, streaming_delta_kb
+    );
+
+    // Measure eager (non-streaming) RSS delta for comparison
+    let before_eager = read_rss_kb().unwrap_or(0);
+    let mut epub_eager = futures::executor::block_on(LexEpub::open(test_epub)).unwrap();
+    let _ = futures::executor::block_on(epub_eager.extract_text_only()).unwrap();
+    let after_eager = read_rss_kb().unwrap_or(0);
+    let eager_delta_kb = after_eager.saturating_sub(before_eager);
+    eprintln!(
+        "LOWMEM eager RSS before={} KB, after={} KB, delta={} KB",
+        before_eager, after_eager, eager_delta_kb
+    );
+
+    // Ensure streaming isn't absurdly large
+    let absolute_threshold_kb = 1024;
+    assert!(
+        streaming_delta_kb <= absolute_threshold_kb,
+        "Lowmem memory regression: streaming delta={} KB > {} KB",
+        streaming_delta_kb,
+        absolute_threshold_kb
+    );
+
+    // log eager delta for diagnostics
+    eprintln!("LOWMEM eager delta = {} KB", eager_delta_kb);
 }

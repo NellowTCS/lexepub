@@ -75,6 +75,7 @@ impl ChapterParser {
     }
 }
 
+#[cfg(not(feature = "lowmem"))]
 /// Extract clean text content from HTML using scraper
 pub fn extract_text_content(html: &str) -> Result<String> {
     let fragment = Html::parse_fragment(html);
@@ -102,6 +103,58 @@ pub fn extract_text_content(html: &str) -> Result<String> {
 
     // Clean up excess whitespace and newlines
     let cleaned = text
+        .lines()
+        .map(|line| line.trim())
+        .filter(|line| !line.is_empty())
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    Ok(cleaned)
+}
+
+#[cfg(feature = "lowmem")]
+/// Lightweight HTML-to-text extractor for low-memory targets.
+// Not as robust as the scraper-based version, but avoids the overhead of building a full DOM tree, haha.
+pub fn extract_text_content(html: &str) -> Result<String> {
+    let mut out = String::new();
+    let mut in_tag = false;
+    let mut tag_buf = String::new();
+    let mut last_was_space = false;
+
+    for c in html.chars() {
+        if in_tag {
+            if c == '>' {
+                in_tag = false;
+                let tag = tag_buf.trim().trim_start_matches('/').to_ascii_lowercase();
+                if tag.starts_with('p')
+                    || tag.starts_with("div")
+                    || tag.starts_with("br")
+                    || tag.starts_with('h')
+                    || tag.starts_with("li")
+                {
+                    out.push('\n');
+                }
+                tag_buf.clear();
+            } else {
+                tag_buf.push(c);
+            }
+        } else if c == '<' {
+            in_tag = true;
+            tag_buf.clear();
+        } else {
+            if c.is_whitespace() {
+                if !last_was_space {
+                    out.push(' ');
+                    last_was_space = true;
+                }
+            } else {
+                out.push(c);
+                last_was_space = false;
+            }
+        }
+    }
+
+    let cleaned = out
         .lines()
         .map(|line| line.trim())
         .filter(|line| !line.is_empty())

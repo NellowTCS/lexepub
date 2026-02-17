@@ -99,8 +99,40 @@ impl LexEpub {
 
     /// Extract chapters as a stream for memory-efficient processing
     pub async fn extract_chapters_stream(&mut self) -> Result<ChapterStream> {
-        let chapters = self.extract_chapters().await?;
-        Ok(ChapterStream::new(chapters))
+        // Build a streaming ChapterStream that reads each chapter lazily from
+        // the archive via the extractor.
+
+        // Get OPF location
+        let container_data = self.extractor.read_file("META-INF/container.xml").await?;
+        let mut container_parser = ContainerParser::new();
+        let opf_path = container_parser
+            .parse_container(&container_data)?
+            .rootfile_path;
+
+        // Parse OPF for spine and manifest
+        let opf_data = self.extractor.read_file(&opf_path).await?;
+        let mut opf_parser = OpfParser::new();
+        let spine = opf_parser.parse_spine(&opf_data)?;
+        let metadata = opf_parser.parse_metadata(&opf_data)?;
+
+        // Resolve full paths for spine entries and return a streaming iterator
+        let mut entries = Vec::new();
+        let opf_base = std::path::Path::new(&opf_path)
+            .parent()
+            .unwrap_or(std::path::Path::new(""));
+
+        for item_id in spine {
+            if let Some(href) = metadata.manifest.get(&item_id) {
+                let full_path = opf_base.join(href);
+                let full_path_str = full_path.to_string_lossy().to_string();
+                entries.push(full_path_str);
+            }
+        }
+
+        Ok(ChapterStream::from_extractor(
+            self.extractor.clone(),
+            entries,
+        ))
     }
 
     /// Get metadata
@@ -228,7 +260,14 @@ impl LexEpub {
             }
         }
 
-        self.chapters = Some(chapters.clone());
+        // Cache chapters only when `lowmem` feature is not enabled
+        // low-memory targets should avoid keeping the entire chapter list in
+        // memory.
+        #[cfg(not(feature = "lowmem"))]
+        {
+            self.chapters = Some(chapters.clone());
+        }
+
         Ok(chapters)
     }
 }
