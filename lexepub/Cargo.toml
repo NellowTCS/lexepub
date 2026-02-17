@@ -36,6 +36,11 @@ wasm = []
 c-ffi = []
 embassy = ["embassy-executor"]
 
+[dev-dependencies]
+criterion = "0.4"
+jemallocator = "0.5"
+jemalloc-ctl = "0.5"
+
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 wasm-bindgen = "0.2"
 js-sys = "0.3"

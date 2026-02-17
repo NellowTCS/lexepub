@@ -1,0 +1,36 @@
+name: CI — tests & size
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test-and-size:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          components: rustfmt
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+      - name: Install cargo-bloat
+        run: cargo install cargo-bloat --locked
+      - name: Run tests (release)
+        run: cargo test -p lexepub --release --all-features
+      - name: Build release
+        run: cargo build -p lexepub --release --all-features
+      - name: Cargo bloat (text top items)
+        run: cargo bloat --release -n 20 --crates
+      - name: Run Criterion benches (single-run)
+        run: cargo bench -p lexepub --bench bench_lib -- --nocapture
