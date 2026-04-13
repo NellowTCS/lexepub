@@ -205,7 +205,7 @@ impl LexEpub {
         let opf_data = self.extractor.read_file(&opf_path).await?;
         let mut opf_parser = OpfParser::new();
         let cover_id = opf_parser.get_cover_image_id(&opf_data)?;
-        
+
         Ok(cover_id.is_some())
     }
 
@@ -220,25 +220,28 @@ impl LexEpub {
         let opf_data = self.extractor.read_file(&opf_path).await?;
         let mut opf_parser = OpfParser::new();
         let metadata = opf_parser.parse_metadata(&opf_data)?;
-        
-        let cover_id = metadata.cover_image_id
+
+        let cover_id = metadata
+            .cover_image_id
             .ok_or_else(|| LexEpubError::MissingFile("No cover image found in EPUB".to_string()))?;
-        
-        let cover_href = metadata.manifest
-            .get(&cover_id)
-            .ok_or_else(|| LexEpubError::MissingFile(format!("Cover image item '{}' not in manifest", cover_id)))?;
-        
+
+        let cover_href = metadata.manifest.get(&cover_id).ok_or_else(|| {
+            LexEpubError::MissingFile(format!("Cover image item '{}' not in manifest", cover_id))
+        })?;
+
         // Resolve the cover href relative to the OPF file's directory
         let opf_base = std::path::Path::new(&opf_path)
             .parent()
             .unwrap_or(std::path::Path::new(""));
         let full_path = opf_base.join(cover_href);
         let full_path_str = full_path.to_string_lossy();
-        
+
         self.extractor.read_file(&full_path_str).await
     }
 
-    // TODO: implement extract_with_ast() method as alias for extract_ast() for API consistency? or just use one method name?
+    pub async fn extract_with_ast(&mut self) -> Result<Vec<ParsedChapter>> {
+        self.extract_ast().await
+    }
 
     // Internal method to extract chapters
     async fn extract_chapters(&mut self) -> Result<Vec<ParsedChapter>> {
@@ -434,7 +437,7 @@ where
         rights: metadata.rights,
         contributors: metadata.contributors,
         spine: metadata.spine.clone(),
-        has_cover: false, // TODO: extract cover image details
+        has_cover: metadata.cover_image_id.is_some(),
         chapter_count: metadata.spine.len(),
     };
 

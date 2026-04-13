@@ -3,11 +3,12 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// Represents a raw EPUB chapter
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Chapter {
     pub href: String,
     pub id: String,
     pub media_type: String,
+    #[serde(skip_serializing)]
     pub content: Vec<u8>,
 }
 
@@ -32,7 +33,7 @@ pub enum AstNode {
 ///
 /// Contains the extracted text content, optional AST representation,
 /// and statistics about the chapter.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ParsedChapter {
     /// Raw chapter information (ID, href, media type)
     pub chapter_info: Chapter,

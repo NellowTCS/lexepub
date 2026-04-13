@@ -144,7 +144,10 @@ mod integration_tests {
             if has_cover {
                 assert!(cover_result.is_ok());
                 let cover_data = cover_result.unwrap();
-                assert!(!cover_data.is_empty(), "Should have cover data if has_cover is true");
+                assert!(
+                    !cover_data.is_empty(),
+                    "Should have cover data if has_cover is true"
+                );
             } else {
                 assert!(cover_result.is_err());
             }

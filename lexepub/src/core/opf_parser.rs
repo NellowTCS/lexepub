@@ -8,6 +8,7 @@ use std::io::Cursor;
 #[derive(Debug, Clone)]
 pub struct OpfMetadata {
     pub title: Option<String>,
+    pub version: Option<String>,
     pub creators: Vec<String>,
     pub description: Option<String>,
     pub languages: Vec<String>,
@@ -111,12 +112,19 @@ impl OpfParser {
                             let mut content = String::new();
                             for attr in e.attributes().flatten() {
                                 match attr.key.as_ref() {
-                                    b"name" => name = String::from_utf8_lossy(&attr.value).to_string(),
-                                    b"content" => content = String::from_utf8_lossy(&attr.value).to_string(),
+                                    b"name" => {
+                                        name = String::from_utf8_lossy(&attr.value).to_string()
+                                    }
+                                    b"content" => {
+                                        content = String::from_utf8_lossy(&attr.value).to_string()
+                                    }
                                     _ => {}
                                 }
                             }
-                            if name == "cover" && !content.is_empty() && metadata.cover_image_id.is_none() {
+                            if name == "cover"
+                                && !content.is_empty()
+                                && metadata.cover_image_id.is_none()
+                            {
                                 metadata.cover_image_id = Some(content);
                             }
                         }

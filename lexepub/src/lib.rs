@@ -5,6 +5,9 @@ pub mod error;
 #[cfg(feature = "c-ffi")]
 pub mod ffi;
 
+#[cfg(target_arch = "wasm32")]
+pub mod wasm;
+
 // Re-export core modules for internal use
 pub use core::chapter::{AstNode, Chapter, ChapterStream, ParsedChapter};
 pub use core::container::ContainerParser;

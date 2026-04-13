@@ -1,8 +1,8 @@
 # Todo
 
-- [ ] Proper WASM support
+- [ ] Ensure 1-1 API functionality between C/C++, Rust, and WASM
 
-- [ ] Add docs
+- [ ] Implement CSS parsing and application
 
 - [ ] Add streaming cover image support
 
@@ -14,13 +14,15 @@
 
 - [ ] Add rendering support
 
-- [ ] Implement CSS parsing and application
+- [ ] Add docs
 
 - [ ] Add JavaScript execution support for interactive EPUBs (probably beyond v0.1.0)
 
 - [ ] Integrate the ✨ fancy ✨ EPUB library features (advanced layout, multimedia, accessibility, etc. ) (probably beyond v0.1.0)
 
 ## Done
+
+- [x] Proper WASM support
 
 - [x] Implement AST parsing in main API
   - Currently `extract_chapters()` sets `ast: None`
