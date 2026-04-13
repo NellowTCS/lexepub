@@ -2,12 +2,6 @@
 
 - [ ] Proper WASM support
 
-- [ ] Add cover image support
-  - [ ] Add `has_cover()`
-  - [ ] Add `cover_image()`
-  - [ ] Parse OPF manifest for cover image detection
-  - [ ] Extract cover image data from EPUB files
-
 - [ ] Add docs
 
 - [ ] Add streaming cover image support
@@ -22,9 +16,9 @@
 
 - [ ] Implement CSS parsing and application
 
-- [ ] Add JavaScript execution support for interactive EPUBs
+- [ ] Add JavaScript execution support for interactive EPUBs (probably beyond v0.1.0)
 
-- [ ] Integrate the ✨ fancy ✨ EPUB library features (advanced layout, multimedia, accessibility, etc. )
+- [ ] Integrate the ✨ fancy ✨ EPUB library features (advanced layout, multimedia, accessibility, etc. ) (probably beyond v0.1.0)
 
 ## Done
 
@@ -37,3 +31,9 @@
   - [x] Add `has_cover: bool` for cover image presence
   - [x] Add `chapter_count: usize` for number of chapters
   - [x] Rename `date` to `publication_date` for API consistency
+
+- [x] Add cover image support
+  - [x] Add `has_cover()`
+  - [x] Add `cover_image()`
+  - [x] Parse OPF manifest for cover image detection
+  - [x] Extract cover image data from EPUB files

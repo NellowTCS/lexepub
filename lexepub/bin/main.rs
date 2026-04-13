@@ -2,9 +2,15 @@ use lexepub::LexEpub;
 
 #[cfg(feature = "embassy")]
 #[embassy_executor::main]
-async fn main(
-    _spawner: embassy_executor::Spawner,
-) -> std::result::Result<(), Box<dyn std::error::Error>> {
+async fn main(_spawner: embassy_executor::Spawner) {
+    if let Err(e) = run_embassy_main().await {
+        eprintln!("Error: {}", e);
+        std::process::exit(1);
+    }
+}
+
+#[cfg(feature = "embassy")]
+async fn run_embassy_main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = std::env::args().collect();
 
     if args.len() < 2 {

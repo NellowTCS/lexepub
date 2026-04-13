@@ -34,7 +34,7 @@ default = []
 # js = ["quickjs-rs"]
 wasm = []
 c-ffi = []
-embassy = ["embassy-executor"]
+embassy = ["embassy-executor/arch-std", "embassy-executor/executor-thread"]
 lowmem = []
 
 [dev-dependencies]

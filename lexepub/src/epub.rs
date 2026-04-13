@@ -164,7 +164,7 @@ impl LexEpub {
             rights: opf_metadata.rights,
             contributors: opf_metadata.contributors,
             spine: opf_metadata.spine.clone(),
-            has_cover: false, // TODO: detect cover image
+            has_cover: opf_metadata.cover_image_id.is_some(),
             chapter_count: opf_metadata.spine.len(),
         };
 
@@ -194,8 +194,50 @@ impl LexEpub {
         futures::executor::block_on(self.total_char_count())
     }
 
-    // TODO: implement has_cover() method, check OPF manifest for cover image
-    // TODO: implement cover_image() method, extract cover image data from EPUB
+    /// Check if the EPUB has a cover image
+    pub async fn has_cover(&mut self) -> Result<bool> {
+        let container_data = self.extractor.read_file("META-INF/container.xml").await?;
+        let mut container_parser = ContainerParser::new();
+        let opf_path = container_parser
+            .parse_container(&container_data)?
+            .rootfile_path;
+
+        let opf_data = self.extractor.read_file(&opf_path).await?;
+        let mut opf_parser = OpfParser::new();
+        let cover_id = opf_parser.get_cover_image_id(&opf_data)?;
+        
+        Ok(cover_id.is_some())
+    }
+
+    /// Extract the cover image bytes from the EPUB
+    pub async fn cover_image(&mut self) -> Result<Vec<u8>> {
+        let container_data = self.extractor.read_file("META-INF/container.xml").await?;
+        let mut container_parser = ContainerParser::new();
+        let opf_path = container_parser
+            .parse_container(&container_data)?
+            .rootfile_path;
+
+        let opf_data = self.extractor.read_file(&opf_path).await?;
+        let mut opf_parser = OpfParser::new();
+        let metadata = opf_parser.parse_metadata(&opf_data)?;
+        
+        let cover_id = metadata.cover_image_id
+            .ok_or_else(|| LexEpubError::MissingFile("No cover image found in EPUB".to_string()))?;
+        
+        let cover_href = metadata.manifest
+            .get(&cover_id)
+            .ok_or_else(|| LexEpubError::MissingFile(format!("Cover image item '{}' not in manifest", cover_id)))?;
+        
+        // Resolve the cover href relative to the OPF file's directory
+        let opf_base = std::path::Path::new(&opf_path)
+            .parent()
+            .unwrap_or(std::path::Path::new(""));
+        let full_path = opf_base.join(cover_href);
+        let full_path_str = full_path.to_string_lossy();
+        
+        self.extractor.read_file(&full_path_str).await
+    }
+
     // TODO: implement extract_with_ast() method as alias for extract_ast() for API consistency? or just use one method name?
 
     // Internal method to extract chapters

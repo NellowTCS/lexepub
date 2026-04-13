@@ -125,28 +125,31 @@ mod integration_tests {
         });
     }
 
-    // TODO: uncomment this test once has_cover() and cover_image() methods are implemented
-    // #[tokio::test]
-    // async fn test_cover_image_handling() {
-    //     let test_epub = match get_test_epub_path() {
-    //         Some(path) => path,
-    //         None => return,
-    //     };
+    #[test]
+    fn test_cover_image_handling() {
+        let test_epub = match get_test_epub_path() {
+            Some(path) => path,
+            None => return,
+        };
 
-    //     let mut epub = LexEpub::open(test_epub).await.unwrap();
+        futures::executor::block_on(async {
+            let mut epub = LexEpub::open(&test_epub).await.unwrap();
 
-    //     // Test cover detection
-    //     let has_cover = epub.has_cover().await.unwrap();
+            // Test cover detection
+            let has_cover = epub.has_cover().await.unwrap();
 
-    //     // Test cover extraction (may or may not have a cover)
-    //     let cover_result = epub.cover_image().await;
-    //     assert!(cover_result.is_ok());
+            // Test cover extraction (may or may not have a cover)
+            let cover_result = epub.cover_image().await;
 
-    //     let cover_data = cover_result.unwrap();
-    //     if has_cover {
-    //         assert!(cover_data.is_some(), "Should have cover data if has_cover is true");
-    //     }
-    // }
+            if has_cover {
+                assert!(cover_result.is_ok());
+                let cover_data = cover_result.unwrap();
+                assert!(!cover_data.is_empty(), "Should have cover data if has_cover is true");
+            } else {
+                assert!(cover_result.is_err());
+            }
+        });
+    }
 
     #[test]
     fn test_error_handling() {

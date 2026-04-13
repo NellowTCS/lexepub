@@ -19,6 +19,7 @@ pub struct OpfMetadata {
     pub contributors: Vec<String>,
     pub spine: Vec<String>,
     pub manifest: HashMap<String, String>,
+    pub cover_image_id: Option<String>,
 }
 
 pub struct OpfParser {
@@ -51,6 +52,7 @@ impl OpfParser {
             contributors: Vec::new(),
             spine: Vec::new(),
             manifest: HashMap::new(),
+            cover_image_id: None,
         };
 
         let mut in_metadata = false;
@@ -72,16 +74,26 @@ impl OpfParser {
                         "item" if in_manifest => {
                             let mut id = String::new();
                             let mut href = String::new();
+                            let mut is_cover = false;
                             for attr in e.attributes().flatten() {
                                 match attr.key.as_ref() {
                                     b"id" => id = String::from_utf8_lossy(&attr.value).to_string(),
                                     b"href" => {
                                         href = String::from_utf8_lossy(&attr.value).to_string()
                                     }
+                                    b"properties" => {
+                                        let props = String::from_utf8_lossy(&attr.value);
+                                        if props.contains("cover-image") {
+                                            is_cover = true;
+                                        }
+                                    }
                                     _ => {}
                                 }
                             }
                             if !id.is_empty() && !href.is_empty() {
+                                if is_cover {
+                                    metadata.cover_image_id = Some(id.clone());
+                                }
                                 metadata.manifest.insert(id, href);
                             }
                         }
@@ -92,6 +104,20 @@ impl OpfParser {
                                     metadata.spine.push(idref);
                                     break;
                                 }
+                            }
+                        }
+                        "meta" if in_metadata => {
+                            let mut name = String::new();
+                            let mut content = String::new();
+                            for attr in e.attributes().flatten() {
+                                match attr.key.as_ref() {
+                                    b"name" => name = String::from_utf8_lossy(&attr.value).to_string(),
+                                    b"content" => content = String::from_utf8_lossy(&attr.value).to_string(),
+                                    _ => {}
+                                }
+                            }
+                            if name == "cover" && !content.is_empty() && metadata.cover_image_id.is_none() {
+                                metadata.cover_image_id = Some(content);
                             }
                         }
                         _ => {}
@@ -196,6 +222,12 @@ impl OpfParser {
         }
 
         Ok(spine)
+    }
+
+    /// Get the cover image item ID from OPF metadata
+    pub fn get_cover_image_id(&mut self, data: &[u8]) -> Result<Option<String>> {
+        let metadata = self.parse_metadata(data)?;
+        Ok(metadata.cover_image_id)
     }
 }
 
