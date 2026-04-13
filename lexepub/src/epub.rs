@@ -17,6 +17,7 @@ pub struct LexEpub {
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct EpubMetadata {
     pub title: Option<String>,
+    pub version: Option<String>,
     pub authors: Vec<String>,
     pub description: Option<String>,
     pub languages: Vec<String>,
@@ -154,6 +155,7 @@ impl LexEpub {
 
         let epub_metadata = EpubMetadata {
             title: opf_metadata.title,
+            version: opf_metadata.version,
             authors: opf_metadata.creators,
             description: opf_metadata.description,
             languages: opf_metadata.languages,
@@ -427,6 +429,7 @@ where
 
     let epub_metadata = EpubMetadata {
         title: metadata.title,
+        version: metadata.version,
         authors: metadata.creators,
         description: metadata.description,
         languages: metadata.languages,

@@ -37,6 +37,10 @@ async fn run_embassy_main() -> std::result::Result<(), Box<dyn std::error::Error
     println!("{}", "-".repeat(20));
     let metadata = epub.get_metadata().await?;
 
+    if let Some(version) = &metadata.version {
+        println!("EPUB Version: {}", version);
+    }
+
     if let Some(title) = &metadata.title {
         println!("Title: {}", title);
     } else {
@@ -118,6 +122,10 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     println!("METADATA");
     println!("{}", "-".repeat(20));
     let metadata = futures::executor::block_on(epub.get_metadata())?;
+
+    if let Some(version) = &metadata.version {
+        println!("EPUB Version: {}", version);
+    }
 
     if let Some(title) = &metadata.title {
         println!("Title: {}", title);

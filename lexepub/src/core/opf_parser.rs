@@ -42,6 +42,7 @@ impl OpfParser {
 
         let mut metadata = OpfMetadata {
             title: None,
+            version: None,
             creators: Vec::new(),
             description: None,
             languages: Vec::new(),
@@ -67,6 +68,16 @@ impl OpfParser {
                 Ok(Event::Start(ref e)) | Ok(Event::Empty(ref e)) => {
                     let tag_name = String::from_utf8_lossy(e.name().as_ref()).to_lowercase();
                     current_element = tag_name.clone();
+
+                    if current_element == "package" {
+                        for attr in e.attributes().flatten() {
+                            if attr.key.as_ref() == b"version" {
+                                metadata.version =
+                                    Some(String::from_utf8_lossy(&attr.value).to_string());
+                                break;
+                            }
+                        }
+                    }
 
                     match current_element.as_str() {
                         "metadata" => in_metadata = true,
