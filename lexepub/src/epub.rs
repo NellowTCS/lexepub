@@ -33,6 +33,29 @@ pub struct EpubMetadata {
     pub chapter_count: usize,
 }
 
+impl EpubMetadata {
+    /// Validates the metadata per EPUB standards (requires title, language, and identifier)
+    pub fn validate(&self) -> std::result::Result<(), Vec<String>> {
+        let mut errors = Vec::new();
+
+        if self.title.as_ref().is_none_or(|t| t.trim().is_empty()) {
+            errors.push("Missing required field: title".to_string());
+        }
+        if self.languages.is_empty() {
+            errors.push("Missing required field: language".to_string());
+        }
+        if self.identifiers.is_empty() {
+            errors.push("Missing required field: identifier".to_string());
+        }
+
+        if errors.is_empty() {
+            Ok(())
+        } else {
+            Err(errors)
+        }
+    }
+}
+
 impl LexEpub {
     /// Open an EPUB from a file path
     pub async fn open<P: AsRef<Path>>(path: P) -> Result<Self> {
@@ -168,14 +191,27 @@ impl LexEpub {
             contributors: opf_metadata.contributors,
             spine: opf_metadata.spine.clone(),
             has_cover: opf_metadata.cover_image_id.is_some(),
-            cover_image_format: opf_metadata.cover_image_id.as_ref().and_then(|id| {
-                opf_metadata.manifest.get(id).map(|(_, mime)| mime.clone())
-            }),
+            cover_image_format: opf_metadata
+                .cover_image_id
+                .as_ref()
+                .and_then(|id| opf_metadata.manifest.get(id).map(|(_, mime)| mime.clone())),
             chapter_count: opf_metadata.spine.len(),
         };
 
         self.metadata = Some(epub_metadata.clone());
         Ok(epub_metadata)
+    }
+
+    /// Validates the metadata against basic EPUB standard requirements
+    pub async fn validate_metadata(&mut self) -> Result<()> {
+        let metadata = self.get_metadata().await?;
+        metadata
+            .validate()
+            .map_err(crate::error::LexEpubError::ValidationError)
+    }
+
+    pub fn validate_metadata_sync(&mut self) -> Result<()> {
+        futures::executor::block_on(self.validate_metadata())
     }
 
     /// Get total word count across all chapters
@@ -445,9 +481,10 @@ where
         contributors: metadata.contributors,
         spine: metadata.spine.clone(),
         has_cover: metadata.cover_image_id.is_some(),
-        cover_image_format: metadata.cover_image_id.as_ref().and_then(|id| {
-            metadata.manifest.get(id).map(|(_, mime)| mime.clone())
-        }),
+        cover_image_format: metadata
+            .cover_image_id
+            .as_ref()
+            .and_then(|id| metadata.manifest.get(id).map(|(_, mime)| mime.clone())),
         chapter_count: metadata.spine.len(),
     };
 

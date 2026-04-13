@@ -35,6 +35,11 @@ async fn run_embassy_main() -> std::result::Result<(), Box<dyn std::error::Error
     // Extract and display metadata
     println!("METADATA");
     println!("{}", "-".repeat(20));
+    match epub.validate_metadata().await {
+        Ok(_) => println!("Validation: OK"),
+        Err(e) => println!("Validation: INVALID ({:?})", e),
+    }
+
     let metadata = epub.get_metadata().await?;
 
     if let Some(version) = &metadata.version {
@@ -126,6 +131,11 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     // Extract and display metadata
     println!("METADATA");
     println!("{}", "-".repeat(20));
+    match futures::executor::block_on(epub.validate_metadata()) {
+        Ok(_) => println!("Validation: OK"),
+        Err(e) => println!("Validation: INVALID ({:?})", e),
+    }
+
     let metadata = futures::executor::block_on(epub.get_metadata())?;
 
     if let Some(version) = &metadata.version {

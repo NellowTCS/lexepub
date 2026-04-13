@@ -16,6 +16,9 @@ pub enum LexEpubError {
     #[error("HTML parsing error: {0}")]
     Html(String),
 
+    #[error("Validation error: {0:?}")]
+    ValidationError(Vec<String>),
+
     #[error("Invalid EPUB format: {0}")]
     InvalidFormat(String),
 

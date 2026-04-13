@@ -6,8 +6,6 @@
 
 - [ ] Add streaming cover image support
 
-- [ ] Add metadata validation
-
 - [ ] Add rendering support
 
 - [ ] Add docs
@@ -17,6 +15,9 @@
 - [ ] Integrate the ✨ fancy ✨ EPUB library features (advanced layout, multimedia, accessibility, etc. ) (probably beyond v0.1.0)
 
 ## Done
+
+- [x] Add metadata validation
+  - Implemented `validate_metadata` method and `ValidationError` handling.
 
 - [x] Add image format detection for covers
 

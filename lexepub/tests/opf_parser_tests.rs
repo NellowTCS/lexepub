@@ -39,7 +39,10 @@ mod tests {
         assert_eq!(metadata.spine, vec!["chapter1"]);
         assert_eq!(
             metadata.manifest.get("chapter1"),
-            Some(&"chapter1.xhtml".to_string())
+            Some(&(
+                "chapter1.xhtml".to_string(),
+                "application/xhtml+xml".to_string()
+            ))
         );
     }
 

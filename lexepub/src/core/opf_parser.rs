@@ -95,7 +95,8 @@ impl OpfParser {
                                         href = String::from_utf8_lossy(&attr.value).to_string()
                                     }
                                     b"media-type" => {
-                                        media_type = String::from_utf8_lossy(&attr.value).to_string()
+                                        media_type =
+                                            String::from_utf8_lossy(&attr.value).to_string()
                                     }
                                     b"properties" => {
                                         let props = String::from_utf8_lossy(&attr.value);
