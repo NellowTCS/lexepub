@@ -6,11 +6,7 @@
 
 - [ ] Add streaming cover image support
 
-- [ ] Add image format detection for covers
-
 - [ ] Add metadata validation
-
-- [x] Add EPUB version detection
 
 - [ ] Add rendering support
 
@@ -21,6 +17,13 @@
 - [ ] Integrate the ✨ fancy ✨ EPUB library features (advanced layout, multimedia, accessibility, etc. ) (probably beyond v0.1.0)
 
 ## Done
+
+- [x] Add image format detection for covers
+
+- [x] Add EPUB version detection
+
+- [x] Add image format detection for covers
+  - Parses `media-type` from OPF manifest for the cover image.
 
 - [x] Add EPUB version detection
   - Parses `<package version="X.X">` in OPF file

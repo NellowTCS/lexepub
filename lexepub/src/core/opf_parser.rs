@@ -19,7 +19,7 @@ pub struct OpfMetadata {
     pub rights: Option<String>,
     pub contributors: Vec<String>,
     pub spine: Vec<String>,
-    pub manifest: HashMap<String, String>,
+    pub manifest: HashMap<String, (String, String)>,
     pub cover_image_id: Option<String>,
 }
 
@@ -86,12 +86,16 @@ impl OpfParser {
                         "item" if in_manifest => {
                             let mut id = String::new();
                             let mut href = String::new();
+                            let mut media_type = String::new();
                             let mut is_cover = false;
                             for attr in e.attributes().flatten() {
                                 match attr.key.as_ref() {
                                     b"id" => id = String::from_utf8_lossy(&attr.value).to_string(),
                                     b"href" => {
                                         href = String::from_utf8_lossy(&attr.value).to_string()
+                                    }
+                                    b"media-type" => {
+                                        media_type = String::from_utf8_lossy(&attr.value).to_string()
                                     }
                                     b"properties" => {
                                         let props = String::from_utf8_lossy(&attr.value);
@@ -106,7 +110,7 @@ impl OpfParser {
                                 if is_cover {
                                     metadata.cover_image_id = Some(id.clone());
                                 }
-                                metadata.manifest.insert(id, href);
+                                metadata.manifest.insert(id, (href, media_type));
                             }
                         }
                         "itemref" if in_spine => {

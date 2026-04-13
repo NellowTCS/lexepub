@@ -29,6 +29,7 @@ pub struct EpubMetadata {
     pub contributors: Vec<String>,
     pub spine: Vec<String>,
     pub has_cover: bool,
+    pub cover_image_format: Option<String>,
     pub chapter_count: usize,
 }
 
@@ -123,7 +124,7 @@ impl LexEpub {
 
         for item_id in spine {
             if let Some(href) = metadata.manifest.get(&item_id) {
-                let full_path = opf_base.join(href);
+                let full_path = opf_base.join(&href.0);
                 let full_path_str = full_path.to_string_lossy().to_string();
                 entries.push(full_path_str);
             }
@@ -167,6 +168,9 @@ impl LexEpub {
             contributors: opf_metadata.contributors,
             spine: opf_metadata.spine.clone(),
             has_cover: opf_metadata.cover_image_id.is_some(),
+            cover_image_format: opf_metadata.cover_image_id.as_ref().and_then(|id| {
+                opf_metadata.manifest.get(id).map(|(_, mime)| mime.clone())
+            }),
             chapter_count: opf_metadata.spine.len(),
         };
 
@@ -235,7 +239,7 @@ impl LexEpub {
         let opf_base = std::path::Path::new(&opf_path)
             .parent()
             .unwrap_or(std::path::Path::new(""));
-        let full_path = opf_base.join(cover_href);
+        let full_path = opf_base.join(&cover_href.0);
         let full_path_str = full_path.to_string_lossy();
 
         self.extractor.read_file(&full_path_str).await
@@ -274,7 +278,7 @@ impl LexEpub {
         for item_id in spine {
             if let Some(href) = metadata.manifest.get(&item_id) {
                 // Resolve the href relative to the OPF file's directory
-                let full_path = opf_base.join(href);
+                let full_path = opf_base.join(&href.0);
                 let full_path_str = full_path.to_string_lossy();
                 match self.extractor.read_file(&full_path_str).await {
                     Ok(content) => {
@@ -407,7 +411,7 @@ where
 
     for item_id in spine {
         if let Some(href) = metadata.manifest.get(&item_id) {
-            let full_path = opf_base.join(href);
+            let full_path = opf_base.join(&href.0);
             let full_path_str = full_path.to_string_lossy();
             if let Ok(content) = read_entry(&mut archive, &full_path_str).await {
                 let html_content = String::from_utf8_lossy(&content);
@@ -441,6 +445,9 @@ where
         contributors: metadata.contributors,
         spine: metadata.spine.clone(),
         has_cover: metadata.cover_image_id.is_some(),
+        cover_image_format: metadata.cover_image_id.as_ref().and_then(|id| {
+            metadata.manifest.get(id).map(|(_, mime)| mime.clone())
+        }),
         chapter_count: metadata.spine.len(),
     };
 

@@ -41,6 +41,11 @@ async fn run_embassy_main() -> std::result::Result<(), Box<dyn std::error::Error
         println!("EPUB Version: {}", version);
     }
 
+    println!("Has Cover: {}", metadata.has_cover);
+    if let Some(format) = &metadata.cover_image_format {
+        println!("Cover Format: {}", format);
+    }
+
     if let Some(title) = &metadata.title {
         println!("Title: {}", title);
     } else {
@@ -125,6 +130,11 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
     if let Some(version) = &metadata.version {
         println!("EPUB Version: {}", version);
+    }
+
+    println!("Has Cover: {}", metadata.has_cover);
+    if let Some(format) = &metadata.cover_image_format {
+        println!("Cover Format: {}", format);
     }
 
     if let Some(title) = &metadata.title {
