@@ -49,7 +49,7 @@ async fn main(
         println!("Publisher: {}", publisher);
     }
 
-    if let Some(date) = &metadata.date {
+    if let Some(date) = &metadata.publication_date {
         println!("Publication Date: {}", date);
     }
 
@@ -131,7 +131,7 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         println!("Publisher: {}", publisher);
     }
 
-    if let Some(date) = &metadata.date {
+    if let Some(date) = &metadata.publication_date {
         println!("Publication Date: {}", date);
     }
 

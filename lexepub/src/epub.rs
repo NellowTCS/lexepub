@@ -22,14 +22,13 @@ pub struct EpubMetadata {
     pub languages: Vec<String>,
     pub subjects: Vec<String>,
     pub publisher: Option<String>,
-    pub date: Option<String>,
+    pub publication_date: Option<String>,
     pub identifiers: Vec<String>,
     pub rights: Option<String>,
     pub contributors: Vec<String>,
-    // TODO: add spine field (Vec<String>) for chapter order
-    // TODO: add has_cover field (bool) for cover image presence
-    // TODO: add chapter_count field (usize) for number of chapters
-    // TODO: rename date to publication_date for API consistency
+    pub spine: Vec<String>,
+    pub has_cover: bool,
+    pub chapter_count: usize,
 }
 
 impl LexEpub {
@@ -160,10 +159,13 @@ impl LexEpub {
             languages: opf_metadata.languages,
             subjects: opf_metadata.subjects,
             publisher: opf_metadata.publisher,
-            date: opf_metadata.date,
+            publication_date: opf_metadata.date,
             identifiers: opf_metadata.identifiers,
             rights: opf_metadata.rights,
             contributors: opf_metadata.contributors,
+            spine: opf_metadata.spine.clone(),
+            has_cover: false, // TODO: detect cover image
+            chapter_count: opf_metadata.spine.len(),
         };
 
         self.metadata = Some(epub_metadata.clone());
@@ -230,11 +232,6 @@ impl LexEpub {
                 match self.extractor.read_file(&full_path_str).await {
                     Ok(content) => {
                         // Parse HTML content
-                        let html_content = String::from_utf8_lossy(&content);
-                        let text_content = extract_text_content(&html_content)?;
-                        let word_count = text_content.split_whitespace().count();
-                        let char_count = text_content.chars().count();
-
                         let chapter = Chapter {
                             href: full_path_str.to_string(),
                             id: item_id,
@@ -242,13 +239,8 @@ impl LexEpub {
                             content,
                         };
 
-                        let parsed_chapter = ParsedChapter {
-                            chapter_info: chapter,
-                            content: text_content,
-                            ast: None, // TODO: implement AST parsing, use ChapterParser::with_ast() instead of extract_text_content
-                            word_count,
-                            char_count,
-                        };
+                        let parser = crate::core::html_parser::ChapterParser::new().with_both();
+                        let parsed_chapter = parser.parse_chapter(chapter)?;
 
                         chapters.push(parsed_chapter);
                     }
@@ -395,10 +387,13 @@ where
         languages: metadata.languages,
         subjects: metadata.subjects,
         publisher: metadata.publisher,
-        date: metadata.date,
+        publication_date: metadata.date,
         identifiers: metadata.identifiers,
         rights: metadata.rights,
         contributors: metadata.contributors,
+        spine: metadata.spine.clone(),
+        has_cover: false, // TODO: extract cover image details
+        chapter_count: metadata.spine.len(),
     };
 
     Ok(AnalysisReport {

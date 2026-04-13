@@ -1,14 +1,4 @@
-# TODO
-
-- [ ] Implement AST parsing in main API
-  - Currently `extract_chapters()` sets `ast: None`
-  - Should use `ChapterParser::with_ast()` instead of `extract_text_content()`
-
-- [ ] Add missing fields to EpubMetadata
-  - [ ] Add `spine: Vec<String>` for chapter order
-  - [ ] Add `has_cover: bool` for cover image presence
-  - [ ] Add `chapter_count: usize` for number of chapters
-  - [ ] Rename `date` to `publication_date` for API consistency
+# Todo
 
 - [ ] Proper WASM support
 
@@ -35,3 +25,15 @@
 - [ ] Add JavaScript execution support for interactive EPUBs
 
 - [ ] Integrate the ✨ fancy ✨ EPUB library features (advanced layout, multimedia, accessibility, etc. )
+
+## Done
+
+- [x] Implement AST parsing in main API
+  - Currently `extract_chapters()` sets `ast: None`
+  - Should use `ChapterParser::with_ast()` instead of `extract_text_content()`
+
+- [x] Add missing fields to EpubMetadata
+  - [x] Add `spine: Vec<String>` for chapter order
+  - [x] Add `has_cover: bool` for cover image presence
+  - [x] Add `chapter_count: usize` for number of chapters
+  - [x] Rename `date` to `publication_date` for API consistency
