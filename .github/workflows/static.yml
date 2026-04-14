@@ -1,50 +1,48 @@
-# Deploy documentation to GitHub Pages
-name: Deploy to GitHub Pages
+name: Deploy GitHub Pages
 
 on:
   push:
-    branches: ["main"]
-  workflow_dispatch:
-
-permissions:
-  contents: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
+    branches: [main]
 
 jobs:
-  deploy:
+  build-deploy:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
 
-      - name: Setup Node.js
+    steps:
+      - uses: actions/checkout@v4
+
+      # Build everything
+      - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: '20.19.0'
 
-      - name: Build documentation
-        working-directory: Docs
+      # Build core library
+      - name: Install Build deps and build library
         run: |
+          cd Demo
           npm ci
           npm run build
+          cd ../Docs
+          npm ci
+          npm run build
+          cd ../
 
-      - name: Prepare deployment
+      # Prepare full page deploy directory
+      - name: Prepare Pages assets
         run: |
-          mkdir -p deploy
-          cp -r Docs/site deploy/docs
-          cat > deploy/index.html << 'EOF'
-          <!DOCTYPE html>
-          <html>
-          <head><meta http-equiv="refresh" content="0;url=docs/"></head>
-          <body><a href="docs/">Go to documentation</a></body>
-          </html>
-          EOF
+          mkdir -p gh-pages-root
+          # Demo at root
+          mkdir -p gh-pages-root/demo
+          cp -r Demo/dist/* gh-pages-root/
+          # Docs at docs/
+          mkdir -p gh-pages-root/docs
+          cp -r Docs/site/* gh-pages-root/docs/
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Deploy all assets to gh-pages
+        uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: deploy
+          publish_dir: gh-pages-root
+          keep_files: false # Or true, depending
+          commit_message: Deploy Demo
