@@ -160,6 +160,10 @@ impl LexEpub {
     }
 
     /// Get metadata
+    pub fn get_metadata_sync(&mut self) -> Result<EpubMetadata> {
+        futures::executor::block_on(self.get_metadata())
+    }
+
     pub async fn get_metadata(&mut self) -> Result<EpubMetadata> {
         if let Some(ref metadata) = self.metadata {
             return Ok(metadata.clone());
@@ -237,6 +241,10 @@ impl LexEpub {
     }
 
     /// Check if the EPUB has a cover image
+    pub fn has_cover_sync(&mut self) -> Result<bool> {
+        futures::executor::block_on(self.has_cover())
+    }
+
     pub async fn has_cover(&mut self) -> Result<bool> {
         let container_data = self.extractor.read_file("META-INF/container.xml").await?;
         let mut container_parser = ContainerParser::new();
@@ -252,6 +260,10 @@ impl LexEpub {
     }
 
     /// Extract the cover image bytes from the EPUB
+    pub fn cover_image_sync(&mut self) -> Result<Vec<u8>> {
+        futures::executor::block_on(self.cover_image())
+    }
+
     pub async fn cover_image(&mut self) -> Result<Vec<u8>> {
         let container_data = self.extractor.read_file("META-INF/container.xml").await?;
         let mut container_parser = ContainerParser::new();

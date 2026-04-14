@@ -21,5 +21,9 @@ mod ffi {
         pub fn get_total_char_count(&mut self) -> usize {
             self.0.total_char_count_sync().unwrap_or(0)
         }
+
+        pub fn has_cover(&mut self) -> bool {
+            self.0.has_cover_sync().unwrap_or(false)
+        }
     }
 }

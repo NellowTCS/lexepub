@@ -1,6 +1,6 @@
 # Todo
 
-- [ ] Ensure 1-1 API functionality between C/C++, Rust, and WASM
+- [x] Ensure 1-1 API functionality between C/C++, Rust, and WASM
 
 - [ ] Implement CSS parsing and application
 
