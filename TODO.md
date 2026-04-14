@@ -8,6 +8,8 @@
 
 ## Done
 
+- [X] Add Demo
+
 - [X] Ensure 1-1 API functionality between C/C++, Rust, and WASM
 
 - [X] Implement CSS parsing and application

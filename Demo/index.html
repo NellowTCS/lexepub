@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self' blob: data:;
+    script-src 'self' 'unsafe-eval';
+    style-src 'self' 'unsafe-inline';
+    img-src 'self' blob: data:;
+    connect-src 'self';
+    frame-src 'self' blob: data:;
+    worker-src 'self';
+    manifest-src 'self';
+    upgrade-insecure-requests; block-all-mixed-content;">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTMLReader</title>
+  <link rel="stylesheet" href="./src/style.css" />
+</head>
+<body>
+  <header>
+    <div class="title">
+      <span>HTMLReader</span>
+      <span class="book-title" id="book-title"></span>
+    </div>
+    <div class="controls">
+      <button id="toc-button" disabled>Table of Contents</button>
+      <button id="open-button">Open EPUB</button>
+      <select id="demo-book-select" class="demo-picker" aria-label="Built-in demo EPUBs">
+        <option value="/epubs/test-book.epub">Demo: Test Book</option>
+        <option value="/epubs/Accessibility-Tests-Extended-Descriptions-v1.1.1.epub">Demo: Accessibility Extended Descriptions</option>
+        <option value="/epubs/Fundamental-Accessibility-Tests-Basic-Functionality-v2.0.0.epub">Demo: Accessibility Basic Functionality</option>
+        <option value="/epubs/Fundamental-Accessibility-Tests-Visual-Adjustments-v2.0.0.epub">Demo: Accessibility Visual Adjustments</option>
+      </select>
+      <button id="open-demo-button">Open Built-in Demo</button>
+      <button id="library-button">Library</button>
+      <input type="file" id="file-input" class="file-input" accept=".epub">
+      <!-- Fallback multiple file input for library import -->
+      <input type="file" id="library-input" class="file-input" accept=".epub" multiple>
+      <button id="install-button" hidden>Install App</button> <!-- New Install Button -->
+    </div>
+  </header>
+  <main>
+    <div id="viewer"></div>
+  </main>
+  <footer>
+    <button id="prev-button" disabled>⬅ Previous</button>
+    <div class="page-info">
+      <span>Page</span>
+      <input type="number" id="current-page" min="1" value="1">
+      <span>of</span>
+      <span id="total-pages">1</span>
+    </div>
+    <button id="next-button" disabled>Next ➡</button>
+  </footer>
+  <!-- TOC Container -->
+  <div class="toc-container" id="toc-container">
+    <div class="toc-header">
+      <h3>Table of Contents</h3>
+      <button id="close-toc">Close</button>
+    </div>
+    <div class="toc-content" id="toc-content"></div>
+  </div>
+  <!-- Library Popup (hidden by default) -->
+  <div class="library-container" id="library-container">
+    <div class="library-header">
+      <h3>Library</h3>
+      <button id="close-library">Close</button>
+    </div>
+    <div class="library-content" id="library-content"></div>
+  </div>
+  <div class="overlay" id="overlay"></div>
+  <div class="message" id="loading-message">
+    <h3>Loading EPUB...</h3>
+    <p>Please wait while your book is being processed.</p>
+  </div>
+  <div class="message" id="error-message">
+    <h3>Error</h3>
+    <p id="error-text">There was an error processing your EPUB file.</p>
+    <button id="close-error">Close</button>
+  </div>
+</body>
+<script type="module" src="./src/main.js"></script>
+</html>
