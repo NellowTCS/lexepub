@@ -57,7 +57,10 @@ mod lib_tests {
         futures::executor::block_on(async {
             let test_epub = Path::new("examples/epubs/test-book.epub");
             if test_epub.exists() {
-                let mut epub = LexEpub::open(test_epub).await.unwrap();
+                let mut epub = match LexEpub::open(test_epub).await {
+                    Ok(epub) => epub,
+                    Err(err) => panic!("Failed to open test EPUB: {err}"),
+                };
                 let metadata = epub.get_metadata().await;
                 assert!(
                     metadata.is_ok(),
@@ -65,7 +68,10 @@ mod lib_tests {
                     metadata.err()
                 );
 
-                let metadata = metadata.unwrap();
+                let metadata = match metadata {
+                    Ok(metadata) => metadata,
+                    Err(err) => panic!("Metadata extraction failed unexpectedly: {err}"),
+                };
                 // Just check that we got some metadata, don't assume specific content
                 assert!(
                     !metadata.languages.is_empty()
@@ -82,7 +88,10 @@ mod lib_tests {
         futures::executor::block_on(async {
             let test_epub = Path::new("examples/epubs/test-book.epub");
             if test_epub.exists() {
-                let mut epub = LexEpub::open(test_epub).await.unwrap();
+                let mut epub = match LexEpub::open(test_epub).await {
+                    Ok(epub) => epub,
+                    Err(err) => panic!("Failed to open test EPUB: {err}"),
+                };
                 let chapters = epub.extract_text_only().await;
                 assert!(
                     chapters.is_ok(),
@@ -90,7 +99,10 @@ mod lib_tests {
                     chapters.err()
                 );
 
-                let chapters = chapters.unwrap();
+                let chapters = match chapters {
+                    Ok(chapters) => chapters,
+                    Err(err) => panic!("Text extraction failed unexpectedly: {err}"),
+                };
                 assert!(!chapters.is_empty(), "Should have chapters");
             }
         });
@@ -125,14 +137,23 @@ mod lib_tests {
         futures::executor::block_on(async {
             let test_epub = Path::new("examples/epubs/test-book.epub");
             if test_epub.exists() {
-                let mut epub = LexEpub::open(test_epub).await.unwrap();
+                let mut epub = match LexEpub::open(test_epub).await {
+                    Ok(epub) => epub,
+                    Err(err) => panic!("Failed to open test EPUB: {err}"),
+                };
 
                 // Test text-only parsing
-                let text_chapters = epub.extract_text_only().await.unwrap();
+                let text_chapters = match epub.extract_text_only().await {
+                    Ok(chapters) => chapters,
+                    Err(err) => panic!("Text-only parsing failed: {err}"),
+                };
                 assert!(!text_chapters.is_empty());
 
                 // Test AST parsing
-                let ast_chapters = epub.extract_ast().await.unwrap();
+                let ast_chapters = match epub.extract_ast().await {
+                    Ok(chapters) => chapters,
+                    Err(err) => panic!("AST parsing failed: {err}"),
+                };
                 assert!(!ast_chapters.is_empty());
 
                 // Verify AST structure (TODO: currently not implemented)
@@ -149,10 +170,19 @@ mod lib_tests {
         futures::executor::block_on(async {
             let test_epub = Path::new("examples/epubs/test-book.epub");
             if test_epub.exists() {
-                let mut epub = LexEpub::open(test_epub).await.unwrap();
+                let mut epub = match LexEpub::open(test_epub).await {
+                    Ok(epub) => epub,
+                    Err(err) => panic!("Failed to open test EPUB: {err}"),
+                };
 
-                let word_count = epub.total_word_count().await.unwrap();
-                let char_count = epub.total_char_count().await.unwrap();
+                let word_count = match epub.total_word_count().await {
+                    Ok(count) => count,
+                    Err(err) => panic!("Word count failed: {err}"),
+                };
+                let char_count = match epub.total_char_count().await {
+                    Ok(count) => count,
+                    Err(err) => panic!("Character count failed: {err}"),
+                };
 
                 assert!(word_count > 0, "Word count should be greater than 0");
                 assert!(char_count > 0, "Character count should be greater than 0");

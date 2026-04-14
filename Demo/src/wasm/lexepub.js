@@ -123,6 +123,17 @@ export class WasmEpubExtractor {
         return ret;
     }
     /**
+     * Read an internal EPUB resource as bytes by normalized path
+     * @param {string} path
+     * @returns {Promise<Uint8Array>}
+     */
+    get_resource(path) {
+        const ptr0 = passStringToWasm0(path, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.wasmepubextractor_get_resource(this.__wbg_ptr, ptr0, len0);
+        return ret;
+    }
+    /**
      * Get title string from metadata
      * @returns {Promise<string>}
      */
@@ -321,7 +332,7 @@ function __wbg_get_imports() {
             return ret;
         },
         __wbindgen_cast_0000000000000001: function(arg0, arg1) {
-            // Cast intrinsic for `Closure(Closure { owned: true, function: Function { arguments: [Externref], shim_idx: 135, ret: Result(Unit), inner_ret: Some(Result(Unit)) }, mutable: true }) -> Externref`.
+            // Cast intrinsic for `Closure(Closure { owned: true, function: Function { arguments: [Externref], shim_idx: 140, ret: Result(Unit), inner_ret: Some(Result(Unit)) }, mutable: true }) -> Externref`.
             const ret = makeMutClosure(arg0, arg1, wasm_bindgen__convert__closures_____invoke__hab5d802ec56f1a23);
             return ret;
         },

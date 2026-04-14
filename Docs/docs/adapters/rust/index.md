@@ -24,10 +24,15 @@ The native Rust API exposes the full LexePub capability set through `tokio` or a
 - `LexEpub::extract_chapters_stream()`
 - `LexEpub::get_metadata()`
 - `LexEpub::validate_metadata()`
+- `LexEpub::get_toc()`
+- `LexEpub::read_resource(path)`
+- `LexEpub::resolve_chapter_resource_path(chapter_index, href)`
+- `LexEpub::read_chapter_resource(chapter_index, href)`
 - `LexEpub::total_word_count()`
 - `LexEpub::total_char_count()`
 - `LexEpub::has_cover()`
 - `LexEpub::cover_image()`
+- `LexEpub::cover_image_to_writer(writer)`
 
 ## Sync wrapper API
 
@@ -49,6 +54,8 @@ Calling `extract_ast()` performs CSS-aware AST generation:
 - Applied declarations are stored in `AstNode::Element.styles`.
 - Inline style attributes are merged during application.
 
+Also, chapter-relative `href`/`src` values are normalized during extraction to make runtime rendering/link navigation simpler across adapters.
+
 ## Building and Testing
 
 Simply add LexePub as a Cargo dependency. Integration tests and API tests ensure the parsing logic remains deterministic and resilient across versions.
@@ -65,3 +72,10 @@ The crate also exports async helpers:
 - `extract_text_only(path)`
 - `extract_ast(path)`
 - `get_metadata(path)`
+
+## Extra analysis helpers
+
+The core module also exposes high-level analysis entry points:
+
+- `analyze_reader(reader)`
+- `analyze_sync_reader(reader)`

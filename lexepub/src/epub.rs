@@ -117,7 +117,11 @@ impl LexEpub {
 
         let normalized_candidate = normalize_internal_path(path_only);
         if !normalized_candidate.is_empty()
-            && self.extractor.read_file(&normalized_candidate).await.is_ok()
+            && self
+                .extractor
+                .read_file(&normalized_candidate)
+                .await
+                .is_ok()
         {
             let mut out = normalized_candidate;
             if let Some(fragment) = href_clean.split('#').nth(1) {
@@ -156,7 +160,9 @@ impl LexEpub {
             }
         }
 
-        let resolved = self.resolve_chapter_resource_path(chapter_index, href).await?;
+        let resolved = self
+            .resolve_chapter_resource_path(chapter_index, href)
+            .await?;
         let resolved_path = resolved.split('#').next().unwrap_or(&resolved);
         self.extractor.read_file(resolved_path).await
     }

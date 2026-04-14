@@ -42,6 +42,16 @@ diplomat_result_void_void EpubExtractor_get_chapter_text(EpubExtractor* self, si
 
 diplomat_result_void_void EpubExtractor_get_chapter_json(EpubExtractor* self, size_t index, DiplomatWriteable* to);
 
+diplomat_result_void_void EpubExtractor_get_toc_json(EpubExtractor* self, DiplomatWriteable* to);
+
+diplomat_result_void_void EpubExtractor_get_toc(EpubExtractor* self, DiplomatWriteable* to);
+
+diplomat_result_void_void EpubExtractor_resolve_chapter_resource_path(EpubExtractor* self, size_t chapter_index, const char* href_data, size_t href_len, DiplomatWriteable* to);
+
+diplomat_result_void_void EpubExtractor_get_resource_json(EpubExtractor* self, const char* path_data, size_t path_len, DiplomatWriteable* to);
+
+diplomat_result_void_void EpubExtractor_get_chapter_resource_json(EpubExtractor* self, size_t chapter_index, const char* href_data, size_t href_len, DiplomatWriteable* to);
+
 diplomat_result_void_void EpubExtractor_get_chapter(EpubExtractor* self, size_t index, DiplomatWriteable* to);
 
 size_t EpubExtractor_get_total_word_count(EpubExtractor* self);

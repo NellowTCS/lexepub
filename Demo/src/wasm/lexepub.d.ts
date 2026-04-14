@@ -57,6 +57,10 @@ export class WasmEpubExtractor {
      */
     get_metadata_json(): Promise<string>;
     /**
+     * Read an internal EPUB resource as bytes by normalized path
+     */
+    get_resource(path: string): Promise<Uint8Array>;
+    /**
      * Get title string from metadata
      */
     get_title(): Promise<string>;
@@ -109,6 +113,7 @@ export interface InitOutput {
     readonly wasmepubextractor_get_metadata: (a: number) => any;
     readonly wasmepubextractor_get_metadata_is_valid: (a: number) => any;
     readonly wasmepubextractor_get_metadata_json: (a: number) => any;
+    readonly wasmepubextractor_get_resource: (a: number, b: number, c: number) => any;
     readonly wasmepubextractor_get_title: (a: number) => any;
     readonly wasmepubextractor_get_toc: (a: number) => any;
     readonly wasmepubextractor_get_toc_json: (a: number) => any;

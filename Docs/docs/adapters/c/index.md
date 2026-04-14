@@ -5,7 +5,7 @@ description: "Integration layer for native applications via Diplomat"
 
 # C/C++ Adapter
 
-The C/C++ adapter is generated using Diplomat from the Rust core and is being expanded toward 1:1 behavior parity.
+The C/C++ adapter is generated using Diplomat from the Rust core and tracks the same capability set as Rust/WASM.
 
 ## Headers and Linking
 
@@ -17,7 +17,7 @@ To integrate this module, include the generated header:
 #include "EpubExtractor.h"
 ```
 
-## Current API reference
+## API reference
 
 `EpubExtractor` currently provides:
 
@@ -33,6 +33,11 @@ To integrate this module, include the generated header:
 - `EpubExtractor_get_chapter(extractor, index, writeable)`
 - `EpubExtractor_get_chapter_text(extractor, index, writeable)`
 - `EpubExtractor_get_chapter_json(extractor, index, writeable)`
+- `EpubExtractor_get_toc(extractor, writeable)`
+- `EpubExtractor_get_toc_json(extractor, writeable)`
+- `EpubExtractor_resolve_chapter_resource_path(extractor, chapter_index, href_data, href_len, writeable)`
+- `EpubExtractor_get_resource_json(extractor, path_data, path_len, writeable)`
+- `EpubExtractor_get_chapter_resource_json(extractor, chapter_index, href_data, href_len, writeable)`
 - `EpubExtractor_get_total_word_count(extractor)`
 - `EpubExtractor_get_total_char_count(extractor)`
 - `EpubExtractor_has_cover(extractor)`
@@ -96,4 +101,13 @@ int main(void) {
 ## Returns
 
 - Methods like `get_metadata`, `get_chapters_text`, and `get_chapter` write JSON text into `DiplomatWriteable` outputs so C can consume structured Rust data without unsafe ABI struct coupling.
-- `get_cover_image_json` returns a JSON array of bytes; `get_cover_image_len` and `get_cover_image_format` provide fast metadata access.
+- Resource and cover byte payloads are exposed as JSON arrays (`get_resource_json`, `get_chapter_resource_json`, `get_cover_image_json`).
+- `get_cover_image_len` and `get_cover_image_format` provide fast metadata access without large payload transfer.
+
+## Build + regenerate headers
+
+```bash
+cd lexepub
+cargo build --release --features c-ffi
+diplomat-tool c include/
+```

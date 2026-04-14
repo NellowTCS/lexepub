@@ -1,11 +1,25 @@
 #[diplomat::bridge]
 #[allow(clippy::module_inception)]
 mod ffi {
+    use core::fmt::Write as _;
+
     #[diplomat::opaque]
     #[allow(dead_code)]
     pub struct EpubExtractor(Box<crate::LexEpub>);
 
     impl EpubExtractor {
+        fn write_string(to: &mut diplomat_runtime::DiplomatWriteable, s: &str) -> Result<(), ()> {
+            to.write_str(s).map_err(|_| ())
+        }
+
+        fn write_json<T: serde::Serialize>(
+            to: &mut diplomat_runtime::DiplomatWriteable,
+            value: &T,
+        ) -> Result<(), ()> {
+            let json = serde_json::to_string(value).map_err(|_| ())?;
+            Self::write_string(to, &json)
+        }
+
         pub fn create(path: &str) -> Option<Box<EpubExtractor>> {
             let path_buf = std::path::PathBuf::from(path);
             match crate::LexEpub::open_sync(path_buf) {
@@ -37,26 +51,21 @@ mod ffi {
             &mut self,
             to: &mut diplomat_runtime::DiplomatWriteable,
         ) -> Result<(), ()> {
-            use core::fmt::Write as _;
             let title = self
                 .0
                 .get_metadata_sync()
                 .ok()
                 .and_then(|m| m.title)
                 .unwrap_or_default();
-            to.write_str(&title).map_err(|_| ())
+            Self::write_string(to, &title)
         }
 
         pub fn get_metadata_json(
             &mut self,
             to: &mut diplomat_runtime::DiplomatWriteable,
         ) -> Result<(), ()> {
-            use core::fmt::Write as _;
-            let json = match self.0.get_metadata_sync() {
-                Ok(metadata) => serde_json::to_string(&metadata).map_err(|_| ())?,
-                Err(_) => return Err(()),
-            };
-            to.write_str(&json).map_err(|_| ())
+            let metadata = self.0.get_metadata_sync().map_err(|_| ())?;
+            Self::write_json(to, &metadata)
         }
 
         pub fn get_metadata(
@@ -70,12 +79,9 @@ mod ffi {
             &mut self,
             to: &mut diplomat_runtime::DiplomatWriteable,
         ) -> Result<(), ()> {
-            use core::fmt::Write as _;
-            let json = match futures::executor::block_on(self.0.extract_text_only()) {
-                Ok(chapters) => serde_json::to_string(&chapters).map_err(|_| ())?,
-                Err(_) => return Err(()),
-            };
-            to.write_str(&json).map_err(|_| ())
+            let chapters =
+                futures::executor::block_on(self.0.extract_text_only()).map_err(|_| ())?;
+            Self::write_json(to, &chapters)
         }
 
         pub fn get_chapters_text(
@@ -90,12 +96,11 @@ mod ffi {
             index: usize,
             to: &mut diplomat_runtime::DiplomatWriteable,
         ) -> Result<(), ()> {
-            use core::fmt::Write as _;
             let text = match futures::executor::block_on(self.0.extract_text_only()) {
                 Ok(chapters) => chapters.get(index).cloned().ok_or(())?,
                 Err(_) => return Err(()),
             };
-            to.write_str(&text).map_err(|_| ())
+            Self::write_string(to, &text)
         }
 
         pub fn get_chapter_json(
@@ -103,15 +108,57 @@ mod ffi {
             index: usize,
             to: &mut diplomat_runtime::DiplomatWriteable,
         ) -> Result<(), ()> {
-            use core::fmt::Write as _;
-            let json = match futures::executor::block_on(self.0.extract_ast()) {
-                Ok(chapters) => {
-                    let chapter = chapters.get(index).ok_or(())?;
-                    serde_json::to_string(chapter).map_err(|_| ())?
-                }
+            let chapter = match futures::executor::block_on(self.0.extract_ast()) {
+                Ok(chapters) => chapters.get(index).cloned().ok_or(())?,
                 Err(_) => return Err(()),
             };
-            to.write_str(&json).map_err(|_| ())
+            Self::write_json(to, &chapter)
+        }
+
+        pub fn get_toc_json(
+            &mut self,
+            to: &mut diplomat_runtime::DiplomatWriteable,
+        ) -> Result<(), ()> {
+            let toc = futures::executor::block_on(self.0.get_toc()).map_err(|_| ())?;
+            Self::write_json(to, &toc)
+        }
+
+        pub fn get_toc(&mut self, to: &mut diplomat_runtime::DiplomatWriteable) -> Result<(), ()> {
+            self.get_toc_json(to)
+        }
+
+        pub fn resolve_chapter_resource_path(
+            &mut self,
+            chapter_index: usize,
+            href: &str,
+            to: &mut diplomat_runtime::DiplomatWriteable,
+        ) -> Result<(), ()> {
+            let resolved = futures::executor::block_on(
+                self.0.resolve_chapter_resource_path(chapter_index, href),
+            )
+            .map_err(|_| ())?;
+            Self::write_string(to, &resolved)
+        }
+
+        pub fn get_resource_json(
+            &mut self,
+            path: &str,
+            to: &mut diplomat_runtime::DiplomatWriteable,
+        ) -> Result<(), ()> {
+            let bytes = futures::executor::block_on(self.0.read_resource(path)).map_err(|_| ())?;
+            Self::write_json(to, &bytes)
+        }
+
+        pub fn get_chapter_resource_json(
+            &mut self,
+            chapter_index: usize,
+            href: &str,
+            to: &mut diplomat_runtime::DiplomatWriteable,
+        ) -> Result<(), ()> {
+            let bytes =
+                futures::executor::block_on(self.0.read_chapter_resource(chapter_index, href))
+                    .map_err(|_| ())?;
+            Self::write_json(to, &bytes)
         }
 
         pub fn get_chapter(
@@ -145,26 +192,21 @@ mod ffi {
             &mut self,
             to: &mut diplomat_runtime::DiplomatWriteable,
         ) -> Result<(), ()> {
-            use core::fmt::Write as _;
             let mime = self
                 .0
                 .get_metadata_sync()
                 .ok()
                 .and_then(|m| m.cover_image_format)
                 .unwrap_or_default();
-            to.write_str(&mime).map_err(|_| ())
+            Self::write_string(to, &mime)
         }
 
         pub fn get_cover_image_json(
             &mut self,
             to: &mut diplomat_runtime::DiplomatWriteable,
         ) -> Result<(), ()> {
-            use core::fmt::Write as _;
-            let json = match self.0.cover_image_sync() {
-                Ok(bytes) => serde_json::to_string(&bytes).map_err(|_| ())?,
-                Err(_) => return Err(()),
-            };
-            to.write_str(&json).map_err(|_| ())
+            let bytes = self.0.cover_image_sync().map_err(|_| ())?;
+            Self::write_json(to, &bytes)
         }
     }
 }

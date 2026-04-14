@@ -15,6 +15,7 @@ export const wasmepubextractor_get_cover_image_len: (a: number) => any;
 export const wasmepubextractor_get_metadata: (a: number) => any;
 export const wasmepubextractor_get_metadata_is_valid: (a: number) => any;
 export const wasmepubextractor_get_metadata_json: (a: number) => any;
+export const wasmepubextractor_get_resource: (a: number, b: number, c: number) => any;
 export const wasmepubextractor_get_title: (a: number) => any;
 export const wasmepubextractor_get_toc: (a: number) => any;
 export const wasmepubextractor_get_toc_json: (a: number) => any;

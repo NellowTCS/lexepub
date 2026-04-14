@@ -33,11 +33,27 @@ Automatically detects EPUB versions (2.0 vs 3.0), resolves OPF manifest links, a
 Manifest CSS resources are parsed and applied to chapter AST nodes. Styles are merged into each element's `styles` map.
 :::
 
-## API
+::: card Resource + TOC Utilities
+Resolve chapter-relative links, load internal EPUB resources (images/assets), and consume normalized TOC entries with chapter titles.
+:::
 
-- Rust adapter: async API plus sync wrappers for metadata/count/cover operations.
-- WASM adapter: async JS-facing surface for loading bytes, metadata, chapter text, AST chapter retrieval, counts, and cover image.
-- C/C++ adapter: currently focused on constructor plus aggregate counters and cover presence.
+## Adapter parity
+
+LexePub tries to have parity between adapters, C/C++, WASM, and Rust.
+
+- Metadata APIs (structured + JSON + validation)
+- Chapter APIs (text + AST + per-chapter lookup)
+- TOC APIs (chapter titles + href/index mapping)
+- Resource APIs (resolve chapter href, read internal EPUB bytes)
+- Cover APIs (presence, bytes/json bytes, mime, length)
+
+The data transport differs by runtime (native structs vs JS objects vs C writeables), however!
+
+## API overview
+
+- Rust adapter: async API plus sync wrappers where relevant.
+- WASM adapter: async JS-facing API from `wasm-bindgen`.
+- C/C++ adapter: Diplomat-generated API using `DiplomatWriteable` for structured outputs.
 
 For complete setup instructions, see [Quick Start](/getting-started/quickstart).
 For runtime-specific APIs, see:

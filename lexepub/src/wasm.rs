@@ -156,6 +156,21 @@ impl WasmEpubExtractor {
         }
     }
 
+    /// Read an internal EPUB resource as bytes by normalized path
+    #[wasm_bindgen]
+    pub async fn get_resource(&mut self, path: String) -> std::result::Result<Uint8Array, JsValue> {
+        match &mut self.inner {
+            Some(extractor) => {
+                let bytes = extractor
+                    .read_resource(&path)
+                    .await
+                    .map_err(|e| JsValue::from_str(&format!("Failed to read resource: {}", e)))?;
+                Ok(Uint8Array::from(&bytes[..]))
+            }
+            None => Err(JsValue::from_str("No EPUB loaded")),
+        }
+    }
+
     /// Get title string from metadata
     #[wasm_bindgen]
     pub async fn get_title(&mut self) -> std::result::Result<String, JsValue> {

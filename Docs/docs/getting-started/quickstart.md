@@ -29,6 +29,24 @@ Optional features:
 lexepub = { version = "0.1.0", features = ["c-ffi", "wasm"] }
 ```
 
+## Useful Commands
+
+From the repository root:
+
+```bash
+cargo fmt
+cargo clippy -p lexepub --all-targets --features c-ffi -- -D warnings
+cargo check -p lexepub --features c-ffi
+cargo check -p lexepub --target wasm32-unknown-unknown
+```
+
+If you are building demo WASM output:
+
+```bash
+cd lexepub
+wasm-pack build --release --target web --out-dir /workspaces/lexepub/Demo/src/wasm --out-name lexepub
+```
+
 ## Basic usage
 
 The fundamental entry point for parsing is the `LexEpub` struct. Here is how you initialize the parser and request standard metadata:
@@ -59,6 +77,9 @@ Use these methods for most workflows:
 - `extract_chapters_stream()` for stream-based chapter processing.
 - `total_word_count()` and `total_char_count()` for aggregate analysis.
 - `has_cover()` and `cover_image()` for cover lookup/extraction.
+- `get_toc()` for chapter-title-aware table of contents entries.
+- `resolve_chapter_resource_path()` and `read_chapter_resource()` for chapter-relative internal resources.
+- `read_resource()` for direct internal EPUB resource reads.
 
 ## Sync wrappers
 
@@ -93,3 +114,9 @@ When you call `extract_ast()`, LexePub reads `text/css` resources from the OPF m
 ::: callout tip
 The `open` invocation guarantees that the underlying archive structure is verified without fully loading the uncompressed data into memory. Check the adapter documentation for advanced usage regarding streams.
 :::
+
+## Where to go next
+
+- Rust adapter details: [Rust Adapter](/adapters/rust/index)
+- Browser/JS integration: [WASM Adapter](/adapters/wasm/index)
+- Native C/C++ integration: [C/C++ Adapter](/adapters/c/index)
