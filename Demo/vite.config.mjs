@@ -3,8 +3,8 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
-  root: './',
-  base: './',
+  root: '/lexepub/',
+  base: '/lexepub/',
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
@@ -12,7 +12,7 @@ export default defineConfig({
       manifest: {
         name: 'HTMLReader',
         short_name: 'HTMLReader',
-        start_url: './',
+        start_url: '/lexepub/',
         display: 'standalone',
         background_color: '#f5f5f5',
         theme_color: '#2196F3',
