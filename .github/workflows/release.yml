@@ -20,6 +20,10 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
       - name: Cache cargo
         uses: Swatinem/rust-cache@v2
@@ -38,6 +42,9 @@ jobs:
       - name: Build release
         run: cd lexepub && cargo build --release
 
+      - name: Build WASM adapter
+        run: cd lexepub && wasm-pack build --release --target web
+
       - name: Generate C bindings
         run: |
           cd lexepub
@@ -48,14 +55,28 @@ jobs:
 
       - name: Create release archive
         run: |
-          cd lexepub
-          tar -czf ../lexepub-${{ github.ref_name }}.tar.gz \
-            target/release/liblexepub.so \
-            target/release/liblexepub.dylib \
-            target/release/liblexepub.a \
-            include/ \
-            README.md \
-            LICENSE
+          set -e
+          rm -rf /tmp/lexepub-release
+          mkdir -p /tmp/lexepub-release/lib /tmp/lexepub-release/include
+
+          # Include platform-specific native artifacts only when present.
+          for artifact in \
+            /workspaces/lexepub/lexepub/target/release/liblexepub.so \
+            /workspaces/lexepub/lexepub/target/release/liblexepub.dylib \
+            /workspaces/lexepub/lexepub/target/release/liblexepub.a \
+            /workspaces/lexepub/lexepub/target/release/lexepub.dll
+          do
+            if [ -f "$artifact" ]; then
+              cp "$artifact" /tmp/lexepub-release/lib/
+            fi
+          done
+
+          cp -R /workspaces/lexepub/lexepub/include/. /tmp/lexepub-release/include/
+          cp -R /workspaces/lexepub/lexepub/pkg /tmp/lexepub-release/pkg
+          cp /workspaces/lexepub/lexepub/README.md /tmp/lexepub-release/README.md
+          cp /workspaces/lexepub/lexepub/LICENSE /tmp/lexepub-release/LICENSE
+
+          tar -czf /workspaces/lexepub/lexepub-${{ github.ref_name }}.tar.gz -C /tmp/lexepub-release .
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v1
