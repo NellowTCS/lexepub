@@ -4,17 +4,18 @@
 
 - [ ] Implement CSS parsing and application
 
-- [ ] Add streaming cover image support
-
-- [ ] Add rendering support
-
-- [ ] Add docs
+- [ ] Add rendering support (probably beyond v0.1.0 sadly)
 
 - [ ] Add JavaScript execution support for interactive EPUBs (probably beyond v0.1.0)
 
 - [ ] Integrate the ✨ fancy ✨ EPUB library features (advanced layout, multimedia, accessibility, etc. ) (probably beyond v0.1.0)
 
 ## Done
+
+- [x] Add streaming cover image support
+  - Implemented `cover_image_to_writer` allowing data forwarding using zero allocations.
+
+- [x] Add docs
 
 - [x] Add metadata validation
   - Implemented `validate_metadata` method and `ValidationError` handling.

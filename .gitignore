@@ -22,3 +22,5 @@ target
 
 .codesandbox/
 .vscode/
+site/
+node_modules/
