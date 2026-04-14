@@ -4,7 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
   root: '/lexepub/',
-  base: '/lexepub/',
+  base: './',
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
