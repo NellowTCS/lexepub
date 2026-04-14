@@ -3,12 +3,10 @@ title: "LexePub"
 description: "High-performance, memory-efficient EPUB parsing for multiple runtimes"
 ---
 
-**LexePub** is a robust parser and extractor for EPUB files. It provides zero-allocation asynchronous streaming, metadata validation, an
-d asset extraction across Rust, C/C++, and WebAssembly from a single core implementing a shared set of primitives.
+**LexePub** is a robust parser and extractor for EPUB files. It provides zero-allocation asynchronous streaming, metadata validation, and asset extraction across Rust, C/C++, and WebAssembly from a single core implementing a shared set of primitives.
 
 ::: callout tip
-LexePub focuses heavily on minimizing memory footprint. The idea: you should be able to stream an embedded cover image or parse an entir
-e book's HTML AST without pulling out the entire ZIP archive into RAM.
+LexePub focuses heavily on minimizing memory footprint. The idea: you should be able to stream an embedded cover image or parse an entire book's HTML AST without pulling out the entire ZIP archive into RAM.
 :::
 
 ## What it solves
@@ -20,12 +18,11 @@ LexePub replaces all of that with a single streamlined core library and a set of
 ## Features
 
 ::: card Zero-Allocation Streaming
-Direct `AsyncWrite` pipelining allows pulling compressed archive contents, like cover images, straight to your buffers or network stream
-s without loading huge vectors in memory.
+Direct `AsyncWrite` pipelining allows pulling compressed archive contents, like cover images, straight to your buffers or network streams without loading huge vectors in memory.
 :::
 
 ::: card Multi-Platform Adapters
-Written in async Rust at the core, but exported with guaranteed 1-1 API parity to C/C++ via Diplomat and JavaScript/TypeScript via WebAssembly.
+Written in async Rust at the core, but exported with guaranteed 1-1 API parity to C/C++ via Diplomat and JavaScript/TypeScript via WebAssembly. Will eventually move to Saikuro, of course, once I get that stable and properly WASM compatible.
 :::
 
 ::: card Strict Metadata Validation

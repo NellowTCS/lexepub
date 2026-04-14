@@ -152,8 +152,15 @@ mod integration_tests {
                 let mut buffer = Vec::new();
                 let streamed_size = epub.cover_image_to_writer(&mut buffer).await;
                 assert!(streamed_size.is_ok());
-                assert_eq!(streamed_size.unwrap() as usize, cover_data.len(), "Streamed vs Buffer must match length");
-                assert_eq!(buffer, cover_data, "Stream content differs from full vector extraction");            
+                assert_eq!(
+                    streamed_size.unwrap() as usize,
+                    cover_data.len(),
+                    "Streamed vs Buffer must match length"
+                );
+                assert_eq!(
+                    buffer, cover_data,
+                    "Stream content differs from full vector extraction"
+                );
             } else {
                 assert!(cover_result.is_err());
             }

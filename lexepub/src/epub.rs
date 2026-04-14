@@ -312,7 +312,9 @@ impl LexEpub {
         let full_path = opf_base.join(&cover_href.0);
         let full_path_str = full_path.to_string_lossy();
 
-        self.extractor.read_file_to_writer(&full_path_str, writer).await
+        self.extractor
+            .read_file_to_writer(&full_path_str, writer)
+            .await
     }
 
     pub async fn extract_with_ast(&mut self) -> Result<Vec<ParsedChapter>> {

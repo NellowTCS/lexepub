@@ -79,10 +79,20 @@ impl EpubExtractor {
     }
 
     /// Stream a specific file from EPUB directly to an AsyncWrite destination
-    pub async fn read_file_to_writer<W: futures::AsyncWrite + Unpin + Send>(&self, path: &str, writer: &mut W) -> Result<u64> {
+    pub async fn read_file_to_writer<W: futures::AsyncWrite + Unpin + Send>(
+        &self,
+        path: &str,
+        writer: &mut W,
+    ) -> Result<u64> {
         match &self.data_source {
-            EpubDataSource::FilePath(file_path) => self.read_file_from_path_to_writer(file_path, path, writer).await,
-            EpubDataSource::Bytes(bytes) => self.read_file_from_bytes_to_writer(bytes, path, writer).await,
+            EpubDataSource::FilePath(file_path) => {
+                self.read_file_from_path_to_writer(file_path, path, writer)
+                    .await
+            }
+            EpubDataSource::Bytes(bytes) => {
+                self.read_file_from_bytes_to_writer(bytes, path, writer)
+                    .await
+            }
             EpubDataSource::Reader(_) => self.read_file_from_reader_to_writer(path, writer).await,
         }
     }
@@ -175,29 +185,52 @@ impl EpubExtractor {
 }
 
 impl EpubExtractor {
-    async fn read_file_from_path_to_writer<W: futures::AsyncWrite + Unpin + Send>(&self, file_path: &Path, path: &str, writer: &mut W) -> Result<u64> {
+    async fn read_file_from_path_to_writer<W: futures::AsyncWrite + Unpin + Send>(
+        &self,
+        file_path: &Path,
+        path: &str,
+        writer: &mut W,
+    ) -> Result<u64> {
         let file = std::fs::File::open(file_path).map_err(LexEpubError::Io)?;
         let allow = AllowStdIo::new(file);
         let reader = FuturesBufReader::new(allow);
-        let mut archive = ZipFileReader::new(reader).await.map_err(LexEpubError::Zip)?;
-        self.extract_file_from_archive_to_writer(&mut archive, path, writer).await
+        let mut archive = ZipFileReader::new(reader)
+            .await
+            .map_err(LexEpubError::Zip)?;
+        self.extract_file_from_archive_to_writer(&mut archive, path, writer)
+            .await
     }
 
-    async fn read_file_from_bytes_to_writer<W: futures::AsyncWrite + Unpin + Send>(&self, data: &Bytes, path: &str, writer: &mut W) -> Result<u64> {
+    async fn read_file_from_bytes_to_writer<W: futures::AsyncWrite + Unpin + Send>(
+        &self,
+        data: &Bytes,
+        path: &str,
+        writer: &mut W,
+    ) -> Result<u64> {
         let cursor = FuturesCursor::new(data.as_ref());
         let reader = FuturesBufReader::new(cursor);
-        let mut archive = ZipFileReader::new(reader).await.map_err(LexEpubError::Zip)?;
-        self.extract_file_from_archive_to_writer(&mut archive, path, writer).await
+        let mut archive = ZipFileReader::new(reader)
+            .await
+            .map_err(LexEpubError::Zip)?;
+        self.extract_file_from_archive_to_writer(&mut archive, path, writer)
+            .await
     }
 
-    async fn read_file_from_reader_to_writer<W: futures::AsyncWrite + Unpin + Send>(&self, path: &str, writer: &mut W) -> Result<u64> {
+    async fn read_file_from_reader_to_writer<W: futures::AsyncWrite + Unpin + Send>(
+        &self,
+        path: &str,
+        writer: &mut W,
+    ) -> Result<u64> {
         let mut guard = match &self.data_source {
             EpubDataSource::Reader(m) => m.lock().await,
             _ => unreachable!(),
         };
         let reader_ref: &mut (dyn AsyncReadSeek + '_) = &mut *guard;
-        let mut archive = ZipFileReader::new(reader_ref).await.map_err(LexEpubError::Zip)?;
-        self.extract_file_from_archive_to_writer(&mut archive, path, writer).await
+        let mut archive = ZipFileReader::new(reader_ref)
+            .await
+            .map_err(LexEpubError::Zip)?;
+        self.extract_file_from_archive_to_writer(&mut archive, path, writer)
+            .await
     }
 
     async fn extract_file_from_archive_to_writer<R, W>(
@@ -211,12 +244,27 @@ impl EpubExtractor {
         W: futures::AsyncWrite + Unpin + Send,
     {
         let entries = archive.file().entries();
-        let entry_index = entries.iter().enumerate().find_map(|(i, entry)| {
-            entry.filename().as_str().ok().and_then(|filename| (filename == path).then_some(i))
-        }).ok_or_else(|| LexEpubError::MissingFile(format!("File '{}' not found in EPUB", path)))?;
+        let entry_index = entries
+            .iter()
+            .enumerate()
+            .find_map(|(i, entry)| {
+                entry
+                    .filename()
+                    .as_str()
+                    .ok()
+                    .and_then(|filename| (filename == path).then_some(i))
+            })
+            .ok_or_else(|| {
+                LexEpubError::MissingFile(format!("File '{}' not found in EPUB", path))
+            })?;
 
-        let mut entry_reader = archive.reader_without_entry(entry_index).await.map_err(LexEpubError::Zip)?;
+        let mut entry_reader = archive
+            .reader_without_entry(entry_index)
+            .await
+            .map_err(LexEpubError::Zip)?;
 
-        futures::io::copy(&mut entry_reader, writer).await.map_err(LexEpubError::Io)
+        futures::io::copy(&mut entry_reader, writer)
+            .await
+            .map_err(LexEpubError::Io)
     }
 }
