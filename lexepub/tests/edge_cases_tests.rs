@@ -3,7 +3,6 @@ use lexepub::epub::LexEpub;
 
 /// This entire file needs a lot of work, but for now it's just a placeholder for
 /// various edge case tests that we should add eventually.
-
 #[cfg(test)]
 mod edge_case_tests {
     use super::*;

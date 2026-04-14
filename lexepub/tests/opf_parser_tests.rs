@@ -5,10 +5,6 @@ mod tests {
     #[test]
     fn test_opf_parser_creation() {
         let _parser = OpfParser::new();
-        // Note: reader field is private, so we can't test buffer_position
-        // This test just ensures the parser can be created
-        // TODO: FIX HAHA
-        assert!(true);
     }
 
     #[test]

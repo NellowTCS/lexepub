@@ -86,6 +86,7 @@ mod tests {
         let node = AstNode::Element {
             tag: "p".to_string(),
             attrs: HashMap::new(),
+            styles: HashMap::new(),
             children: vec![AstNode::Text {
                 content: "Hello".to_string(),
             }],

@@ -359,6 +359,20 @@ impl LexEpub {
             .parent()
             .unwrap_or(std::path::Path::new(""));
 
+        // Global CSS collection
+        let mut css_text = String::new();
+        for (href, media_type) in metadata.manifest.values() {
+            if media_type == "text/css" {
+                let css_path = opf_base.join(href);
+                let css_path_str = css_path.to_string_lossy();
+                if let Ok(css_data) = self.extractor.read_file(&css_path_str).await {
+                    css_text.push_str(&String::from_utf8_lossy(&css_data));
+                    css_text.push('\n');
+                }
+            }
+        }
+        let stylesheet = crate::core::css::Stylesheet::parse(&css_text);
+
         for item_id in spine {
             if let Some(href) = metadata.manifest.get(&item_id) {
                 // Resolve the href relative to the OPF file's directory
@@ -369,13 +383,17 @@ impl LexEpub {
                         // Parse HTML content
                         let chapter = Chapter {
                             href: full_path_str.to_string(),
-                            id: item_id,
+                            id: item_id.clone(),
                             media_type: "application/xhtml+xml".to_string(), // TODO: Assume XHTML
                             content,
                         };
 
                         let parser = crate::core::html_parser::ChapterParser::new().with_both();
-                        let parsed_chapter = parser.parse_chapter(chapter)?;
+                        let mut parsed_chapter = parser.parse_chapter(chapter)?;
+
+                        if let Some(ref mut ast) = parsed_chapter.ast {
+                            stylesheet.apply_to_ast(ast);
+                        }
 
                         chapters.push(parsed_chapter);
                     }

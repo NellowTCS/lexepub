@@ -19,6 +19,7 @@ pub enum AstNode {
     Element {
         tag: String,
         attrs: HashMap<String, String>,
+        styles: HashMap<String, String>,
         children: Vec<AstNode>,
     },
     Text {

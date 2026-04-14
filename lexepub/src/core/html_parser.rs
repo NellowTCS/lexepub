@@ -202,6 +202,7 @@ fn element_to_ast(element: &scraper::ElementRef) -> AstNode {
     AstNode::Element {
         tag: element.value().name().to_string(),
         attrs,
+        styles: HashMap::new(),
         children,
     }
 }

@@ -164,8 +164,7 @@ mod performance_tests {
 
             if num_chapters > 1 {
                 let start = Instant::now();
-                for i in 0..num_chapters {
-                    let chapter = &chapters[i];
+                for chapter in chapters.iter().take(num_chapters) {
                     assert!(!chapter.is_empty());
                 }
                 let duration = start.elapsed();

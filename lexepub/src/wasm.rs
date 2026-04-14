@@ -49,6 +49,57 @@ impl WasmEpubExtractor {
         }
     }
 
+    /// Validate EPUB metadata against required constraints
+    #[wasm_bindgen]
+    pub async fn get_metadata_is_valid(&mut self) -> std::result::Result<bool, JsValue> {
+        match &mut self.inner {
+            Some(extractor) => Ok(extractor.validate_metadata().await.is_ok()),
+            None => Err(JsValue::from_str("No EPUB loaded")),
+        }
+    }
+
+    /// Get metadata serialized as JSON string
+    #[wasm_bindgen]
+    pub async fn get_metadata_json(&mut self) -> std::result::Result<String, JsValue> {
+        match &mut self.inner {
+            Some(extractor) => {
+                let metadata = extractor
+                    .get_metadata()
+                    .await
+                    .map_err(|e| JsValue::from_str(&format!("Failed to get metadata: {}", e)))?;
+                serde_json::to_string(&metadata)
+                    .map_err(|e| JsValue::from_str(&format!("Serialization error: {}", e)))
+            }
+            None => Err(JsValue::from_str("No EPUB loaded")),
+        }
+    }
+
+    /// Get chapter count from metadata
+    #[wasm_bindgen]
+    pub async fn get_chapter_count(&mut self) -> std::result::Result<usize, JsValue> {
+        match &mut self.inner {
+            Some(extractor) => extractor
+                .get_metadata()
+                .await
+                .map(|m| m.chapter_count)
+                .map_err(|e| JsValue::from_str(&format!("Failed to get chapter count: {}", e))),
+            None => Err(JsValue::from_str("No EPUB loaded")),
+        }
+    }
+
+    /// Get title string from metadata
+    #[wasm_bindgen]
+    pub async fn get_title(&mut self) -> std::result::Result<String, JsValue> {
+        match &mut self.inner {
+            Some(extractor) => extractor
+                .get_metadata()
+                .await
+                .map(|m| m.title.unwrap_or_default())
+                .map_err(|e| JsValue::from_str(&format!("Failed to get title: {}", e))),
+            None => Err(JsValue::from_str("No EPUB loaded")),
+        }
+    }
+
     /// Get all chapters as text array
     #[wasm_bindgen]
     pub async fn get_chapters_text(&mut self) -> std::result::Result<JsValue, JsValue> {
@@ -58,6 +109,21 @@ impl WasmEpubExtractor {
                     JsValue::from_str(&format!("Failed to extract chapters: {}", e))
                 })?;
                 serde_wasm_bindgen::to_value(&chapters)
+                    .map_err(|e| JsValue::from_str(&format!("Serialization error: {}", e)))
+            }
+            None => Err(JsValue::from_str("No EPUB loaded")),
+        }
+    }
+
+    /// Get all chapter text serialized as JSON string
+    #[wasm_bindgen]
+    pub async fn get_chapters_text_json(&mut self) -> std::result::Result<String, JsValue> {
+        match &mut self.inner {
+            Some(extractor) => {
+                let chapters = extractor.extract_text_only().await.map_err(|e| {
+                    JsValue::from_str(&format!("Failed to extract chapters: {}", e))
+                })?;
+                serde_json::to_string(&chapters)
                     .map_err(|e| JsValue::from_str(&format!("Serialization error: {}", e)))
             }
             None => Err(JsValue::from_str("No EPUB loaded")),
@@ -79,6 +145,44 @@ impl WasmEpubExtractor {
 
                 serde_wasm_bindgen::to_value(&chapters[index])
                     .map_err(|e| JsValue::from_str(&format!("Serialization error: {}", e)))
+            }
+            None => Err(JsValue::from_str("No EPUB loaded")),
+        }
+    }
+
+    /// Get chapter by index serialized as JSON string
+    #[wasm_bindgen]
+    pub async fn get_chapter_json(&mut self, index: usize) -> std::result::Result<String, JsValue> {
+        match &mut self.inner {
+            Some(extractor) => {
+                let chapters = extractor.extract_ast().await.map_err(|e| {
+                    JsValue::from_str(&format!("Failed to extract chapters: {}", e))
+                })?;
+
+                if index >= chapters.len() {
+                    return Err(JsValue::from_str("Chapter index out of bounds"));
+                }
+
+                serde_json::to_string(&chapters[index])
+                    .map_err(|e| JsValue::from_str(&format!("Serialization error: {}", e)))
+            }
+            None => Err(JsValue::from_str("No EPUB loaded")),
+        }
+    }
+
+    /// Get chapter text by index
+    #[wasm_bindgen]
+    pub async fn get_chapter_text(&mut self, index: usize) -> std::result::Result<String, JsValue> {
+        match &mut self.inner {
+            Some(extractor) => {
+                let chapters = extractor.extract_text_only().await.map_err(|e| {
+                    JsValue::from_str(&format!("Failed to extract chapters: {}", e))
+                })?;
+
+                chapters
+                    .get(index)
+                    .cloned()
+                    .ok_or_else(|| JsValue::from_str("Chapter index out of bounds"))
             }
             None => Err(JsValue::from_str("No EPUB loaded")),
         }
@@ -132,6 +236,32 @@ impl WasmEpubExtractor {
 
                 Ok(Uint8Array::from(&cover_data[..]))
             }
+            None => Err(JsValue::from_str("No EPUB loaded")),
+        }
+    }
+
+    /// Get cover image byte length
+    #[wasm_bindgen]
+    pub async fn get_cover_image_len(&mut self) -> std::result::Result<usize, JsValue> {
+        match &mut self.inner {
+            Some(extractor) => extractor
+                .cover_image()
+                .await
+                .map(|bytes| bytes.len())
+                .map_err(|e| JsValue::from_str(&format!("Failed to get cover length: {}", e))),
+            None => Err(JsValue::from_str("No EPUB loaded")),
+        }
+    }
+
+    /// Get cover image MIME format from metadata
+    #[wasm_bindgen]
+    pub async fn get_cover_image_format(&mut self) -> std::result::Result<String, JsValue> {
+        match &mut self.inner {
+            Some(extractor) => extractor
+                .get_metadata()
+                .await
+                .map(|m| m.cover_image_format.unwrap_or_default())
+                .map_err(|e| JsValue::from_str(&format!("Failed to get cover format: {}", e))),
             None => Err(JsValue::from_str("No EPUB loaded")),
         }
     }

@@ -5,8 +5,6 @@ mod tests {
     #[test]
     fn test_container_parser_creation() {
         let _parser = ContainerParser::new();
-        // Test just ensures the parser can be created
-        assert!(true);
     }
 
     #[test]

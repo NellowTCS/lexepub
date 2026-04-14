@@ -51,21 +51,20 @@ fn bench_from_reader(c: &mut Criterion) {
 fn bench_extract_text_only(c: &mut Criterion) {
     let bytes = read_examples_testbook_bytes();
     let mut group = c.benchmark_group("extract_text_only");
-    for size in [1usize].iter() {
-        group.bench_with_input(BenchmarkId::from_parameter(size), size, |b, _| {
-            b.iter(|| {
-                let mut epub =
-                    futures::executor::block_on(lexepub::epub::LexEpub::from_bytes(bytes.clone()))
-                        .unwrap();
-                epoch::advance().ok();
-                let before = stats::allocated::read().unwrap_or(0);
-                let _ = futures::executor::block_on(epub.extract_text_only()).unwrap();
-                epoch::advance().ok();
-                let after = stats::allocated::read().unwrap_or(0);
-                println!("allocated delta (bytes): {}", after.saturating_sub(before));
-            })
-        });
-    }
+    let size = &1usize;
+    group.bench_with_input(BenchmarkId::from_parameter(size), size, |b, _| {
+        b.iter(|| {
+            let mut epub =
+                futures::executor::block_on(lexepub::epub::LexEpub::from_bytes(bytes.clone()))
+                    .unwrap();
+            epoch::advance().ok();
+            let before = stats::allocated::read().unwrap_or(0);
+            let _ = futures::executor::block_on(epub.extract_text_only()).unwrap();
+            epoch::advance().ok();
+            let after = stats::allocated::read().unwrap_or(0);
+            println!("allocated delta (bytes): {}", after.saturating_sub(before));
+        })
+    });
     group.finish();
 }
 

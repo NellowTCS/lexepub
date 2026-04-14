@@ -3,30 +3,45 @@ title: "LexePub"
 description: "High-performance, memory-efficient EPUB parsing for multiple runtimes"
 ---
 
-**LexePub** is a robust parser and extractor for EPUB files. It provides zero-allocation asynchronous streaming, metadata validation, and asset extraction across Rust, C/C++, and WebAssembly from a single core implementing a shared set of primitives.
+**LexePub** is a robust parser and extractor for EPUB files. It provides asynchronous streaming, metadata validation, and asset extraction across Rust, C/C++, and WebAssembly from a single core implementation.
 
 ::: callout tip
-LexePub focuses heavily on minimizing memory footprint. The idea: you should be able to stream an embedded cover image or parse an entire book's HTML AST without pulling out the entire ZIP archive into RAM.
+LexePub focuses heavily on minimizing memory footprint. You can stream chapter extraction and still get structured AST output with CSS styles applied.
 :::
 
 ## What it solves
 
-You're building an e-reader or book management system that needs to process EPUB files efficiently. Normally, that means loading massive archives entirely into memory, fighting with poorly documented OPF manifest parsing, or dealing with blocking I/O calls that freeze your UI.
+You're building an e-reader or book management system that needs to process EPUB files efficiently. Normally, that means loading massive archives entirely into memory, dealing with OPF manifest edge cases, or juggling different APIs for each runtime.
 
-LexePub replaces all of that with a single streamlined core library and a set of thin language adapters. You parse your EPUBs once using memory-safe async streams, LexePub handles the extraction logic, and your application—whether Native, Web, or Embedded—just streams the output.
+LexePub replaces that with one core parser and thin language adapters. Parse once using memory-safe async streams, then consume the same chapter/metadata behavior from Rust, WASM, and C/C++.
 
 ## Features
 
-::: card Zero-Allocation Streaming
-Direct `AsyncWrite` pipelining allows pulling compressed archive contents, like cover images, straight to your buffers or network streams without loading huge vectors in memory.
+::: card Streaming-Friendly Core
+Read chapters sequentially and process content without requiring full-book materialization in memory.
 :::
 
 ::: card Multi-Platform Adapters
-Written in async Rust at the core, but exported with guaranteed 1-1 API parity to C/C++ via Diplomat and JavaScript/TypeScript via WebAssembly. Will eventually move to Saikuro, of course, once I get that stable and properly WASM compatible.
+Written in async Rust at the core, exported to C/C++ via Diplomat and JavaScript/TypeScript via WebAssembly.
 :::
 
 ::: card Strict Metadata Validation
 Automatically detects EPUB versions (2.0 vs 3.0), resolves OPF manifest links, and validates required metadata structure according to the standards. 
 :::
 
-For complete setup instructions, please see the [Quick Start](/getting-started/quickstart) guide.
+::: card CSS-Aware AST
+Manifest CSS resources are parsed and applied to chapter AST nodes. Styles are merged into each element's `styles` map.
+:::
+
+## API
+
+- Rust adapter: async API plus sync wrappers for metadata/count/cover operations.
+- WASM adapter: async JS-facing surface for loading bytes, metadata, chapter text, AST chapter retrieval, counts, and cover image.
+- C/C++ adapter: currently focused on constructor plus aggregate counters and cover presence.
+
+For complete setup instructions, see [Quick Start](/getting-started/quickstart).
+For runtime-specific APIs, see:
+
+- [Rust Adapter](/adapters/rust/index)
+- [C/C++ Adapter](/adapters/c/index)
+- [WASM Adapter](/adapters/wasm/index)

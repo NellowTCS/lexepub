@@ -245,7 +245,7 @@ mod api_tests {
                 let stream = epub.extract_chapters_stream().await.unwrap();
                 let mut count = 0;
                 let mut stream = stream;
-                while let Some(_) = stream.next().await {
+                while stream.next().await.is_some() {
                     count += 1;
                 }
                 println!("Found {} chapters in stream for {}", count, test_file);

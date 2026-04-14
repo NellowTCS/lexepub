@@ -1,9 +1,5 @@
 # Todo
 
-- [x] Ensure 1-1 API functionality between C/C++, Rust, and WASM
-
-- [ ] Implement CSS parsing and application
-
 - [ ] Add rendering support (probably beyond v0.1.0 sadly)
 
 - [ ] Add JavaScript execution support for interactive EPUBs (probably beyond v0.1.0)
@@ -11,6 +7,10 @@
 - [ ] Integrate the ✨ fancy ✨ EPUB library features (advanced layout, multimedia, accessibility, etc. ) (probably beyond v0.1.0)
 
 ## Done
+
+- [X] Ensure 1-1 API functionality between C/C++, Rust, and WASM
+
+- [X] Implement CSS parsing and application
 
 - [x] Add streaming cover image support
   - Implemented `cover_image_to_writer` allowing data forwarding using zero allocations.

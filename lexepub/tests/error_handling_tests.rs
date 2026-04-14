@@ -42,8 +42,8 @@ mod error_tests {
             // This would require creating a mock EPUB without container.xml
             // For now, just test that the error handling works
             let result = std::fs::read("examples/epubs/test-book.epub");
-            if result.is_ok() {
-                let data = bytes::Bytes::from(result.unwrap());
+            if let Ok(bytes) = result {
+                let data = bytes::Bytes::from(bytes);
                 let mut epub = LexEpub::from_bytes(data).await.unwrap();
 
                 // This should work for valid EPUBs
@@ -115,18 +115,12 @@ mod error_tests {
     #[test]
     fn test_error_types() {
         // Test that all error variants can be created
-        let _io = LexEpubError::Io(std::io::Error::new(std::io::ErrorKind::Other, "test"));
+        let _io = LexEpubError::Io(std::io::Error::other("test"));
         // TODO: ZipError variants depend on async_zip version, using a simple test
-        let zip_err = async_zip::error::ZipError::from(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "test",
-        ));
+        let zip_err = async_zip::error::ZipError::from(std::io::Error::other("test"));
         let _zip = LexEpubError::Zip(zip_err);
         // TODO: quick_xml::Error variants depend on version, using a simple test
-        let xml_err = quick_xml::Error::Io(std::sync::Arc::new(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "test",
-        )));
+        let xml_err = quick_xml::Error::Io(std::sync::Arc::new(std::io::Error::other("test")));
         let _xml = LexEpubError::Xml(xml_err);
         let _invalid = LexEpubError::InvalidFormat("test".to_string());
         let _missing = LexEpubError::MissingFile("test".to_string());
@@ -137,10 +131,8 @@ mod error_tests {
         let invalid_utf8 = vec![0, 159, 146, 150]; // Invalid UTF-8 sequence
         let _utf8 = LexEpubError::Utf8(String::from_utf8(invalid_utf8).unwrap_err());
         // TODO: Skip Utf8Str test as it's hard to construct properly
-        let _json = LexEpubError::Serialization(serde_json::Error::io(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "test",
-        )));
+        let _json =
+            LexEpubError::Serialization(serde_json::Error::io(std::io::Error::other("test")));
         let _async = LexEpubError::AsyncError("test".to_string());
     }
 
