@@ -35,7 +35,7 @@ Or run `cargo add lexepub`!
 
 ## Demo
 
-A modified version of [HTMLPlayer](https://github.com/HTMLToolkit/HTMLReader) is available as a demo at <https://nellowtcs.me/lexepub/>!
+A modified version of [HTMLReader](https://github.com/HTMLToolkit/HTMLReader) is available as a demo at <https://nellowtcs.me/lexepub/>!
 The demo uses the WASM adapter for LexePub.
 
 ## Documentation
