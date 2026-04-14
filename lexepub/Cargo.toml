@@ -16,7 +16,6 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 futures = "0.3"
 quick-xml = "0.37"
-cssparser = { version = "0.34", optional = true }
 # quickjs-rs = { version = "0.5", optional = true }
 scraper = "0.20"
 async_zip = { version = "0.0.17", features = ["deflate", "deflate64"] }
@@ -32,7 +31,6 @@ diplomat-runtime = "0.7"
 
 [features]
 default = []
-css = ["cssparser"]
 # js = ["quickjs-rs"]
 wasm = []
 c-ffi = []
