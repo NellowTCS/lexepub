@@ -4,6 +4,16 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Build and package only (skip GitHub release upload)'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
 
 env:
   CARGO_TERM_COLOR: always
@@ -12,6 +22,8 @@ jobs:
   release:
     name: Release lexepub
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -56,29 +68,34 @@ jobs:
       - name: Create release archive
         run: |
           set -e
+          ROOT_DIR="${GITHUB_WORKSPACE}"
+          CRATE_DIR="${ROOT_DIR}/lexepub"
+          ARCHIVE_NAME="lexepub-${{ github.ref_name }}.tar.gz"
+
           rm -rf /tmp/lexepub-release
           mkdir -p /tmp/lexepub-release/lib /tmp/lexepub-release/include
 
           # Include platform-specific native artifacts only when present.
           for artifact in \
-            /workspaces/lexepub/lexepub/target/release/liblexepub.so \
-            /workspaces/lexepub/lexepub/target/release/liblexepub.dylib \
-            /workspaces/lexepub/lexepub/target/release/liblexepub.a \
-            /workspaces/lexepub/lexepub/target/release/lexepub.dll
+            "${CRATE_DIR}/target/release/liblexepub.so" \
+            "${CRATE_DIR}/target/release/liblexepub.dylib" \
+            "${CRATE_DIR}/target/release/liblexepub.a" \
+            "${CRATE_DIR}/target/release/lexepub.dll"
           do
             if [ -f "$artifact" ]; then
               cp "$artifact" /tmp/lexepub-release/lib/
             fi
           done
 
-          cp -R /workspaces/lexepub/lexepub/include/. /tmp/lexepub-release/include/
-          cp -R /workspaces/lexepub/lexepub/pkg /tmp/lexepub-release/pkg
-          cp /workspaces/lexepub/lexepub/README.md /tmp/lexepub-release/README.md
-          cp /workspaces/lexepub/lexepub/LICENSE /tmp/lexepub-release/LICENSE
+          cp -R "${CRATE_DIR}/include/." /tmp/lexepub-release/include/
+          cp -R "${CRATE_DIR}/pkg" /tmp/lexepub-release/pkg
+          cp "${CRATE_DIR}/README.md" /tmp/lexepub-release/README.md
+          cp "${CRATE_DIR}/LICENSE" /tmp/lexepub-release/LICENSE
 
-          tar -czf /workspaces/lexepub/lexepub-${{ github.ref_name }}.tar.gz -C /tmp/lexepub-release .
+          tar -czf "${ROOT_DIR}/${ARCHIVE_NAME}" -C /tmp/lexepub-release .
 
       - name: Create GitHub release
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.dry_run != 'true' }}
         uses: softprops/action-gh-release@v1
         with:
           files: lexepub-${{ github.ref_name }}.tar.gz
