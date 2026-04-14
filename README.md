@@ -23,14 +23,19 @@ Add this to your `Cargo.toml`:
 lexepub = "0.1"
 ```
 
+## Demo
+
+A modified version of [HTMLPlayer](https://github.com/HTMLToolkit/HTMLReader) is available as a demo at <https://nellowtcs.me/lexepub/>!
+The demo uses the WASM adapter for LexePub.
+
 ## Documentation
 
 Docs are available at <https://nellowtcs.me/lexepub/docs>!
 
-- Rust adapter API: `https://nellowtcs.me/lexepub/docs/adapters/rust`
-- C/C++ adapter API: `https://nellowtcs.me/lexepub/docs/adapters/c`
-- WASM adapter API: `https://nellowtcs.me/lexepub/docs/adapters/wasm`
-- Quickstart: `https://nellowtcs.me/lexepub/docs/getting-started/quickstart`
+- Rust adapter API: <https://nellowtcs.me/lexepub/docs/adapters/rust>
+- C/C++ adapter API: <https://nellowtcs.me/lexepub/docs/adapters/c>
+- WASM adapter API: <https://nellowtcs.me/lexepub/docs/adapters/wasm>
+- Quickstart: <https://nellowtcs.me/lexepub/docs/getting-started/quickstart>
 
 ## Building
 
