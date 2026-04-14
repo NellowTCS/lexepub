@@ -268,13 +268,13 @@
             <div class="content-layout">
                 <div class="main-content">
                     <h1 id="cc-adapter">C/C++ Adapter</h1>
-<p>The C/C++ adapter is generated using Diplomat from the Rust core and is being expanded toward 1:1 behavior parity.</p>
+<p>The C/C++ adapter is generated using Diplomat from the Rust core and tracks the same capability set as Rust/WASM.</p>
 <h2 id="headers-and-linking">Headers and Linking</h2>
 <p>The generated definition files are located in the standard <code>include/</code> directory at the project root.</p>
 <p>To integrate this module, include the generated header:</p>
 <pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;EpubExtractor.h&quot;</span></span>
 </code></pre>
-<h2 id="current-api-reference">Current API reference</h2>
+<h2 id="api-reference">API reference</h2>
 <p><code>EpubExtractor</code> currently provides:</p>
 <ul>
 <li><code>EpubExtractor_create(path_data, path_len)</code></li>
@@ -289,6 +289,11 @@
 <li><code>EpubExtractor_get_chapter(extractor, index, writeable)</code></li>
 <li><code>EpubExtractor_get_chapter_text(extractor, index, writeable)</code></li>
 <li><code>EpubExtractor_get_chapter_json(extractor, index, writeable)</code></li>
+<li><code>EpubExtractor_get_toc(extractor, writeable)</code></li>
+<li><code>EpubExtractor_get_toc_json(extractor, writeable)</code></li>
+<li><code>EpubExtractor_resolve_chapter_resource_path(extractor, chapter_index, href_data, href_len, writeable)</code></li>
+<li><code>EpubExtractor_get_resource_json(extractor, path_data, path_len, writeable)</code></li>
+<li><code>EpubExtractor_get_chapter_resource_json(extractor, chapter_index, href_data, href_len, writeable)</code></li>
 <li><code>EpubExtractor_get_total_word_count(extractor)</code></li>
 <li><code>EpubExtractor_get_total_char_count(extractor)</code></li>
 <li><code>EpubExtractor_has_cover(extractor)</code></li>
@@ -349,8 +354,14 @@
 <h2 id="returns">Returns</h2>
 <ul>
 <li>Methods like <code>get_metadata</code>, <code>get_chapters_text</code>, and <code>get_chapter</code> write JSON text into <code>DiplomatWriteable</code> outputs so C can consume structured Rust data without unsafe ABI struct coupling.</li>
-<li><code>get_cover_image_json</code> returns a JSON array of bytes; <code>get_cover_image_len</code> and <code>get_cover_image_format</code> provide fast metadata access.</li>
+<li>Resource and cover byte payloads are exposed as JSON arrays (<code>get_resource_json</code>, <code>get_chapter_resource_json</code>, <code>get_cover_image_json</code>).</li>
+<li><code>get_cover_image_len</code> and <code>get_cover_image_format</code> provide fast metadata access without large payload transfer.</li>
 </ul>
+<h2 id="build-regenerate-headers">Build + regenerate headers</h2>
+<pre class="hljs"><code><span class="hljs-built_in">cd</span> lexepub
+cargo build --release --features c-ffi
+diplomat-tool c include/
+</code></pre>
 
 
                     
@@ -393,11 +404,15 @@
         </li>
       
         <li class="toc-item toc-level-2">
-          <a href="#current-api-reference" class="toc-link">Current API reference</a>
+          <a href="#api-reference" class="toc-link">API reference</a>
         </li>
       
         <li class="toc-item toc-level-2">
           <a href="#returns" class="toc-link">Returns</a>
+        </li>
+      
+        <li class="toc-item toc-level-2">
+          <a href="#build-regenerate-headers" class="toc-link">Build + regenerate headers</a>
         </li>
       
     </ul>

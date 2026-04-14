@@ -284,6 +284,17 @@
 <p>Optional features:</p>
 <pre class="hljs"><code><span class="hljs-attr">lexepub</span> = { version = <span class="hljs-string">&quot;0.1.0&quot;</span>, features = [<span class="hljs-string">&quot;c-ffi&quot;</span>, <span class="hljs-string">&quot;wasm&quot;</span>] }
 </code></pre>
+<h2 id="useful-commands">Useful Commands</h2>
+<p>From the repository root:</p>
+<pre class="hljs"><code>cargo <span class="hljs-built_in">fmt</span>
+cargo clippy -p lexepub --all-targets --features c-ffi -- -D warnings
+cargo check -p lexepub --features c-ffi
+cargo check -p lexepub --target wasm32-unknown-unknown
+</code></pre>
+<p>If you are building demo WASM output:</p>
+<pre class="hljs"><code><span class="hljs-built_in">cd</span> lexepub
+wasm-pack build --release --target web --out-dir /workspaces/lexepub/Demo/src/wasm --out-name lexepub
+</code></pre>
 <h2 id="basic-usage">Basic usage</h2>
 <p>The fundamental entry point for parsing is the <code>LexEpub</code> struct. Here is how you initialize the parser and request standard metadata:</p>
 <pre class="hljs"><code><span class="hljs-keyword">use</span> lexepub::LexEpub;
@@ -309,6 +320,9 @@
 <li><code>extract_chapters_stream()</code> for stream-based chapter processing.</li>
 <li><code>total_word_count()</code> and <code>total_char_count()</code> for aggregate analysis.</li>
 <li><code>has_cover()</code> and <code>cover_image()</code> for cover lookup/extraction.</li>
+<li><code>get_toc()</code> for chapter-title-aware table of contents entries.</li>
+<li><code>resolve_chapter_resource_path()</code> and <code>read_chapter_resource()</code> for chapter-relative internal resources.</li>
+<li><code>read_resource()</code> for direct internal EPUB resource reads.</li>
 </ul>
 <h2 id="sync-wrappers">Sync wrappers</h2>
 <p>For non-async contexts, <code>LexEpub</code> also exposes sync wrappers:</p>
@@ -336,7 +350,13 @@
 <li>Selector matching is intentionally EPUB-focused (tag, class, id, grouped selectors).</li>
 </ul>
 <div class="docmd-container callout callout-tip"><div class="callout-content"><p>The <code>open</code> invocation guarantees that the underlying archive structure is verified without fully loading the uncompressed data into memory. Check the adapter documentation for advanced usage regarding streams.</p>
-</div></div>
+</div></div><h2 id="where-to-go-next">Where to go next</h2>
+<ul>
+<li>Rust adapter details: <a href="/adapters/rust/index">Rust Adapter</a></li>
+<li>Browser/JS integration: <a href="/adapters/wasm/index">WASM Adapter</a></li>
+<li>Native C/C++ integration: <a href="/adapters/c/index">C/C++ Adapter</a></li>
+</ul>
+
 
                     
                     <div class="page-navigation">
@@ -378,6 +398,10 @@
         </li>
       
         <li class="toc-item toc-level-2">
+          <a href="#useful-commands" class="toc-link">Useful Commands</a>
+        </li>
+      
+        <li class="toc-item toc-level-2">
           <a href="#basic-usage" class="toc-link">Basic usage</a>
         </li>
       
@@ -395,6 +419,10 @@
       
         <li class="toc-item toc-level-2">
           <a href="#css-behavior-in-ast-mode" class="toc-link">CSS behavior in AST mode</a>
+        </li>
+      
+        <li class="toc-item toc-level-2">
+          <a href="#where-to-go-next" class="toc-link">Where to go next</a>
         </li>
       
     </ul>

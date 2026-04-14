@@ -277,11 +277,22 @@
 </div></div><div class="docmd-container card"><div class="card-title">Multi-Platform Adapters</div><div class="card-content"><p>Written in async Rust at the core, exported to C/C++ via Diplomat and JavaScript/TypeScript via WebAssembly.</p>
 </div></div><div class="docmd-container card"><div class="card-title">Strict Metadata Validation</div><div class="card-content"><p>Automatically detects EPUB versions (2.0 vs 3.0), resolves OPF manifest links, and validates required metadata structure according to the standards.</p>
 </div></div><div class="docmd-container card"><div class="card-title">CSS-Aware AST</div><div class="card-content"><p>Manifest CSS resources are parsed and applied to chapter AST nodes. Styles are merged into each element’s <code>styles</code> map.</p>
-</div></div><h2 id="api">API</h2>
+</div></div><div class="docmd-container card"><div class="card-title">Resource + TOC Utilities</div><div class="card-content"><p>Resolve chapter-relative links, load internal EPUB resources (images/assets), and consume normalized TOC entries with chapter titles.</p>
+</div></div><h2 id="adapter-parity">Adapter parity</h2>
+<p>LexePub tries to have parity between adapters, C/C++, WASM, and Rust.</p>
 <ul>
-<li>Rust adapter: async API plus sync wrappers for metadata/count/cover operations.</li>
-<li>WASM adapter: async JS-facing surface for loading bytes, metadata, chapter text, AST chapter retrieval, counts, and cover image.</li>
-<li>C/C++ adapter: currently focused on constructor plus aggregate counters and cover presence.</li>
+<li>Metadata APIs (structured + JSON + validation)</li>
+<li>Chapter APIs (text + AST + per-chapter lookup)</li>
+<li>TOC APIs (chapter titles + href/index mapping)</li>
+<li>Resource APIs (resolve chapter href, read internal EPUB bytes)</li>
+<li>Cover APIs (presence, bytes/json bytes, mime, length)</li>
+</ul>
+<p>The data transport differs by runtime (native structs vs JS objects vs C writeables), however!</p>
+<h2 id="api-overview">API overview</h2>
+<ul>
+<li>Rust adapter: async API plus sync wrappers where relevant.</li>
+<li>WASM adapter: async JS-facing API from <code>wasm-bindgen</code>.</li>
+<li>C/C++ adapter: Diplomat-generated API using <code>DiplomatWriteable</code> for structured outputs.</li>
 </ul>
 <p>For complete setup instructions, see <a href="/getting-started/quickstart">Quick Start</a>.<br>
 For runtime-specific APIs, see:</p>
@@ -328,7 +339,11 @@ For runtime-specific APIs, see:</p>
         </li>
       
         <li class="toc-item toc-level-2">
-          <a href="#api" class="toc-link">API</a>
+          <a href="#adapter-parity" class="toc-link">Adapter parity</a>
+        </li>
+      
+        <li class="toc-item toc-level-2">
+          <a href="#api-overview" class="toc-link">API overview</a>
         </li>
       
     </ul>

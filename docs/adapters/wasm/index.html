@@ -283,6 +283,11 @@ wasm-pack build --target web
 <li><code>get_metadata_json()</code></li>
 <li><code>get_metadata_is_valid()</code></li>
 <li><code>get_chapter_count()</code></li>
+<li><code>get_toc()</code></li>
+<li><code>get_toc_json()</code></li>
+<li><code>resolve_chapter_resource_path(chapterIndex, href)</code></li>
+<li><code>get_resource(path)</code></li>
+<li><code>get_chapter_resource(chapterIndex, href)</code></li>
 <li><code>get_title()</code></li>
 <li><code>get_chapters_text()</code></li>
 <li><code>get_chapters_text_json()</code></li>
@@ -321,7 +326,14 @@ wasm-pack build --target web
 </ul>
 <h2 id="notes">Notes</h2>
 <ul>
-<li>Filesystem-path loading is intentionally not exposed in browser-oriented WASM flows; byte loading is the obvious entrypoint (duh).</li>
+<li>Filesystem-path loading is intentionally not exposed in browser-oriented WASM flows; byte loading is the primary entrypoint.</li>
+<li>Linked resources inside EPUB archives can be rendered by combining:
+<ul>
+<li>normalized <code>src</code>/<code>href</code> from AST,</li>
+<li><code>resolve_chapter_resource_path(...)</code>, and</li>
+<li><code>get_chapter_resource(...)</code> or <code>get_resource(...)</code>.</li>
+</ul>
+</li>
 </ul>
 
 
