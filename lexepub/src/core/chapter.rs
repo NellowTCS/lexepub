@@ -38,6 +38,8 @@ pub enum AstNode {
 pub struct ParsedChapter {
     /// Raw chapter information (ID, href, media type)
     pub chapter_info: Chapter,
+    /// Chapter display title inferred from HTML content when available
+    pub title: Option<String>,
     /// Extracted text content
     pub content: String,
     /// Optional HTML AST representation
@@ -112,6 +114,7 @@ impl futures::Stream for ChapterStream {
 
                 Ok(crate::core::chapter::ParsedChapter {
                     chapter_info: chapter,
+                    title: None,
                     content: text_content,
                     ast: None,
                     word_count,

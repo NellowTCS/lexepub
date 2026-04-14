@@ -20,15 +20,15 @@ pub use epub::{extract_ast, extract_text_only, get_metadata, LexEpub};
 pub use error::{LexEpubError, Result};
 
 // Re-export metadata types
-pub use epub::EpubMetadata;
+pub use epub::{EpubMetadata, TocEntry};
 
 /// Re-export common types
 pub mod prelude {
     pub use crate::core::chapter::{AstNode, Chapter, ChapterStream, ParsedChapter};
     pub use crate::core::extractor::EpubExtractor;
     pub use crate::core::html_parser::ChapterParser;
-    pub use crate::epub::EpubMetadata;
     pub use crate::epub::LexEpub;
+    pub use crate::epub::{EpubMetadata, TocEntry};
     pub use crate::error::{LexEpubError, Result};
 }
 

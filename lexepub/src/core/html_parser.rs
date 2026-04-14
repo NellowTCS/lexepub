@@ -65,8 +65,16 @@ impl ChapterParser {
         let word_count = content.split_whitespace().count();
         let char_count = content.chars().count();
 
+        let title = ast.as_ref().and_then(extract_title_from_ast).or_else(|| {
+            content
+                .lines()
+                .find(|line| !line.trim().is_empty())
+                .map(|s| s.trim().to_string())
+        });
+
         Ok(ParsedChapter {
             chapter_info: chapter,
+            title,
             content,
             ast,
             word_count,
@@ -205,4 +213,53 @@ fn element_to_ast(element: &scraper::ElementRef) -> AstNode {
         styles: HashMap::new(),
         children,
     }
+}
+
+fn extract_title_from_ast(ast: &AstNode) -> Option<String> {
+    fn first_non_empty_text(node: &AstNode) -> Option<String> {
+        match node {
+            AstNode::Text { content } => {
+                let trimmed = content.trim();
+                if trimmed.is_empty() {
+                    None
+                } else {
+                    Some(trimmed.to_string())
+                }
+            }
+            AstNode::Element { children, .. } => {
+                for child in children {
+                    if let Some(text) = first_non_empty_text(child) {
+                        return Some(text);
+                    }
+                }
+                None
+            }
+            AstNode::Comment { .. } => None,
+        }
+    }
+
+    fn find_by_tag(node: &AstNode, target: &str) -> Option<String> {
+        match node {
+            AstNode::Element { tag, children, .. } => {
+                if tag.eq_ignore_ascii_case(target) {
+                    return first_non_empty_text(node);
+                }
+                for child in children {
+                    if let Some(found) = find_by_tag(child, target) {
+                        return Some(found);
+                    }
+                }
+                None
+            }
+            _ => None,
+        }
+    }
+
+    for tag in ["h1", "h2", "title"] {
+        if let Some(found) = find_by_tag(ast, tag) {
+            return Some(found);
+        }
+    }
+
+    first_non_empty_text(ast)
 }

@@ -38,6 +38,18 @@ export class WasmEpubExtractor {
         return ret;
     }
     /**
+     * Read a chapter-relative resource as bytes (for images, linked assets)
+     * @param {number} chapter_index
+     * @param {string} href
+     * @returns {Promise<Uint8Array>}
+     */
+    get_chapter_resource(chapter_index, href) {
+        const ptr0 = passStringToWasm0(href, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.wasmepubextractor_get_chapter_resource(this.__wbg_ptr, chapter_index, ptr0, len0);
+        return ret;
+    }
+    /**
      * Get chapter text by index
      * @param {number} index
      * @returns {Promise<string>}
@@ -119,6 +131,22 @@ export class WasmEpubExtractor {
         return ret;
     }
     /**
+     * Get table of contents entries
+     * @returns {Promise<any>}
+     */
+    get_toc() {
+        const ret = wasm.wasmepubextractor_get_toc(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * Get table of contents entries serialized as JSON
+     * @returns {Promise<string>}
+     */
+    get_toc_json() {
+        const ret = wasm.wasmepubextractor_get_toc_json(this.__wbg_ptr);
+        return ret;
+    }
+    /**
      * Get total character count
      * @returns {Promise<number>}
      */
@@ -156,6 +184,18 @@ export class WasmEpubExtractor {
         this.__wbg_ptr = ret >>> 0;
         WasmEpubExtractorFinalization.register(this, this.__wbg_ptr, this);
         return this;
+    }
+    /**
+     * Resolve a chapter-relative href into a normalized internal EPUB path
+     * @param {number} chapter_index
+     * @param {string} href
+     * @returns {Promise<string>}
+     */
+    resolve_chapter_resource_path(chapter_index, href) {
+        const ptr0 = passStringToWasm0(href, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.wasmepubextractor_resolve_chapter_resource_path(this.__wbg_ptr, chapter_index, ptr0, len0);
+        return ret;
     }
 }
 if (Symbol.dispose) WasmEpubExtractor.prototype[Symbol.dispose] = WasmEpubExtractor.prototype.free;
@@ -281,7 +321,7 @@ function __wbg_get_imports() {
             return ret;
         },
         __wbindgen_cast_0000000000000001: function(arg0, arg1) {
-            // Cast intrinsic for `Closure(Closure { owned: true, function: Function { arguments: [Externref], shim_idx: 119, ret: Result(Unit), inner_ret: Some(Result(Unit)) }, mutable: true }) -> Externref`.
+            // Cast intrinsic for `Closure(Closure { owned: true, function: Function { arguments: [Externref], shim_idx: 135, ret: Result(Unit), inner_ret: Some(Result(Unit)) }, mutable: true }) -> Externref`.
             const ret = makeMutClosure(arg0, arg1, wasm_bindgen__convert__closures_____invoke__hab5d802ec56f1a23);
             return ret;
         },

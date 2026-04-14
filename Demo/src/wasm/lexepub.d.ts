@@ -17,6 +17,10 @@ export class WasmEpubExtractor {
      */
     get_chapter_json(index: number): Promise<string>;
     /**
+     * Read a chapter-relative resource as bytes (for images, linked assets)
+     */
+    get_chapter_resource(chapter_index: number, href: string): Promise<Uint8Array>;
+    /**
      * Get chapter text by index
      */
     get_chapter_text(index: number): Promise<string>;
@@ -57,6 +61,14 @@ export class WasmEpubExtractor {
      */
     get_title(): Promise<string>;
     /**
+     * Get table of contents entries
+     */
+    get_toc(): Promise<any>;
+    /**
+     * Get table of contents entries serialized as JSON
+     */
+    get_toc_json(): Promise<string>;
+    /**
      * Get total character count
      */
     get_total_char_count(): Promise<number>;
@@ -73,6 +85,10 @@ export class WasmEpubExtractor {
      */
     load_from_bytes(data: Uint8Array): Promise<void>;
     constructor();
+    /**
+     * Resolve a chapter-relative href into a normalized internal EPUB path
+     */
+    resolve_chapter_resource_path(chapter_index: number, href: string): Promise<string>;
 }
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
@@ -83,6 +99,7 @@ export interface InitOutput {
     readonly wasmepubextractor_get_chapter: (a: number, b: number) => any;
     readonly wasmepubextractor_get_chapter_count: (a: number) => any;
     readonly wasmepubextractor_get_chapter_json: (a: number, b: number) => any;
+    readonly wasmepubextractor_get_chapter_resource: (a: number, b: number, c: number, d: number) => any;
     readonly wasmepubextractor_get_chapter_text: (a: number, b: number) => any;
     readonly wasmepubextractor_get_chapters_text: (a: number) => any;
     readonly wasmepubextractor_get_chapters_text_json: (a: number) => any;
@@ -93,11 +110,14 @@ export interface InitOutput {
     readonly wasmepubextractor_get_metadata_is_valid: (a: number) => any;
     readonly wasmepubextractor_get_metadata_json: (a: number) => any;
     readonly wasmepubextractor_get_title: (a: number) => any;
+    readonly wasmepubextractor_get_toc: (a: number) => any;
+    readonly wasmepubextractor_get_toc_json: (a: number) => any;
     readonly wasmepubextractor_get_total_char_count: (a: number) => any;
     readonly wasmepubextractor_get_total_word_count: (a: number) => any;
     readonly wasmepubextractor_has_cover: (a: number) => any;
     readonly wasmepubextractor_load_from_bytes: (a: number, b: any) => any;
     readonly wasmepubextractor_new: () => number;
+    readonly wasmepubextractor_resolve_chapter_resource_path: (a: number, b: number, c: number, d: number) => any;
     readonly wasm_bindgen__convert__closures_____invoke__hab5d802ec56f1a23: (a: number, b: number, c: any) => [number, number];
     readonly wasm_bindgen__convert__closures_____invoke__h00187f8f3fee2983: (a: number, b: number, c: any, d: any) => void;
     readonly __wbindgen_malloc: (a: number, b: number) => number;

@@ -1,5 +1,9 @@
 # Todo
 
+- [ ] making links work to navigate inside the book
+
+- [ ] alt text for images
+
 - [ ] Add rendering support (probably beyond v0.1.0 sadly)
 
 - [ ] Add JavaScript execution support for interactive EPUBs (probably beyond v0.1.0)
@@ -7,6 +11,12 @@
 - [ ] Integrate the ✨ fancy ✨ EPUB library features (advanced layout, multimedia, accessibility, etc. ) (probably beyond v0.1.0)
 
 ## Done
+
+- [X] chapter images
+
+- [X] proper table of contents using page titles rather than name of html files
+
+- [X] making sure css from <link>'s also works, 
 
 - [X] Add Demo
 

@@ -33,6 +33,14 @@ pub struct EpubMetadata {
     pub chapter_count: usize,
 }
 
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+pub struct TocEntry {
+    pub chapter_index: usize,
+    pub chapter_id: String,
+    pub chapter_href: String,
+    pub title: String,
+}
+
 impl EpubMetadata {
     /// Validates the metadata per EPUB standards (requires title, language, and identifier)
     pub fn validate(&self) -> std::result::Result<(), Vec<String>> {
@@ -57,6 +65,83 @@ impl EpubMetadata {
 }
 
 impl LexEpub {
+    pub async fn get_toc(&mut self) -> Result<Vec<TocEntry>> {
+        let chapters = self.extract_chapters().await?;
+        Ok(chapters
+            .iter()
+            .enumerate()
+            .map(|(index, chapter)| TocEntry {
+                chapter_index: index,
+                chapter_id: chapter.chapter_info.id.clone(),
+                chapter_href: chapter.chapter_info.href.clone(),
+                title: chapter
+                    .title
+                    .clone()
+                    .filter(|s| !s.trim().is_empty())
+                    .unwrap_or_else(|| {
+                        std::path::Path::new(&chapter.chapter_info.href)
+                            .file_stem()
+                            .and_then(|s| s.to_str())
+                            .unwrap_or("Untitled Chapter")
+                            .to_string()
+                    }),
+            })
+            .collect())
+    }
+
+    pub async fn read_resource(&self, path: &str) -> Result<Vec<u8>> {
+        self.extractor.read_file(path).await
+    }
+
+    pub async fn resolve_chapter_resource_path(
+        &mut self,
+        chapter_index: usize,
+        href: &str,
+    ) -> Result<String> {
+        let href_clean = href.trim();
+        if href_clean.is_empty()
+            || href_clean.starts_with('#')
+            || href_clean.starts_with("http://")
+            || href_clean.starts_with("https://")
+            || href_clean.starts_with("mailto:")
+            || href_clean.starts_with("data:")
+            || href_clean.starts_with("blob:")
+        {
+            return Ok(href_clean.to_string());
+        }
+
+        let path_only = href_clean.split('#').next().unwrap_or(href_clean);
+        if !path_only.is_empty() && self.extractor.read_file(path_only).await.is_ok() {
+            return Ok(href_clean.replace('\\', "/"));
+        }
+
+        let chapters = self.extract_chapters().await?;
+        let chapter = chapters
+            .get(chapter_index)
+            .ok_or_else(|| LexEpubError::ChapterError("Chapter index out of bounds".to_string()))?;
+        Ok(resolve_href_against(&chapter.chapter_info.href, href))
+    }
+
+    pub async fn read_chapter_resource(
+        &mut self,
+        chapter_index: usize,
+        href: &str,
+    ) -> Result<Vec<u8>> {
+        let href_clean = href.trim();
+        if !href_clean.is_empty() {
+            let direct_path = href_clean.split('#').next().unwrap_or(href_clean);
+            if !direct_path.is_empty() {
+                if let Ok(bytes) = self.extractor.read_file(direct_path).await {
+                    return Ok(bytes);
+                }
+            }
+        }
+
+        let resolved = self.resolve_chapter_resource_path(chapter_index, href).await?;
+        let resolved_path = resolved.split('#').next().unwrap_or(&resolved);
+        self.extractor.read_file(resolved_path).await
+    }
+
     /// Open an EPUB from a file path
     pub async fn open<P: AsRef<Path>>(path: P) -> Result<Self> {
         let extractor = EpubExtractor::open(path.as_ref().to_path_buf()).await?;
@@ -392,6 +477,7 @@ impl LexEpub {
                         let mut parsed_chapter = parser.parse_chapter(chapter)?;
 
                         if let Some(ref mut ast) = parsed_chapter.ast {
+                            normalize_ast_links(ast, &full_path_str);
                             stylesheet.apply_to_ast(ast);
                         }
 
@@ -414,6 +500,71 @@ impl LexEpub {
         }
 
         Ok(chapters)
+    }
+}
+
+fn resolve_href_against(base_path: &str, href: &str) -> String {
+    if href.trim().is_empty() {
+        return base_path.to_string();
+    }
+
+    if href.starts_with('#')
+        || href.starts_with("http://")
+        || href.starts_with("https://")
+        || href.starts_with("mailto:")
+        || href.starts_with("data:")
+        || href.starts_with("blob:")
+    {
+        return href.to_string();
+    }
+
+    let (path_part, fragment_part) = match href.split_once('#') {
+        Some((path, frag)) => (path, Some(frag)),
+        None => (href, None),
+    };
+
+    let mut joined = if path_part.starts_with('/') {
+        std::path::PathBuf::from(path_part.trim_start_matches('/'))
+    } else {
+        let base_dir = std::path::Path::new(base_path)
+            .parent()
+            .unwrap_or(std::path::Path::new(""));
+        base_dir.join(path_part)
+    };
+
+    if path_part.is_empty() {
+        joined = std::path::PathBuf::from(base_path);
+    }
+
+    let mut normalized = joined.to_string_lossy().replace('\\', "/");
+    if let Some(fragment) = fragment_part {
+        normalized.push('#');
+        normalized.push_str(fragment);
+    }
+
+    normalized
+}
+
+fn normalize_ast_links(ast: &mut crate::core::chapter::AstNode, chapter_href: &str) {
+    use crate::core::chapter::AstNode;
+
+    if let AstNode::Element {
+        attrs, children, ..
+    } = ast
+    {
+        if let Some(href) = attrs.get_mut("href") {
+            let resolved = resolve_href_against(chapter_href, href);
+            *href = resolved;
+        }
+
+        if let Some(src) = attrs.get_mut("src") {
+            let resolved = resolve_href_against(chapter_href, src);
+            *src = resolved;
+        }
+
+        for child in children {
+            normalize_ast_links(child, chapter_href);
+        }
     }
 }
 

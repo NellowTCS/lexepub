@@ -87,6 +87,75 @@ impl WasmEpubExtractor {
         }
     }
 
+    /// Get table of contents entries
+    #[wasm_bindgen]
+    pub async fn get_toc(&mut self) -> std::result::Result<JsValue, JsValue> {
+        match &mut self.inner {
+            Some(extractor) => {
+                let toc = extractor
+                    .get_toc()
+                    .await
+                    .map_err(|e| JsValue::from_str(&format!("Failed to get TOC: {}", e)))?;
+                serde_wasm_bindgen::to_value(&toc)
+                    .map_err(|e| JsValue::from_str(&format!("Serialization error: {}", e)))
+            }
+            None => Err(JsValue::from_str("No EPUB loaded")),
+        }
+    }
+
+    /// Get table of contents entries serialized as JSON
+    #[wasm_bindgen]
+    pub async fn get_toc_json(&mut self) -> std::result::Result<String, JsValue> {
+        match &mut self.inner {
+            Some(extractor) => {
+                let toc = extractor
+                    .get_toc()
+                    .await
+                    .map_err(|e| JsValue::from_str(&format!("Failed to get TOC: {}", e)))?;
+                serde_json::to_string(&toc)
+                    .map_err(|e| JsValue::from_str(&format!("Serialization error: {}", e)))
+            }
+            None => Err(JsValue::from_str("No EPUB loaded")),
+        }
+    }
+
+    /// Resolve a chapter-relative href into a normalized internal EPUB path
+    #[wasm_bindgen]
+    pub async fn resolve_chapter_resource_path(
+        &mut self,
+        chapter_index: usize,
+        href: String,
+    ) -> std::result::Result<String, JsValue> {
+        match &mut self.inner {
+            Some(extractor) => extractor
+                .resolve_chapter_resource_path(chapter_index, &href)
+                .await
+                .map_err(|e| JsValue::from_str(&format!("Failed to resolve resource path: {}", e))),
+            None => Err(JsValue::from_str("No EPUB loaded")),
+        }
+    }
+
+    /// Read a chapter-relative resource as bytes (for images, linked assets)
+    #[wasm_bindgen]
+    pub async fn get_chapter_resource(
+        &mut self,
+        chapter_index: usize,
+        href: String,
+    ) -> std::result::Result<Uint8Array, JsValue> {
+        match &mut self.inner {
+            Some(extractor) => {
+                let bytes = extractor
+                    .read_chapter_resource(chapter_index, &href)
+                    .await
+                    .map_err(|e| {
+                        JsValue::from_str(&format!("Failed to read chapter resource: {}", e))
+                    })?;
+                Ok(Uint8Array::from(&bytes[..]))
+            }
+            None => Err(JsValue::from_str("No EPUB loaded")),
+        }
+    }
+
     /// Get title string from metadata
     #[wasm_bindgen]
     pub async fn get_title(&mut self) -> std::result::Result<String, JsValue> {

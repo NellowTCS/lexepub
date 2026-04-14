@@ -97,6 +97,19 @@ main {
   margin: 0 0 1rem;
 }
 
+.chapter-view img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1rem auto;
+}
+
+.book-cover {
+  max-height: 40rem;
+  width: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
 footer {
   background-color: #e2e8f0;
   padding: 0.8rem;
