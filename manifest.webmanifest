@@ -1,1 +1,1 @@
-{"name":"HTMLReader","short_name":"HTMLReader","description":"A quick HTML-based ePub Reader that works offline.","start_url":"./","display":"standalone","background_color":"#f5f5f5","theme_color":"#2196F3","lang":"en","scope":"./"}
+{"name":"HTMLReader","short_name":"HTMLReader","description":"A quick HTML-based ePub Reader that works offline.","start_url":"/lexepub/","display":"standalone","background_color":"#f5f5f5","theme_color":"#2196F3","lang":"en","scope":"/lexepub/"}
