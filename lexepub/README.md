@@ -1,7 +1,7 @@
-# lexepub
+# LexePub
 
-lexepub is a high-performance, streaming EPUB parser and extractor for Rust, WASM, and C/C++.
-
+LexePub is a high-performance, streaming EPUB parser and extractor for Rust, WASM, and C/C++.  
+Find LexePub on [NPM](https://www.npmjs.com/package/lexepub) and [crates.io](https://crates.io/crates/lexepub)!
 ## Features
 
 - **Streaming Processing**: Process EPUBs chapter-by-chapter without loading everything into memory
@@ -16,12 +16,22 @@ lexepub is a high-performance, streaming EPUB parser and extractor for Rust, WAS
 
 ## Installation
 
+## NPM
+
+```bash
+npm install lexepub
+```
+
+## Rust
+
 Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
 lexepub = "0.1"
 ```
+
+Or run `cargo add lexepub`!
 
 ## Demo
 
@@ -77,7 +87,7 @@ wasm-pack build --release --target web
 
 ## Performance
 
-lexepub is designed for high performance:
+LexePub is designed for high performance:
 
 - **Memory Efficient**: Streaming processing prevents loading entire EPUBs into memory
 - **Fast Parsing**: Uses optimized HTML parsing with `scraper`
