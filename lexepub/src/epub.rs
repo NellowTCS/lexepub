@@ -115,6 +115,18 @@ impl LexEpub {
             return Ok(href_clean.replace('\\', "/"));
         }
 
+        let normalized_candidate = normalize_internal_path(path_only);
+        if !normalized_candidate.is_empty()
+            && self.extractor.read_file(&normalized_candidate).await.is_ok()
+        {
+            let mut out = normalized_candidate;
+            if let Some(fragment) = href_clean.split('#').nth(1) {
+                out.push('#');
+                out.push_str(fragment);
+            }
+            return Ok(out);
+        }
+
         let chapters = self.extract_chapters().await?;
         let chapter = chapters
             .get(chapter_index)
@@ -133,6 +145,13 @@ impl LexEpub {
             if !direct_path.is_empty() {
                 if let Ok(bytes) = self.extractor.read_file(direct_path).await {
                     return Ok(bytes);
+                }
+
+                let normalized_direct = normalize_internal_path(direct_path);
+                if !normalized_direct.is_empty() {
+                    if let Ok(bytes) = self.extractor.read_file(&normalized_direct).await {
+                        return Ok(bytes);
+                    }
                 }
             }
         }
@@ -536,13 +555,28 @@ fn resolve_href_against(base_path: &str, href: &str) -> String {
         joined = std::path::PathBuf::from(base_path);
     }
 
-    let mut normalized = joined.to_string_lossy().replace('\\', "/");
+    let mut normalized = normalize_internal_path(&joined.to_string_lossy());
     if let Some(fragment) = fragment_part {
         normalized.push('#');
         normalized.push_str(fragment);
     }
 
     normalized
+}
+
+fn normalize_internal_path(path: &str) -> String {
+    let mut parts = Vec::new();
+    let replaced = path.replace('\\', "/");
+    for segment in replaced.split('/') {
+        match segment {
+            "" | "." => {}
+            ".." => {
+                parts.pop();
+            }
+            _ => parts.push(segment),
+        }
+    }
+    parts.join("/")
 }
 
 fn normalize_ast_links(ast: &mut crate::core::chapter::AstNode, chapter_href: &str) {
