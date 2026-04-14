@@ -269,12 +269,20 @@
                 <div class="main-content">
                     <h1 id="quick-start">Quick start</h1>
 <p>This guide outlines how to configure your project to use LexEpub. It assumes you are setting up the Rust adapter inside a standard Cargo project.</p>
-<p>For other language adapters, refer to the <a href="/adapters/index.md">Adapters</a> index.</p>
+<p>For other language adapters, refer to:</p>
+<ul>
+<li><a href="/adapters/rust/index">Rust Adapter</a></li>
+<li><a href="/adapters/c/index">C/C++ Adapter</a></li>
+<li><a href="/adapters/wasm/index">WASM Adapter</a></li>
+</ul>
 <h2 id="installation">Installation</h2>
 <p>Add the core library to your Rust dependencies in <code>Cargo.toml</code>:</p>
 <pre class="hljs"><code><span class="hljs-section">[dependencies]</span>
 <span class="hljs-attr">lexepub</span> = <span class="hljs-string">&quot;0.1.0&quot;</span>
 <span class="hljs-attr">tokio</span> = { version = <span class="hljs-string">&quot;1&quot;</span>, features = [<span class="hljs-string">&quot;full&quot;</span>] }
+</code></pre>
+<p>Optional features:</p>
+<pre class="hljs"><code><span class="hljs-attr">lexepub</span> = { version = <span class="hljs-string">&quot;0.1.0&quot;</span>, features = [<span class="hljs-string">&quot;c-ffi&quot;</span>, <span class="hljs-string">&quot;wasm&quot;</span>] }
 </code></pre>
 <h2 id="basic-usage">Basic usage</h2>
 <p>The fundamental entry point for parsing is the <code>LexEpub</code> struct. Here is how you initialize the parser and request standard metadata:</p>
@@ -293,6 +301,40 @@
     <span class="hljs-title function_ invoke__">Ok</span>(())
 }
 </code></pre>
+<h2 id="core-async-methods">Core async methods</h2>
+<p>Use these methods for most workflows:</p>
+<ul>
+<li><code>extract_text_only()</code> for plain chapter text.</li>
+<li><code>extract_ast()</code> for chapter data with parsed AST.</li>
+<li><code>extract_chapters_stream()</code> for stream-based chapter processing.</li>
+<li><code>total_word_count()</code> and <code>total_char_count()</code> for aggregate analysis.</li>
+<li><code>has_cover()</code> and <code>cover_image()</code> for cover lookup/extraction.</li>
+</ul>
+<h2 id="sync-wrappers">Sync wrappers</h2>
+<p>For non-async contexts, <code>LexEpub</code> also exposes sync wrappers:</p>
+<ul>
+<li><code>open_sync()</code></li>
+<li><code>get_metadata_sync()</code></li>
+<li><code>validate_metadata_sync()</code></li>
+<li><code>total_word_count_sync()</code></li>
+<li><code>total_char_count_sync()</code></li>
+<li><code>has_cover_sync()</code></li>
+<li><code>cover_image_sync()</code></li>
+</ul>
+<h2 id="convenience-functions">Convenience functions</h2>
+<pre class="hljs"><code><span class="hljs-keyword">use</span> lexepub::{extract_ast, extract_text_only, get_metadata};
+
+<span class="hljs-keyword">let</span> <span class="hljs-variable">text</span> = <span class="hljs-title function_ invoke__">extract_text_only</span>(<span class="hljs-string">&quot;book.epub&quot;</span>).<span class="hljs-keyword">await</span>?;
+<span class="hljs-keyword">let</span> <span class="hljs-variable">ast</span> = <span class="hljs-title function_ invoke__">extract_ast</span>(<span class="hljs-string">&quot;book.epub&quot;</span>).<span class="hljs-keyword">await</span>?;
+<span class="hljs-keyword">let</span> <span class="hljs-variable">metadata</span> = <span class="hljs-title function_ invoke__">get_metadata</span>(<span class="hljs-string">&quot;book.epub&quot;</span>).<span class="hljs-keyword">await</span>?;
+</code></pre>
+<h2 id="css-behavior-in-ast-mode">CSS behavior in AST mode</h2>
+<p>When you call <code>extract_ast()</code>, LexePub reads <code>text/css</code> resources from the OPF manifest, parses them, and applies declarations onto AST elements.</p>
+<ul>
+<li>AST styles are available in <code>AstNode::Element.styles</code>.</li>
+<li>Inline <code>style</code> attributes are merged too.</li>
+<li>Selector matching is intentionally EPUB-focused (tag, class, id, grouped selectors).</li>
+</ul>
 <div class="docmd-container callout callout-tip"><div class="callout-content"><p>The <code>open</code> invocation guarantees that the underlying archive structure is verified without fully loading the uncompressed data into memory. Check the adapter documentation for advanced usage regarding streams.</p>
 </div></div>
 
@@ -337,6 +379,22 @@
       
         <li class="toc-item toc-level-2">
           <a href="#basic-usage" class="toc-link">Basic usage</a>
+        </li>
+      
+        <li class="toc-item toc-level-2">
+          <a href="#core-async-methods" class="toc-link">Core async methods</a>
+        </li>
+      
+        <li class="toc-item toc-level-2">
+          <a href="#sync-wrappers" class="toc-link">Sync wrappers</a>
+        </li>
+      
+        <li class="toc-item toc-level-2">
+          <a href="#convenience-functions" class="toc-link">Convenience functions</a>
+        </li>
+      
+        <li class="toc-item toc-level-2">
+          <a href="#css-behavior-in-ast-mode" class="toc-link">CSS behavior in AST mode</a>
         </li>
       
     </ul>

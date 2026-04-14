@@ -268,14 +268,61 @@
             <div class="content-layout">
                 <div class="main-content">
                     <h1 id="rust-adapter">Rust Adapter</h1>
-<p>The native Rust API exposes the full capabilities of LexePub through <code>tokio</code> or generic asynchronous executors. It acts as the backbone reference implementation for all other language adapters, supporting low-overhead async I/O streams and full AST HTML parsing.</p>
+<p>The native Rust API exposes the full LexePub capability set through <code>tokio</code> or any compatible async executor.</p>
+<h2 id="primary-types">Primary types</h2>
+<ul>
+<li><code>LexEpub</code>: main parser/entry point.</li>
+<li><code>EpubMetadata</code>: normalized metadata model.</li>
+<li><code>ParsedChapter</code>: chapter payload with text, counts, and optional AST.</li>
+<li><code>AstNode</code>: HTML AST node model (<code>Element</code>, <code>Text</code>, <code>Comment</code>).</li>
+</ul>
+<h2 id="async-api-reference">Async API reference</h2>
+<ul>
+<li><code>LexEpub::open(path)</code></li>
+<li><code>LexEpub::from_bytes(data)</code></li>
+<li><code>LexEpub::from_reader(reader)</code></li>
+<li><code>LexEpub::extract_text_only()</code></li>
+<li><code>LexEpub::extract_ast()</code></li>
+<li><code>LexEpub::extract_chapters_stream()</code></li>
+<li><code>LexEpub::get_metadata()</code></li>
+<li><code>LexEpub::validate_metadata()</code></li>
+<li><code>LexEpub::total_word_count()</code></li>
+<li><code>LexEpub::total_char_count()</code></li>
+<li><code>LexEpub::has_cover()</code></li>
+<li><code>LexEpub::cover_image()</code></li>
+</ul>
+<h2 id="sync-wrapper-api">Sync wrapper API</h2>
+<ul>
+<li><code>LexEpub::open_sync(path)</code></li>
+<li><code>LexEpub::from_sync_reader(reader)</code></li>
+<li><code>LexEpub::get_metadata_sync()</code></li>
+<li><code>LexEpub::validate_metadata_sync()</code></li>
+<li><code>LexEpub::total_word_count_sync()</code></li>
+<li><code>LexEpub::total_char_count_sync()</code></li>
+<li><code>LexEpub::has_cover_sync()</code></li>
+<li><code>LexEpub::cover_image_sync()</code></li>
+</ul>
+<h2 id="css-and-ast-integration">CSS and AST integration</h2>
+<p>Calling <code>extract_ast()</code> performs CSS-aware AST generation:</p>
+<ul>
+<li>OPF <code>text/css</code> manifest items are parsed.</li>
+<li>Rules are applied to AST element nodes.</li>
+<li>Applied declarations are stored in <code>AstNode::Element.styles</code>.</li>
+<li>Inline style attributes are merged during application.</li>
+</ul>
 <h2 id="building-and-testing">Building and Testing</h2>
 <p>Simply add LexePub as a Cargo dependency. Integration tests and API tests ensure the parsing logic remains deterministic and resilient across versions.</p>
 <pre class="hljs"><code>cargo build --release
 cargo <span class="hljs-built_in">test</span>
 </code></pre>
-<div class="docmd-container callout callout-tip"><div class="callout-content"><p>When pulling large datasets, use the <code>read_file_to_writer</code> or <code>cover_image_to_writer</code> abstractions with the Rust adapter. These functions take generic arguments implementing <code>futures::AsyncWrite</code>, which keeps allocation sizes tightly bounded.</p>
-</div></div>
+<h2 id="convenience-functions">Convenience functions</h2>
+<p>The crate also exports async helpers:</p>
+<ul>
+<li><code>extract_text_only(path)</code></li>
+<li><code>extract_ast(path)</code></li>
+<li><code>get_metadata(path)</code></li>
+</ul>
+
 
                     
                     <div class="page-navigation">
@@ -304,6 +351,40 @@ cargo <span class="hljs-built_in">test</span>
                 <div class="toc-sidebar">
                     
 
+
+  <div class="toc-container">
+    <h2 class="toc-title">On This Page<span class="mobile-view toc-menu-button float-right"><svg class="lucide-icon icon-chevrons-down-up" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="m7 20 5-5 5 5" />
+  <path d="m7 4 5 5 5-5" />
+</svg></span></h2>
+    <ul class="toc-list">
+      
+        <li class="toc-item toc-level-2">
+          <a href="#primary-types" class="toc-link">Primary types</a>
+        </li>
+      
+        <li class="toc-item toc-level-2">
+          <a href="#async-api-reference" class="toc-link">Async API reference</a>
+        </li>
+      
+        <li class="toc-item toc-level-2">
+          <a href="#sync-wrapper-api" class="toc-link">Sync wrapper API</a>
+        </li>
+      
+        <li class="toc-item toc-level-2">
+          <a href="#css-and-ast-integration" class="toc-link">CSS and AST integration</a>
+        </li>
+      
+        <li class="toc-item toc-level-2">
+          <a href="#building-and-testing" class="toc-link">Building and Testing</a>
+        </li>
+      
+        <li class="toc-item toc-level-2">
+          <a href="#convenience-functions" class="toc-link">Convenience functions</a>
+        </li>
+      
+    </ul>
+  </div>
 
                 </div>
             </div>

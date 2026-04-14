@@ -267,16 +267,29 @@
         <main class="content-area">
             <div class="content-layout">
                 <div class="main-content">
-                    <p><strong>LexePub</strong> is a robust parser and extractor for EPUB files. It provides zero-allocation asynchronous streaming, metadata validation, and asset extraction across Rust, C/C++, and WebAssembly from a single core implementing a shared set of primitives.</p>
-<div class="docmd-container callout callout-tip"><div class="callout-content"><p>LexePub focuses heavily on minimizing memory footprint. The idea: you should be able to stream an embedded cover image or parse an entire book’s HTML AST without pulling out the entire ZIP archive into RAM.</p>
+                    <p><strong>LexePub</strong> is a robust parser and extractor for EPUB files. It provides asynchronous streaming, metadata validation, and asset extraction across Rust, C/C++, and WebAssembly from a single core implementation.</p>
+<div class="docmd-container callout callout-tip"><div class="callout-content"><p>LexePub focuses heavily on minimizing memory footprint. You can stream chapter extraction and still get structured AST output with CSS styles applied.</p>
 </div></div><h2 id="what-it-solves">What it solves</h2>
-<p>You’re building an e-reader or book management system that needs to process EPUB files efficiently. Normally, that means loading massive archives entirely into memory, fighting with poorly documented OPF manifest parsing, or dealing with blocking I/O calls that freeze your UI.</p>
-<p>LexePub replaces all of that with a single streamlined core library and a set of thin language adapters. You parse your EPUBs once using memory-safe async streams, LexePub handles the extraction logic, and your application—whether Native, Web, or Embedded—just streams the output.</p>
+<p>You’re building an e-reader or book management system that needs to process EPUB files efficiently. Normally, that means loading massive archives entirely into memory, dealing with OPF manifest edge cases, or juggling different APIs for each runtime.</p>
+<p>LexePub replaces that with one core parser and thin language adapters. Parse once using memory-safe async streams, then consume the same chapter/metadata behavior from Rust, WASM, and C/C++.</p>
 <h2 id="features">Features</h2>
-<div class="docmd-container card"><div class="card-title">Zero-Allocation Streaming</div><div class="card-content"><p>Direct <code>AsyncWrite</code> pipelining allows pulling compressed archive contents, like cover images, straight to your buffers or network streams without loading huge vectors in memory.</p>
-</div></div><div class="docmd-container card"><div class="card-title">Multi-Platform Adapters</div><div class="card-content"><p>Written in async Rust at the core, but exported with guaranteed 1-1 API parity to C/C++ via Diplomat and JavaScript/TypeScript via WebAssembly. Will eventually move to Saikuro, of course, once I get that stable and properly WASM compatible.</p>
+<div class="docmd-container card"><div class="card-title">Streaming-Friendly Core</div><div class="card-content"><p>Read chapters sequentially and process content without requiring full-book materialization in memory.</p>
+</div></div><div class="docmd-container card"><div class="card-title">Multi-Platform Adapters</div><div class="card-content"><p>Written in async Rust at the core, exported to C/C++ via Diplomat and JavaScript/TypeScript via WebAssembly.</p>
 </div></div><div class="docmd-container card"><div class="card-title">Strict Metadata Validation</div><div class="card-content"><p>Automatically detects EPUB versions (2.0 vs 3.0), resolves OPF manifest links, and validates required metadata structure according to the standards.</p>
-</div></div><p>For complete setup instructions, please see the <a href="/getting-started/quickstart">Quick Start</a> guide.</p>
+</div></div><div class="docmd-container card"><div class="card-title">CSS-Aware AST</div><div class="card-content"><p>Manifest CSS resources are parsed and applied to chapter AST nodes. Styles are merged into each element’s <code>styles</code> map.</p>
+</div></div><h2 id="api">API</h2>
+<ul>
+<li>Rust adapter: async API plus sync wrappers for metadata/count/cover operations.</li>
+<li>WASM adapter: async JS-facing surface for loading bytes, metadata, chapter text, AST chapter retrieval, counts, and cover image.</li>
+<li>C/C++ adapter: currently focused on constructor plus aggregate counters and cover presence.</li>
+</ul>
+<p>For complete setup instructions, see <a href="/getting-started/quickstart">Quick Start</a>.<br>
+For runtime-specific APIs, see:</p>
+<ul>
+<li><a href="/adapters/rust/index">Rust Adapter</a></li>
+<li><a href="/adapters/c/index">C/C++ Adapter</a></li>
+<li><a href="/adapters/wasm/index">WASM Adapter</a></li>
+</ul>
 
 
                     
@@ -312,6 +325,10 @@
       
         <li class="toc-item toc-level-2">
           <a href="#features" class="toc-link">Features</a>
+        </li>
+      
+        <li class="toc-item toc-level-2">
+          <a href="#api" class="toc-link">API</a>
         </li>
       
     </ul>

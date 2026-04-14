@@ -268,13 +268,89 @@
             <div class="content-layout">
                 <div class="main-content">
                     <h1 id="cc-adapter">C/C++ Adapter</h1>
-<p>The C and C++ adapter allows native applications to directly leverage asynchronous LexePub functionality. The bindings are generated transparently using the <code>diplomat</code> toolchain out of the core Rust API, ensuring robust cross-language FFI integration.</p>
+<p>The C/C++ adapter is generated using Diplomat from the Rust core and is being expanded toward 1:1 behavior parity.</p>
 <h2 id="headers-and-linking">Headers and Linking</h2>
 <p>The generated definition files are located in the standard <code>include/</code> directory at the project root.</p>
-<p>To integrate this module, you link dynamically or statically against the generated artifact <code>libLexePub</code>, including the provided headers:</p>
+<p>To integrate this module, include the generated header:</p>
 <pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;EpubExtractor.h&quot;</span></span>
 </code></pre>
-<p>Because these functions correspond 1:1 with the underlying abstractions, no intermediate memory copy is required between C++ variables and internal Rust strings. You can find full invocation examples within the repository.</p>
+<h2 id="current-api-reference">Current API reference</h2>
+<p><code>EpubExtractor</code> currently provides:</p>
+<ul>
+<li><code>EpubExtractor_create(path_data, path_len)</code></li>
+<li><code>EpubExtractor_create_from_bytes(data_data, data_len)</code></li>
+<li><code>EpubExtractor_get_metadata_is_valid(extractor)</code></li>
+<li><code>EpubExtractor_get_chapter_count(extractor)</code></li>
+<li><code>EpubExtractor_get_title(extractor, writeable)</code></li>
+<li><code>EpubExtractor_get_metadata(extractor, writeable)</code></li>
+<li><code>EpubExtractor_get_metadata_json(extractor, writeable)</code></li>
+<li><code>EpubExtractor_get_chapters_text(extractor, writeable)</code></li>
+<li><code>EpubExtractor_get_chapters_text_json(extractor, writeable)</code></li>
+<li><code>EpubExtractor_get_chapter(extractor, index, writeable)</code></li>
+<li><code>EpubExtractor_get_chapter_text(extractor, index, writeable)</code></li>
+<li><code>EpubExtractor_get_chapter_json(extractor, index, writeable)</code></li>
+<li><code>EpubExtractor_get_total_word_count(extractor)</code></li>
+<li><code>EpubExtractor_get_total_char_count(extractor)</code></li>
+<li><code>EpubExtractor_has_cover(extractor)</code></li>
+<li><code>EpubExtractor_get_cover_image_len(extractor)</code></li>
+<li><code>EpubExtractor_get_cover_image_format(extractor, writeable)</code></li>
+<li><code>EpubExtractor_get_cover_image_json(extractor, writeable)</code></li>
+</ul>
+<p>Example:</p>
+<pre class="hljs"><code><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stdbool.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;stddef.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;string.h&gt;</span></span>
+<span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&quot;EpubExtractor.h&quot;</span></span>
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">void</span>)</span> {
+	<span class="hljs-type">const</span> <span class="hljs-type">char</span>* path = <span class="hljs-string">&quot;book.epub&quot;</span>;
+	EpubExtractor* ex = EpubExtractor_create(path, <span class="hljs-built_in">strlen</span>(path));
+	<span class="hljs-keyword">if</span> (ex != <span class="hljs-literal">NULL</span>) {
+		<span class="hljs-type">bool</span> metadata_ok = EpubExtractor_get_metadata_is_valid(ex);
+		<span class="hljs-type">size_t</span> chapter_count = EpubExtractor_get_chapter_count(ex);
+
+		<span class="hljs-type">char</span> title_buf[<span class="hljs-number">512</span>];
+		DiplomatWriteable title_w = diplomat_simple_writeable(title_buf, <span class="hljs-keyword">sizeof</span>(title_buf));
+		diplomat_result_void_void title_res = EpubExtractor_get_title(ex, &amp;title_w);
+
+		<span class="hljs-type">char</span> metadata_buf[<span class="hljs-number">4096</span>];
+		DiplomatWriteable metadata_w = diplomat_simple_writeable(metadata_buf, <span class="hljs-keyword">sizeof</span>(metadata_buf));
+		diplomat_result_void_void metadata_res = EpubExtractor_get_metadata(ex, &amp;metadata_w);
+
+		<span class="hljs-type">char</span> chapter_buf[<span class="hljs-number">8192</span>];
+		DiplomatWriteable chapter_w = diplomat_simple_writeable(chapter_buf, <span class="hljs-keyword">sizeof</span>(chapter_buf));
+		diplomat_result_void_void chapter_res = EpubExtractor_get_chapter(ex, <span class="hljs-number">0</span>, &amp;chapter_w);
+
+		<span class="hljs-type">size_t</span> words = EpubExtractor_get_total_word_count(ex);
+		<span class="hljs-type">size_t</span> chars = EpubExtractor_get_total_char_count(ex);
+		<span class="hljs-type">bool</span> has_cover = EpubExtractor_has_cover(ex);
+		<span class="hljs-type">size_t</span> cover_len = EpubExtractor_get_cover_image_len(ex);
+
+		<span class="hljs-type">char</span> mime_buf[<span class="hljs-number">128</span>];
+		DiplomatWriteable mime_w = diplomat_simple_writeable(mime_buf, <span class="hljs-keyword">sizeof</span>(mime_buf));
+		diplomat_result_void_void mime_res = EpubExtractor_get_cover_image_format(ex, &amp;mime_w);
+
+		(<span class="hljs-type">void</span>)metadata_ok;
+		(<span class="hljs-type">void</span>)chapter_count;
+		(<span class="hljs-type">void</span>)title_res;
+		(<span class="hljs-type">void</span>)metadata_res;
+		(<span class="hljs-type">void</span>)chapter_res;
+		(<span class="hljs-type">void</span>)words;
+		(<span class="hljs-type">void</span>)chars;
+		(<span class="hljs-type">void</span>)has_cover;
+		(<span class="hljs-type">void</span>)cover_len;
+		(<span class="hljs-type">void</span>)mime_res;
+
+		EpubExtractor_destroy(ex);
+	}
+	<span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+</code></pre>
+<h2 id="returns">Returns</h2>
+<ul>
+<li>Methods like <code>get_metadata</code>, <code>get_chapters_text</code>, and <code>get_chapter</code> write JSON text into <code>DiplomatWriteable</code> outputs so C can consume structured Rust data without unsafe ABI struct coupling.</li>
+<li><code>get_cover_image_json</code> returns a JSON array of bytes; <code>get_cover_image_len</code> and <code>get_cover_image_format</code> provide fast metadata access.</li>
+</ul>
 
 
                     
@@ -304,6 +380,28 @@
                 <div class="toc-sidebar">
                     
 
+
+  <div class="toc-container">
+    <h2 class="toc-title">On This Page<span class="mobile-view toc-menu-button float-right"><svg class="lucide-icon icon-chevrons-down-up" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="m7 20 5-5 5 5" />
+  <path d="m7 4 5 5 5-5" />
+</svg></span></h2>
+    <ul class="toc-list">
+      
+        <li class="toc-item toc-level-2">
+          <a href="#headers-and-linking" class="toc-link">Headers and Linking</a>
+        </li>
+      
+        <li class="toc-item toc-level-2">
+          <a href="#current-api-reference" class="toc-link">Current API reference</a>
+        </li>
+      
+        <li class="toc-item toc-level-2">
+          <a href="#returns" class="toc-link">Returns</a>
+        </li>
+      
+    </ul>
+  </div>
 
                 </div>
             </div>
