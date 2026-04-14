@@ -3,8 +3,8 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
-  root: '/lexepub/',
-  base: './',
+  root: './',
+  base: '/lexepub/',
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
