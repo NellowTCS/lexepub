@@ -1,6 +1,16 @@
 # LexePub
 
 LexePub is a high-performance, streaming EPUB parser and extractor for Rust, WASM, and C/C++.  
+
+<details>
+  <summary>In simple terms</summary>
+  
+  LexePub is a library that reads EPUB files.
+It extracts chapters, text, images, metadata, and styles, and works in Rust, WebAssembly, and C/C++.
+There is also a browser demo that shows it rendering real EPUBs.
+  
+</details>
+
 Find LexePub on [NPM](https://www.npmjs.com/package/lexepub) and [crates.io](https://crates.io/crates/lexepub)!
 ## Features
 
