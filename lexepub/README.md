@@ -22,7 +22,7 @@ Find LexePub on [NPM](https://www.npmjs.com/package/lexepub) and [crates.io](htt
 npm install lexepub
 ```
 
-## Rust
+## Cargo
 
 Add this to your `Cargo.toml`:
 
