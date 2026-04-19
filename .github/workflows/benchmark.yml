@@ -26,4 +26,4 @@ jobs:
         run: cargo install cargo-criterion
 
       - name: Run benchmarks
-        run: cd lexepub && cargo criterion --all-features
+        run: cd lexepub && cargo criterion --all-features -- --nocapture
