@@ -3,7 +3,8 @@ name: CI tests & size
 on:
   push:
   pull_request:
-
+  workflow_dispatch:
+  
 jobs:
   test-and-size:
     runs-on: ubuntu-latest
