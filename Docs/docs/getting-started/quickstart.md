@@ -19,14 +19,14 @@ Add the core library to your Rust dependencies in `Cargo.toml`:
 
 ```toml
 [dependencies]
-lexepub = "0.1.0"
+lexepub = "0.1.1"
 tokio = { version = "1", features = ["full"] }
 ```
 
 Optional features:
 
 ```toml
-lexepub = { version = "0.1.0", features = ["c-ffi", "wasm"] }
+lexepub = { version = "0.1.1", features = ["c-ffi", "wasm"] }
 ```
 
 ## Useful Commands
