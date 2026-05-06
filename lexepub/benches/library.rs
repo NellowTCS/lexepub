@@ -125,4 +125,3 @@ criterion_group!(
     bench_extraction,
     bench_analysis
 );
-criterion_main!(benches);
