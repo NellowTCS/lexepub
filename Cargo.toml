@@ -3,3 +3,18 @@ members = [
     "lexepub"
 ]
 resolver = "2"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+strip = "debuginfo"
+
+[profile.dev]
+opt-level = 1
+
+[profile.bench]
+inherits = "release"
+strip = "none"
+debug = true

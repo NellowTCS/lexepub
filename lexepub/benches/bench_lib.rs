@@ -93,6 +93,29 @@ fn bench_analysis(c: &mut Criterion) {
         b.iter_batched(
             || futures::executor::block_on(lexepub::epub::LexEpub::from_bytes(bytes.clone())).unwrap(),
             |mut epub| {
+                // word_count triggers extraction and caches both counts.
+                // char_count returns from cache immediately: one extraction total.
+                let w = futures::executor::block_on(epub.total_word_count()).unwrap();
+                let c = futures::executor::block_on(epub.total_char_count()).unwrap();
+                (w, c)
+            },
+            BatchSize::SmallInput,
+        )
+    });
+
+    // Benchmark the cached path explicitly so we can see the speedup
+    group.bench_function("total_word_char_count_cached", |b| {
+        b.iter_batched(
+            || {
+                let mut epub = futures::executor::block_on(
+                    lexepub::epub::LexEpub::from_bytes(bytes.clone())
+                ).unwrap();
+                // Pre-warm the cache
+                futures::executor::block_on(epub.total_word_count()).unwrap();
+                epub
+            },
+            |mut epub| {
+                // Both should be instant cache hits
                 let w = futures::executor::block_on(epub.total_word_count()).unwrap();
                 let c = futures::executor::block_on(epub.total_char_count()).unwrap();
                 (w, c)

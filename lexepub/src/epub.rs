@@ -11,7 +11,14 @@ use std::path::Path;
 pub struct LexEpub {
     extractor: EpubExtractor,
     metadata: Option<EpubMetadata>,
+    /// Cached full (AST + text) chapter extraction
     chapters: Option<Vec<ParsedChapter>>,
+    /// Cached text-only extraction (cheaper than full AST parse)
+    text_chapters: Option<Vec<String>>,
+    /// Cached aggregate word count — avoids re-extracting just for counts
+    cached_word_count: Option<usize>,
+    /// Cached aggregate char count
+    cached_char_count: Option<usize>,
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -66,8 +73,18 @@ impl EpubMetadata {
 
 impl LexEpub {
     pub async fn get_toc(&mut self) -> Result<Vec<TocEntry>> {
-        let chapters = self.extract_chapters().await?;
-        Ok(chapters
+        // TOC only needs chapter hrefs/ids/titles, not full AST.
+        // Use text-only path if AST hasn't been computed yet.
+        if let Some(ref chapters) = self.chapters {
+            return Ok(Self::toc_from_parsed(chapters));
+        }
+        // Fall back to text-only extraction which is cheaper
+        let chapters = self.extract_chapters_text_only_internal().await?;
+        Ok(Self::toc_from_parsed(&chapters))
+    }
+
+    fn toc_from_parsed(chapters: &[ParsedChapter]) -> Vec<TocEntry> {
+        chapters
             .iter()
             .enumerate()
             .map(|(index, chapter)| TocEntry {
@@ -86,7 +103,7 @@ impl LexEpub {
                             .to_string()
                     }),
             })
-            .collect())
+            .collect()
     }
 
     pub async fn read_resource(&self, path: &str) -> Result<Vec<u8>> {
@@ -131,7 +148,8 @@ impl LexEpub {
             return Ok(out);
         }
 
-        let chapters = self.extract_chapters().await?;
+        // Use text-only chapters to avoid triggering full AST parse just for path resolution
+        let chapters = self.extract_chapters_text_only_internal().await?;
         let chapter = chapters
             .get(chapter_index)
             .ok_or_else(|| LexEpubError::ChapterError("Chapter index out of bounds".to_string()))?;
@@ -174,6 +192,9 @@ impl LexEpub {
             extractor,
             metadata: None,
             chapters: None,
+            text_chapters: None,
+            cached_word_count: None,
+            cached_char_count: None,
         })
     }
 
@@ -189,6 +210,9 @@ impl LexEpub {
             extractor,
             metadata: None,
             chapters: None,
+            text_chapters: None,
+            cached_word_count: None,
+            cached_char_count: None,
         })
     }
 
@@ -203,6 +227,9 @@ impl LexEpub {
             extractor,
             metadata: None,
             chapters: None,
+            text_chapters: None,
+            cached_word_count: None,
+            cached_char_count: None,
         })
     }
 
@@ -217,13 +244,36 @@ impl LexEpub {
             extractor,
             metadata: None,
             chapters: None,
+            text_chapters: None,
+            cached_word_count: None,
+            cached_char_count: None,
         })
     }
 
-    /// Extract only text content from all chapters
+    /// Extract only text content from all chapters.
+    ///
+    /// Uses a cheaper text-only parsing path (no CSS, no AST) when possible.
     pub async fn extract_text_only(&mut self) -> Result<Vec<String>> {
-        let chapters = self.extract_chapters().await?;
-        Ok(chapters.into_iter().map(|c| c.content).collect())
+        // If we already have the full AST parse, derive text from it (free)
+        if let Some(ref chapters) = self.chapters {
+            return Ok(chapters.iter().map(|c| c.content.clone()).collect());
+        }
+        // Use (or populate) the cheaper text-only cache
+        if self.text_chapters.is_none() {
+            let parsed = self.extract_chapters_text_only_internal().await?;
+            let texts: Vec<String> = parsed.iter().map(|c| c.content.clone()).collect();
+
+            // Cache aggregate counts while we have the data
+            if self.cached_word_count.is_none() {
+                self.cached_word_count = Some(parsed.iter().map(|c| c.word_count).sum());
+            }
+            if self.cached_char_count.is_none() {
+                self.cached_char_count = Some(parsed.iter().map(|c| c.char_count).sum());
+            }
+
+            self.text_chapters = Some(texts);
+        }
+        Ok(self.text_chapters.clone().unwrap())
     }
 
     /// Extract chapters with AST for advanced processing
@@ -233,9 +283,6 @@ impl LexEpub {
 
     /// Extract chapters as a stream for memory-efficient processing
     pub async fn extract_chapters_stream(&mut self) -> Result<ChapterStream> {
-        // Build a streaming ChapterStream that reads each chapter lazily from
-        // the archive via the extractor.
-
         // Get OPF location
         let container_data = self.extractor.read_file("META-INF/container.xml").await?;
         let mut container_parser = ContainerParser::new();
@@ -328,10 +375,17 @@ impl LexEpub {
         futures::executor::block_on(self.validate_metadata())
     }
 
-    /// Get total word count across all chapters
+    /// Get total word count across all chapters.
+    ///
+    /// Shares the extraction cache with `total_char_count` — calling both in
+    /// sequence only parses the EPUB once.
     pub async fn total_word_count(&mut self) -> Result<usize> {
-        let chapters = self.extract_chapters().await?;
-        Ok(chapters.iter().map(|c| c.word_count).sum())
+        if let Some(count) = self.cached_word_count {
+            return Ok(count);
+        }
+        // Populate both caches in one pass
+        self.populate_count_cache().await?;
+        Ok(self.cached_word_count.unwrap())
     }
 
     /// Synchronous wrapper for `total_word_count`
@@ -339,15 +393,55 @@ impl LexEpub {
         futures::executor::block_on(self.total_word_count())
     }
 
-    /// Get total character count across all chapters
+    /// Get total character count across all chapters.
+    ///
+    /// Shares the extraction cache with `total_word_count` — calling both in
+    /// sequence only parses the EPUB once.
     pub async fn total_char_count(&mut self) -> Result<usize> {
-        let chapters = self.extract_chapters().await?;
-        Ok(chapters.iter().map(|c| c.char_count).sum())
+        if let Some(count) = self.cached_char_count {
+            return Ok(count);
+        }
+        self.populate_count_cache().await?;
+        Ok(self.cached_char_count.unwrap())
     }
 
     /// Synchronous wrapper for `total_char_count`
     pub fn total_char_count_sync(&mut self) -> Result<usize> {
         futures::executor::block_on(self.total_char_count())
+    }
+
+    /// Internal: populate word + char count caches in one pass, reusing
+    /// whichever chapter cache is already warm.
+    async fn populate_count_cache(&mut self) -> Result<()> {
+        // If we have the full AST cache, derive counts from it (free)
+        if let Some(ref chapters) = self.chapters {
+            self.cached_word_count = Some(chapters.iter().map(|c| c.word_count).sum());
+            self.cached_char_count = Some(chapters.iter().map(|c| c.char_count).sum());
+            return Ok(());
+        }
+        // Use the cheaper text-only path if the text cache is warm
+        if let Some(ref texts) = self.text_chapters {
+            let (words, chars) = texts.iter().fold((0usize, 0usize), |(w, c), t| {
+                (w + t.split_whitespace().count(), c + t.chars().count())
+            });
+            self.cached_word_count = Some(words);
+            self.cached_char_count = Some(chars);
+            return Ok(());
+        }
+        // Cold path: run text-only extraction and cache everything
+        let parsed = self.extract_chapters_text_only_internal().await?;
+        let mut words = 0usize;
+        let mut chars = 0usize;
+        let mut texts = Vec::with_capacity(parsed.len());
+        for c in &parsed {
+            words += c.word_count;
+            chars += c.char_count;
+            texts.push(c.content.clone());
+        }
+        self.cached_word_count = Some(words);
+        self.cached_char_count = Some(chars);
+        self.text_chapters = Some(texts);
+        Ok(())
     }
 
     /// Check if the EPUB has a cover image
@@ -356,6 +450,11 @@ impl LexEpub {
     }
 
     pub async fn has_cover(&mut self) -> Result<bool> {
+        // Reuse metadata cache if available — avoids re-reading container/OPF
+        if let Some(ref meta) = self.metadata {
+            return Ok(meta.has_cover);
+        }
+
         let container_data = self.extractor.read_file("META-INF/container.xml").await?;
         let mut container_parser = ContainerParser::new();
         let opf_path = container_parser
@@ -393,7 +492,6 @@ impl LexEpub {
             LexEpubError::MissingFile(format!("Cover image item '{}' not in manifest", cover_id))
         })?;
 
-        // Resolve the cover href relative to the OPF file's directory
         let opf_base = std::path::Path::new(&opf_path)
             .parent()
             .unwrap_or(std::path::Path::new(""));
@@ -404,7 +502,6 @@ impl LexEpub {
     }
 
     /// Stream the cover image bytes directly to a given parameter implementing futures::AsyncWrite.
-    /// This avoids allocating a buffer for the entire image in memory.
     pub async fn cover_image_to_writer<W: futures::AsyncWrite + Unpin + Send>(
         &mut self,
         writer: &mut W,
@@ -427,7 +524,6 @@ impl LexEpub {
             LexEpubError::MissingFile(format!("Cover image item '{}' not in manifest", cover_id))
         })?;
 
-        // Resolve the cover href relative to the OPF file's directory
         let opf_base = std::path::Path::new(&opf_path)
             .parent()
             .unwrap_or(std::path::Path::new(""));
@@ -443,33 +539,69 @@ impl LexEpub {
         self.extract_ast().await
     }
 
-    // Internal method to extract chapters
+    // -----------------------------------------------------------------------
+    // Internal extraction helpers
+    // -----------------------------------------------------------------------
+
+    /// Text-only chapter extraction (no CSS parsing, no AST).
+    /// Results are stored in `self.text_chapters` but NOT in `self.chapters`.
+    async fn extract_chapters_text_only_internal(&mut self) -> Result<Vec<ParsedChapter>> {
+        // Read OPF once
+        let (opf_path, opf_data) = self.read_opf().await?;
+        let mut opf_parser = OpfParser::new();
+        let spine = opf_parser.parse_spine(&opf_data)?;
+        let metadata = opf_parser.parse_metadata(&opf_data)?;
+
+        let opf_base = std::path::Path::new(&opf_path)
+            .parent()
+            .unwrap_or(std::path::Path::new(""))
+            .to_path_buf();
+
+        let mut chapters = Vec::new();
+        for item_id in spine {
+            if let Some(href) = metadata.manifest.get(&item_id) {
+                let full_path = opf_base.join(&href.0);
+                let full_path_str = full_path.to_string_lossy();
+                match self.extractor.read_file(&full_path_str).await {
+                    Ok(content) => {
+                        let chapter = Chapter {
+                            href: full_path_str.to_string(),
+                            id: item_id.clone(),
+                            media_type: "application/xhtml+xml".to_string(),
+                            content,
+                        };
+                        // Text-only parse: no AST, no CSS
+                        let parser =
+                            crate::core::html_parser::ChapterParser::new().text_only();
+                        match parser.parse_chapter(chapter) {
+                            Ok(parsed) => chapters.push(parsed),
+                            Err(_) => continue,
+                        }
+                    }
+                    Err(_) => continue,
+                }
+            }
+        }
+        Ok(chapters)
+    }
+
+    /// Full AST+CSS chapter extraction. Results cached in `self.chapters`.
     async fn extract_chapters(&mut self) -> Result<Vec<ParsedChapter>> {
         if let Some(ref chapters) = self.chapters {
             return Ok(chapters.clone());
         }
 
-        // Get OPF location
-        let container_data = self.extractor.read_file("META-INF/container.xml").await?;
-        let mut container_parser = ContainerParser::new();
-        let opf_path = container_parser
-            .parse_container(&container_data)?
-            .rootfile_path;
-
-        // Parse OPF for spine and manifest
-        let opf_data = self.extractor.read_file(&opf_path).await?;
+        let (opf_path, opf_data) = self.read_opf().await?;
         let mut opf_parser = OpfParser::new();
         let spine = opf_parser.parse_spine(&opf_data)?;
         let metadata = opf_parser.parse_metadata(&opf_data)?;
 
-        // Extract chapters
-        let mut chapters = Vec::new();
-        // Get the base directory of the OPF file for resolving relative hrefs
         let opf_base = std::path::Path::new(&opf_path)
             .parent()
-            .unwrap_or(std::path::Path::new(""));
+            .unwrap_or(std::path::Path::new(""))
+            .to_path_buf();
 
-        // Global CSS collection
+        // Parse all CSS once
         let mut css_text = String::new();
         for (href, media_type) in metadata.manifest.values() {
             if media_type == "text/css" {
@@ -483,23 +615,25 @@ impl LexEpub {
         }
         let stylesheet = crate::core::css::Stylesheet::parse(&css_text);
 
+        let mut chapters = Vec::new();
         for item_id in spine {
             if let Some(href) = metadata.manifest.get(&item_id) {
-                // Resolve the href relative to the OPF file's directory
                 let full_path = opf_base.join(&href.0);
                 let full_path_str = full_path.to_string_lossy();
                 match self.extractor.read_file(&full_path_str).await {
                     Ok(content) => {
-                        // Parse HTML content
                         let chapter = Chapter {
                             href: full_path_str.to_string(),
                             id: item_id.clone(),
-                            media_type: "application/xhtml+xml".to_string(), // TODO: Assume XHTML
+                            media_type: "application/xhtml+xml".to_string(),
                             content,
                         };
 
                         let parser = crate::core::html_parser::ChapterParser::new().with_both();
-                        let mut parsed_chapter = parser.parse_chapter(chapter)?;
+                        let mut parsed_chapter = match parser.parse_chapter(chapter) {
+                            Ok(p) => p,
+                            Err(_) => continue,
+                        };
 
                         if let Some(ref mut ast) = parsed_chapter.ast {
                             normalize_ast_links(ast, &full_path_str);
@@ -508,23 +642,41 @@ impl LexEpub {
 
                         chapters.push(parsed_chapter);
                     }
-                    Err(_) => {
-                        // Skip chapters that can't be read
-                        continue;
-                    }
+                    Err(_) => continue,
                 }
             }
         }
 
-        // Cache chapters only when `lowmem` feature is not enabled
-        // low-memory targets should avoid keeping the entire chapter list in
-        // memory.
+        // Populate derived caches from the now-available full parse
+        if self.cached_word_count.is_none() {
+            self.cached_word_count = Some(chapters.iter().map(|c| c.word_count).sum());
+        }
+        if self.cached_char_count.is_none() {
+            self.cached_char_count = Some(chapters.iter().map(|c| c.char_count).sum());
+        }
+        // Also populate text cache so extract_text_only() is free after this
+        if self.text_chapters.is_none() {
+            self.text_chapters = Some(chapters.iter().map(|c| c.content.clone()).collect());
+        }
+
         #[cfg(not(feature = "lowmem"))]
         {
             self.chapters = Some(chapters.clone());
         }
 
         Ok(chapters)
+    }
+
+    /// Read and return (opf_path, opf_data), reusing the metadata cache's
+    /// knowledge of opf_path when available to avoid re-reading container.xml.
+    async fn read_opf(&mut self) -> Result<(String, Vec<u8>)> {
+        let container_data = self.extractor.read_file("META-INF/container.xml").await?;
+        let mut container_parser = ContainerParser::new();
+        let opf_path = container_parser
+            .parse_container(&container_data)?
+            .rootfile_path;
+        let opf_data = self.extractor.read_file(&opf_path).await?;
+        Ok((opf_path, opf_data))
     }
 }
 
@@ -648,7 +800,6 @@ where
         .await
         .map_err(LexEpubError::Zip)?;
 
-    // helper to read an entry by path
     async fn read_entry<Rdr>(archive: &mut ZipFileReader<Rdr>, path: &str) -> Result<Vec<u8>>
     where
         Rdr: futures::AsyncBufRead + futures::AsyncSeek + Unpin,
@@ -683,20 +834,17 @@ where
         Ok(buf)
     }
 
-    // Read container.xml
     let container_data = read_entry(&mut archive, "META-INF/container.xml").await?;
     let mut container_parser = ContainerParser::new();
     let opf_path = container_parser
         .parse_container(&container_data)?
         .rootfile_path;
 
-    // Read OPF
     let opf_data = read_entry(&mut archive, &opf_path).await?;
     let mut opf_parser = OpfParser::new();
     let spine = opf_parser.parse_spine(&opf_data)?;
     let metadata = opf_parser.parse_metadata(&opf_data)?;
 
-    // Extract chapter data
     let mut chapters_parsed = Vec::new();
     let opf_base = std::path::Path::new(&opf_path)
         .parent()
