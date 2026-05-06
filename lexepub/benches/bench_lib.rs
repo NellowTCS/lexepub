@@ -13,9 +13,8 @@ fn bench_loading(c: &mut Criterion) {
 
     group.bench_function("from_bytes", |b| {
         b.iter(|| {
-            let _ =
-                futures::executor::block_on(lexepub::epub::LexEpub::from_bytes(bytes.clone()))
-                    .unwrap();
+            let _ = futures::executor::block_on(lexepub::epub::LexEpub::from_bytes(bytes.clone()))
+                .unwrap();
         })
     });
 
@@ -45,7 +44,10 @@ fn bench_metadata(c: &mut Criterion) {
 
     group.bench_function("get_metadata", |b| {
         b.iter_batched(
-            || futures::executor::block_on(lexepub::epub::LexEpub::from_bytes(bytes.clone())).unwrap(),
+            || {
+                futures::executor::block_on(lexepub::epub::LexEpub::from_bytes(bytes.clone()))
+                    .unwrap()
+            },
             |mut epub| futures::executor::block_on(epub.get_metadata()).unwrap(),
             BatchSize::SmallInput,
         )
@@ -53,7 +55,10 @@ fn bench_metadata(c: &mut Criterion) {
 
     group.bench_function("get_toc", |b| {
         b.iter_batched(
-            || futures::executor::block_on(lexepub::epub::LexEpub::from_bytes(bytes.clone())).unwrap(),
+            || {
+                futures::executor::block_on(lexepub::epub::LexEpub::from_bytes(bytes.clone()))
+                    .unwrap()
+            },
             |mut epub| futures::executor::block_on(epub.get_toc()).unwrap(),
             BatchSize::SmallInput,
         )
@@ -68,7 +73,10 @@ fn bench_extraction(c: &mut Criterion) {
 
     group.bench_function("extract_text_only", |b| {
         b.iter_batched(
-            || futures::executor::block_on(lexepub::epub::LexEpub::from_bytes(bytes.clone())).unwrap(),
+            || {
+                futures::executor::block_on(lexepub::epub::LexEpub::from_bytes(bytes.clone()))
+                    .unwrap()
+            },
             |mut epub| futures::executor::block_on(epub.extract_text_only()).unwrap(),
             BatchSize::SmallInput,
         )
@@ -76,7 +84,10 @@ fn bench_extraction(c: &mut Criterion) {
 
     group.bench_function("extract_ast", |b| {
         b.iter_batched(
-            || futures::executor::block_on(lexepub::epub::LexEpub::from_bytes(bytes.clone())).unwrap(),
+            || {
+                futures::executor::block_on(lexepub::epub::LexEpub::from_bytes(bytes.clone()))
+                    .unwrap()
+            },
             |mut epub| futures::executor::block_on(epub.extract_ast()).unwrap(),
             BatchSize::SmallInput,
         )
@@ -91,7 +102,10 @@ fn bench_analysis(c: &mut Criterion) {
 
     group.bench_function("total_word_char_count", |b| {
         b.iter_batched(
-            || futures::executor::block_on(lexepub::epub::LexEpub::from_bytes(bytes.clone())).unwrap(),
+            || {
+                futures::executor::block_on(lexepub::epub::LexEpub::from_bytes(bytes.clone()))
+                    .unwrap()
+            },
             |mut epub| {
                 // word_count triggers extraction and caches both counts.
                 // char_count returns from cache immediately: one extraction total.
@@ -107,9 +121,9 @@ fn bench_analysis(c: &mut Criterion) {
     group.bench_function("total_word_char_count_cached", |b| {
         b.iter_batched(
             || {
-                let mut epub = futures::executor::block_on(
-                    lexepub::epub::LexEpub::from_bytes(bytes.clone())
-                ).unwrap();
+                let mut epub =
+                    futures::executor::block_on(lexepub::epub::LexEpub::from_bytes(bytes.clone()))
+                        .unwrap();
                 // Pre-warm the cache
                 futures::executor::block_on(epub.total_word_count()).unwrap();
                 epub

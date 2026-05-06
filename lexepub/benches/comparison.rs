@@ -2,7 +2,9 @@ mod comparisons;
 
 use anyhow::{Context, Result};
 use clap::Parser;
-use comparisons::{pick_compatible_sample, run_comparison, Category, ComparisonReport, LibraryResult};
+use comparisons::{
+    pick_compatible_sample, run_comparison, Category, ComparisonReport, LibraryResult,
+};
 use crossterm::{
     event::{self, Event, KeyCode, KeyEventKind},
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
@@ -25,7 +27,11 @@ use std::{
 
 // CLI
 #[derive(Parser, Debug)]
-#[command(name = "comparison", about = "Benchmark EPUB library performance", version)]
+#[command(
+    name = "comparison",
+    about = "Benchmark EPUB library performance",
+    version
+)]
 struct Args {
     /// Number of benchmark iterations per library
     #[arg(long, default_value_t = 20)]
@@ -48,7 +54,7 @@ struct Args {
     print: bool,
 }
 
-//  Data helpers 
+//  Data helpers
 /// Build a category -> average_ms lookup for one library.
 fn timing_map(result: &LibraryResult) -> HashMap<Category, f64> {
     result
@@ -107,14 +113,22 @@ const CATEGORIES: &[Category] = &[
     Category::Analysis,
 ];
 
-const CATEGORY_LABELS: &[&str] = &["Loading (ms)", "Metadata (ms)", "Extraction (ms)", "Analysis (ms)"];
+const CATEGORY_LABELS: &[&str] = &[
+    "Loading (ms)",
+    "Metadata (ms)",
+    "Extraction (ms)",
+    "Analysis (ms)",
+];
 
 fn render_tui(report: &ComparisonReport) -> Result<()> {
     let mut guard = TerminalGuard::enter()?;
     let terminal = &mut guard.0;
 
     // Pre-compute best times so we don't recalculate every frame.
-    let bests: Vec<f64> = CATEGORIES.iter().map(|&cat| best_for(report, cat)).collect();
+    let bests: Vec<f64> = CATEGORIES
+        .iter()
+        .map(|&cat| best_for(report, cat))
+        .collect();
 
     loop {
         terminal.draw(|f| {
@@ -130,7 +144,7 @@ fn render_tui(report: &ComparisonReport) -> Result<()> {
                 ])
                 .split(area);
 
-            //  Header 
+            //  Header
             let header_text = format!(
                 " EPUB Benchmark  │  sample: {}  │  iterations: {}",
                 report.sample_epub, report.iterations
@@ -142,10 +156,16 @@ fn render_tui(report: &ComparisonReport) -> Result<()> {
                 chunks[0],
             );
 
-            //  Results table 
+            //  Results table
             let col_header = std::iter::once("Library")
                 .chain(CATEGORY_LABELS.iter().copied())
-                .map(|s| Cell::from(s).style(Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD)));
+                .map(|s| {
+                    Cell::from(s).style(
+                        Style::default()
+                            .fg(Color::Yellow)
+                            .add_modifier(Modifier::BOLD),
+                    )
+                });
             let header_row = Row::new(col_header).height(1);
 
             let rows: Vec<Row> = report
@@ -181,7 +201,7 @@ fn render_tui(report: &ComparisonReport) -> Result<()> {
                 .column_spacing(1);
             f.render_widget(table, chunks[1]);
 
-            //  Loading-time gauge (relative to slowest) 
+            //  Loading-time gauge (relative to slowest)
             let gauge_area = chunks[2];
             let gauge_chunks = Layout::default()
                 .direction(Direction::Vertical)
@@ -196,13 +216,17 @@ fn render_tui(report: &ComparisonReport) -> Result<()> {
 
             if let Some(title_area) = gauge_chunks.first() {
                 f.render_widget(
-                    Paragraph::new(" Loading time (relative) ").style(Style::default().fg(Color::Yellow)),
+                    Paragraph::new(" Loading time (relative) ")
+                        .style(Style::default().fg(Color::Yellow)),
                     *title_area,
                 );
             }
             for (i, lib) in report.libraries.iter().enumerate() {
                 if let Some(&area) = gauge_chunks.get(i + 1) {
-                    let ms = timing_map(lib).get(&Category::Loading).copied().unwrap_or(0.0);
+                    let ms = timing_map(lib)
+                        .get(&Category::Loading)
+                        .copied()
+                        .unwrap_or(0.0);
                     let ratio = (ms / worst_loading * 100.0) as u16;
                     let gauge = Gauge::default()
                         .label(format!("{} {:.3} ms", lib.library, ms))
@@ -212,7 +236,7 @@ fn render_tui(report: &ComparisonReport) -> Result<()> {
                 }
             }
 
-            // Footer 
+            // Footer
             f.render_widget(
                 Paragraph::new(" [q] quit  │  ✓ = best performer  │  (Nx) = N× slower than best")
                     .style(Style::default().fg(Color::DarkGray))
@@ -233,9 +257,12 @@ fn render_tui(report: &ComparisonReport) -> Result<()> {
     Ok(()) // TerminalGuard::drop handles cleanup
 }
 
-// Stdout summary 
+// Stdout summary
 fn print_summary(report: &ComparisonReport) {
-    let bests: Vec<f64> = CATEGORIES.iter().map(|&cat| best_for(report, cat)).collect();
+    let bests: Vec<f64> = CATEGORIES
+        .iter()
+        .map(|&cat| best_for(report, cat))
+        .collect();
 
     println!(
         "\nEPUB Benchmark | sample: {} | {} iterations\n",
@@ -255,7 +282,10 @@ fn print_summary(report: &ComparisonReport) {
         print!("  {:<20}", label);
     }
     println!();
-    println!("{}", "".repeat(label_width + 2 + CATEGORY_LABELS.len() * 22));
+    println!(
+        "{}",
+        "".repeat(label_width + 2 + CATEGORY_LABELS.len() * 22)
+    );
 
     for lib in &report.libraries {
         let m = timing_map(lib);
@@ -269,7 +299,7 @@ fn print_summary(report: &ComparisonReport) {
     println!();
 }
 
-// Entry point 
+// Entry point
 fn main() -> Result<()> {
     // Strip `--bench` injected by `cargo bench` so Clap doesn't choke on it.
     let filtered_args: Vec<String> = std::env::args().filter(|a| a != "--bench").collect();
@@ -283,10 +313,13 @@ fn main() -> Result<()> {
         None => pick_compatible_sample().context("locating a compatible sample EPUB")?,
     };
 
-    println!("▶ Running {} iteration(s) on {} …", args.iterations, sample.display());
+    println!(
+        "▶ Running {} iteration(s) on {} …",
+        args.iterations,
+        sample.display()
+    );
     let start = Instant::now();
-    let report = run_comparison(&sample, args.iterations)
-        .context("running comparison")?;
+    let report = run_comparison(&sample, args.iterations).context("running comparison")?;
     println!("✓ Done in {:.2?}", start.elapsed());
 
     // Persist JSON report.

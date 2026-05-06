@@ -8,12 +8,12 @@ mod ffi {
     pub struct EpubExtractor(Box<crate::LexEpub>);
 
     impl EpubExtractor {
-        fn write_string(to: &mut diplomat_runtime::DiplomatWriteable, s: &str) -> Result<(), ()> {
+        fn write_string(to: &mut diplomat_runtime::DiplomatWrite, s: &str) -> Result<(), ()> {
             to.write_str(s).map_err(|_| ())
         }
 
         fn write_json<T: serde::Serialize>(
-            to: &mut diplomat_runtime::DiplomatWriteable,
+            to: &mut diplomat_runtime::DiplomatWrite,
             value: &T,
         ) -> Result<(), ()> {
             let json = serde_json::to_string(value).map_err(|_| ())?;
@@ -49,7 +49,7 @@ mod ffi {
 
         pub fn get_title(
             &mut self,
-            to: &mut diplomat_runtime::DiplomatWriteable,
+            to: &mut diplomat_runtime::DiplomatWrite,
         ) -> Result<(), ()> {
             let title = self
                 .0
@@ -62,7 +62,7 @@ mod ffi {
 
         pub fn get_metadata_json(
             &mut self,
-            to: &mut diplomat_runtime::DiplomatWriteable,
+            to: &mut diplomat_runtime::DiplomatWrite,
         ) -> Result<(), ()> {
             let metadata = self.0.get_metadata_sync().map_err(|_| ())?;
             Self::write_json(to, &metadata)
@@ -70,14 +70,14 @@ mod ffi {
 
         pub fn get_metadata(
             &mut self,
-            to: &mut diplomat_runtime::DiplomatWriteable,
+            to: &mut diplomat_runtime::DiplomatWrite,
         ) -> Result<(), ()> {
             self.get_metadata_json(to)
         }
 
         pub fn get_chapters_text_json(
             &mut self,
-            to: &mut diplomat_runtime::DiplomatWriteable,
+            to: &mut diplomat_runtime::DiplomatWrite,
         ) -> Result<(), ()> {
             let chapters =
                 futures::executor::block_on(self.0.extract_text_only()).map_err(|_| ())?;
@@ -86,7 +86,7 @@ mod ffi {
 
         pub fn get_chapters_text(
             &mut self,
-            to: &mut diplomat_runtime::DiplomatWriteable,
+            to: &mut diplomat_runtime::DiplomatWrite,
         ) -> Result<(), ()> {
             self.get_chapters_text_json(to)
         }
@@ -94,7 +94,7 @@ mod ffi {
         pub fn get_chapter_text(
             &mut self,
             index: usize,
-            to: &mut diplomat_runtime::DiplomatWriteable,
+            to: &mut diplomat_runtime::DiplomatWrite,
         ) -> Result<(), ()> {
             let text = match futures::executor::block_on(self.0.extract_text_only()) {
                 Ok(chapters) => chapters.get(index).cloned().ok_or(())?,
@@ -106,7 +106,7 @@ mod ffi {
         pub fn get_chapter_json(
             &mut self,
             index: usize,
-            to: &mut diplomat_runtime::DiplomatWriteable,
+            to: &mut diplomat_runtime::DiplomatWrite,
         ) -> Result<(), ()> {
             let chapter = match futures::executor::block_on(self.0.extract_ast()) {
                 Ok(chapters) => chapters.get(index).cloned().ok_or(())?,
@@ -117,13 +117,13 @@ mod ffi {
 
         pub fn get_toc_json(
             &mut self,
-            to: &mut diplomat_runtime::DiplomatWriteable,
+            to: &mut diplomat_runtime::DiplomatWrite,
         ) -> Result<(), ()> {
             let toc = futures::executor::block_on(self.0.get_toc()).map_err(|_| ())?;
             Self::write_json(to, &toc)
         }
 
-        pub fn get_toc(&mut self, to: &mut diplomat_runtime::DiplomatWriteable) -> Result<(), ()> {
+        pub fn get_toc(&mut self, to: &mut diplomat_runtime::DiplomatWrite) -> Result<(), ()> {
             self.get_toc_json(to)
         }
 
@@ -131,7 +131,7 @@ mod ffi {
             &mut self,
             chapter_index: usize,
             href: &str,
-            to: &mut diplomat_runtime::DiplomatWriteable,
+            to: &mut diplomat_runtime::DiplomatWrite,
         ) -> Result<(), ()> {
             let resolved = futures::executor::block_on(
                 self.0.resolve_chapter_resource_path(chapter_index, href),
@@ -143,7 +143,7 @@ mod ffi {
         pub fn get_resource_json(
             &mut self,
             path: &str,
-            to: &mut diplomat_runtime::DiplomatWriteable,
+            to: &mut diplomat_runtime::DiplomatWrite,
         ) -> Result<(), ()> {
             let bytes = futures::executor::block_on(self.0.read_resource(path)).map_err(|_| ())?;
             Self::write_json(to, &bytes)
@@ -153,7 +153,7 @@ mod ffi {
             &mut self,
             chapter_index: usize,
             href: &str,
-            to: &mut diplomat_runtime::DiplomatWriteable,
+            to: &mut diplomat_runtime::DiplomatWrite,
         ) -> Result<(), ()> {
             let bytes =
                 futures::executor::block_on(self.0.read_chapter_resource(chapter_index, href))
@@ -164,7 +164,7 @@ mod ffi {
         pub fn get_chapter(
             &mut self,
             index: usize,
-            to: &mut diplomat_runtime::DiplomatWriteable,
+            to: &mut diplomat_runtime::DiplomatWrite,
         ) -> Result<(), ()> {
             self.get_chapter_json(index, to)
         }
@@ -190,7 +190,7 @@ mod ffi {
 
         pub fn get_cover_image_format(
             &mut self,
-            to: &mut diplomat_runtime::DiplomatWriteable,
+            to: &mut diplomat_runtime::DiplomatWrite,
         ) -> Result<(), ()> {
             let mime = self
                 .0
@@ -203,7 +203,7 @@ mod ffi {
 
         pub fn get_cover_image_json(
             &mut self,
-            to: &mut diplomat_runtime::DiplomatWriteable,
+            to: &mut diplomat_runtime::DiplomatWrite,
         ) -> Result<(), ()> {
             let bytes = self.0.cover_image_sync().map_err(|_| ())?;
             Self::write_json(to, &bytes)

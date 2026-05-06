@@ -31,7 +31,7 @@ all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
 
 [package.metadata.wasm-pack.profile.release]
-wasm-opt = false
+wasm-opt = true
 
 [dependencies]
 futures = "0.3.32"

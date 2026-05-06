@@ -1,7 +1,7 @@
 mod epub_adapter;
 mod epubie_lib_adapter;
-mod lib_epub_adapter;
 mod lexepub_adapter;
+mod lib_epub_adapter;
 
 use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
@@ -10,8 +10,8 @@ use std::time::Instant;
 
 use self::epub_adapter::EpubAdapter;
 use self::epubie_lib_adapter::EpubieLibAdapter;
-use self::lib_epub_adapter::LibEpubAdapter;
 use self::lexepub_adapter::LexEpubAdapter;
+use self::lib_epub_adapter::LibEpubAdapter;
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq, Hash)]
 #[serde(rename_all = "snake_case")]

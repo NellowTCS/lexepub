@@ -571,8 +571,7 @@ impl LexEpub {
                             content,
                         };
                         // Text-only parse: no AST, no CSS
-                        let parser =
-                            crate::core::html_parser::ChapterParser::new().text_only();
+                        let parser = crate::core::html_parser::ChapterParser::new().text_only();
                         match parser.parse_chapter(chapter) {
                             Ok(parsed) => chapters.push(parsed),
                             Err(_) => continue,
