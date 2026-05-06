@@ -47,10 +47,7 @@ mod ffi {
                 .unwrap_or(0)
         }
 
-        pub fn get_title(
-            &mut self,
-            to: &mut diplomat_runtime::DiplomatWrite,
-        ) -> Result<(), ()> {
+        pub fn get_title(&mut self, to: &mut diplomat_runtime::DiplomatWrite) -> Result<(), ()> {
             let title = self
                 .0
                 .get_metadata_sync()
@@ -68,10 +65,7 @@ mod ffi {
             Self::write_json(to, &metadata)
         }
 
-        pub fn get_metadata(
-            &mut self,
-            to: &mut diplomat_runtime::DiplomatWrite,
-        ) -> Result<(), ()> {
+        pub fn get_metadata(&mut self, to: &mut diplomat_runtime::DiplomatWrite) -> Result<(), ()> {
             self.get_metadata_json(to)
         }
 
@@ -115,10 +109,7 @@ mod ffi {
             Self::write_json(to, &chapter)
         }
 
-        pub fn get_toc_json(
-            &mut self,
-            to: &mut diplomat_runtime::DiplomatWrite,
-        ) -> Result<(), ()> {
+        pub fn get_toc_json(&mut self, to: &mut diplomat_runtime::DiplomatWrite) -> Result<(), ()> {
             let toc = futures::executor::block_on(self.0.get_toc()).map_err(|_| ())?;
             Self::write_json(to, &toc)
         }
