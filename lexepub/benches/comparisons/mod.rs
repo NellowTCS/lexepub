@@ -115,22 +115,27 @@ pub fn run_comparison(sample_path: &Path, iterations: usize) -> Result<Compariso
     let mut libraries = Vec::new();
 
     for adapter in adapters() {
+        let adapter_name = adapter.name();
         let timings = vec![
             CategoryTiming {
                 category: Category::Loading,
-                average_ms: measure(iterations, || adapter.load(sample_path))?,
+                average_ms: measure(iterations, || adapter.load(sample_path))
+                    .map_err(|e| anyhow!("[{}/Loading] {}", adapter_name, e))?,
             },
             CategoryTiming {
                 category: Category::Metadata,
-                average_ms: measure(iterations, || adapter.metadata(sample_path))?,
+                average_ms: measure(iterations, || adapter.metadata(sample_path))
+                    .map_err(|e| anyhow!("[{}/Metadata] {}", adapter_name, e))?,
             },
             CategoryTiming {
                 category: Category::Extraction,
-                average_ms: measure(iterations, || adapter.extraction(sample_path))?,
+                average_ms: measure(iterations, || adapter.extraction(sample_path))
+                    .map_err(|e| anyhow!("[{}/Extraction] {}", adapter_name, e))?,
             },
             CategoryTiming {
                 category: Category::Analysis,
-                average_ms: measure(iterations, || adapter.analysis(sample_path))?,
+                average_ms: measure(iterations, || adapter.analysis(sample_path))
+                    .map_err(|e| anyhow!("[{}/Analysis] {}", adapter_name, e))?,
             },
         ];
 

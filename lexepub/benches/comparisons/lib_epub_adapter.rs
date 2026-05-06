@@ -34,17 +34,19 @@ impl Adapter for LibEpubAdapter {
     }
 
     fn analysis(&self, path: &Path) -> Result<()> {
-        let mut doc = lib_epub::epub::EpubDoc::new(path)?;
+        let doc = lib_epub::epub::EpubDoc::new(path)?;
         let mut word_count = 0usize;
         let mut char_count = 0usize;
 
-        // Iterate through spine items and accumulate text statistics
-        for _ in 0..doc.spine.len() {
-            if let Ok(content) = doc.get_current_str() {
-                word_count += content.split_whitespace().count();
-                char_count += content.chars().count();
+        // Iterate the spine and read each resource via navigate_by_spine_index,
+        // converting the returned bytes to text and accumulating the same
+        // word/char metrics used by other adapters.
+        for i in 0..doc.spine.len() {
+            if let Some((data, _mime)) = doc.navigate_by_spine_index(i) {
+                let text = String::from_utf8_lossy(&data);
+                word_count += text.split_whitespace().count();
+                char_count += text.chars().count();
             }
-            doc.spine_next();
         }
 
         let _ = (word_count, char_count);

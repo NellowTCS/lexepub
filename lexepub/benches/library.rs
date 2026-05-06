@@ -1,8 +1,10 @@
-use criterion::{criterion_group, criterion_main, BatchSize, Criterion};
+use criterion::{criterion_group, BatchSize, Criterion};
 use std::path::Path;
 
 fn read_examples_testbook_bytes() -> bytes::Bytes {
-    let data = std::fs::read(Path::new("examples/epubs/test-book.epub")).unwrap();
+    let manifest_dir = env!("CARGO_MANIFEST_DIR");
+    let path = Path::new(manifest_dir).join("examples/epubs/test-book.epub");
+    let data = std::fs::read(&path).unwrap();
     bytes::Bytes::from(data)
 }
 
@@ -26,13 +28,17 @@ fn bench_loading(c: &mut Criterion) {
 
     let buf = std::fs::read(path).unwrap();
     group.bench_function("from_reader(sync BufReader)", |b| {
-        b.iter(|| {
-            let cursor = std::io::Cursor::new(buf.clone());
-            let allow = futures::io::AllowStdIo::new(cursor);
-            let reader = futures::io::BufReader::new(allow);
-            let _ =
-                futures::executor::block_on(lexepub::epub::LexEpub::from_reader(reader)).unwrap();
-        })
+        b.iter_batched(
+            || {
+                let cursor = std::io::Cursor::new(buf.clone());
+                let allow = futures::io::AllowStdIo::new(cursor);
+                futures::io::BufReader::new(allow)
+            },
+            |reader| {
+                futures::executor::block_on(lexepub::epub::LexEpub::from_reader(reader)).unwrap()
+            },
+            BatchSize::SmallInput,
+        )
     });
 
     group.finish();
@@ -100,17 +106,24 @@ fn bench_analysis(c: &mut Criterion) {
     let mut group = c.benchmark_group("Analysis");
     let bytes = read_examples_testbook_bytes();
 
-    group.bench_function("total_word_char_count", |b| {
+    group.bench_function("total_word_count", |b| {
         b.iter_batched(
             || {
                 futures::executor::block_on(lexepub::epub::LexEpub::from_bytes(bytes.clone()))
                     .unwrap()
             },
-            |mut epub| {
-                let w = futures::executor::block_on(epub.total_word_count()).unwrap();
-                let c = futures::executor::block_on(epub.total_char_count()).unwrap();
-                (w, c)
+            |mut epub| futures::executor::block_on(epub.total_word_count()).unwrap(),
+            BatchSize::SmallInput,
+        )
+    });
+
+    group.bench_function("total_char_count", |b| {
+        b.iter_batched(
+            || {
+                futures::executor::block_on(lexepub::epub::LexEpub::from_bytes(bytes.clone()))
+                    .unwrap()
             },
+            |mut epub| futures::executor::block_on(epub.total_char_count()).unwrap(),
             BatchSize::SmallInput,
         )
     });

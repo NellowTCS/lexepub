@@ -38,8 +38,8 @@ struct Args {
     iterations: usize,
 
     /// Path to write the JSON report
-    #[arg(long, default_value = "../target/comparisons/latest.json")]
-    output: PathBuf,
+    #[arg(long)]
+    output: Option<PathBuf>,
 
     /// Launch the interactive TUI after benchmarking
     #[arg(long)]
@@ -212,7 +212,7 @@ fn render_tui(report: &ComparisonReport) -> Result<()> {
                 .libraries
                 .iter()
                 .filter_map(|l| timing_map(l).get(&Category::Loading).copied())
-                .fold(f64::MIN_POSITIVE, f64::max);
+                .max_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
 
             if let Some(title_area) = gauge_chunks.first() {
                 f.render_widget(
@@ -221,18 +221,25 @@ fn render_tui(report: &ComparisonReport) -> Result<()> {
                     *title_area,
                 );
             }
-            for (i, lib) in report.libraries.iter().enumerate() {
-                if let Some(&area) = gauge_chunks.get(i + 1) {
-                    let ms = timing_map(lib)
-                        .get(&Category::Loading)
-                        .copied()
-                        .unwrap_or(0.0);
-                    let ratio = (ms / worst_loading * 100.0) as u16;
-                    let gauge = Gauge::default()
-                        .label(format!("{} {:.3} ms", lib.library, ms))
-                        .percent(ratio)
-                        .gauge_style(Style::default().fg(Color::Blue));
-                    f.render_widget(gauge, area);
+            if let Some(worst_ms) = worst_loading {
+                for (i, lib) in report.libraries.iter().enumerate() {
+                    if let Some(&area) = gauge_chunks.get(i + 1) {
+                        if let Some(ms) = timing_map(lib)
+                            .get(&Category::Loading)
+                            .copied()
+                        {
+                            let ratio = if worst_ms > 0.0 {
+                                (ms / worst_ms * 100.0) as u16
+                            } else {
+                                100
+                            };
+                            let gauge = Gauge::default()
+                                .label(format!("{} {:.3} ms", lib.library, ms))
+                                .percent(ratio)
+                                .gauge_style(Style::default().fg(Color::Blue));
+                            f.render_widget(gauge, area);
+                        }
+                    }
                 }
             }
 
@@ -305,6 +312,14 @@ fn main() -> Result<()> {
     let filtered_args: Vec<String> = std::env::args().filter(|a| a != "--bench").collect();
     let args = Args::parse_from(filtered_args);
 
+    let output_path = if let Some(path) = args.output {
+        path
+    } else {
+        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR")
+            .unwrap_or_else(|_| ".".to_string());
+        PathBuf::from(manifest_dir).join("target/comparisons/latest.json")
+    };
+
     let sample = match args.epub {
         Some(path) => {
             anyhow::ensure!(path.exists(), "EPUB not found: {}", path.display());
@@ -323,13 +338,13 @@ fn main() -> Result<()> {
     println!("✓ Done in {:.2?}", start.elapsed());
 
     // Persist JSON report.
-    if let Some(parent) = args.output.parent() {
+    if let Some(parent) = output_path.parent() {
         fs::create_dir_all(parent).with_context(|| format!("creating {}", parent.display()))?;
     }
     let json = serde_json::to_string_pretty(&report).context("serialising report")?;
-    fs::write(&args.output, &json)
-        .with_context(|| format!("writing report to {}", args.output.display()))?;
-    println!("Report saved -> {}", args.output.display());
+    fs::write(&output_path, &json)
+        .with_context(|| format!("writing report to {}", output_path.display()))?;
+    println!("Report saved -> {}", output_path.display());
 
     // Output.
     if args.tui {

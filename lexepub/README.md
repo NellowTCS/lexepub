@@ -15,7 +15,7 @@ Find LexePub on [NPM](https://www.npmjs.com/package/lexepub) and [crates.io](htt
 ## Features
 
 - **Streaming Processing**: Process EPUBs chapter-by-chapter without loading everything into memory
-- **Fast HTML Parsing**: Uses the `scraper` crate for efficient HTML/XHTML parsing
+- **Fast HTML Parsing**: Uses the `tl` crate for efficient HTML/XHTML parsing
 - **Multiple Output Formats**: Extract plain text or AST representations
 - **Async Support**: Built on Tokio for efficient I/O operations
 - **Cross-Platform**: Works on desktop, web (WASM), and embedded systems
@@ -100,7 +100,7 @@ wasm-pack build --release --target web
 LexePub is designed for high performance:
 
 - **Memory Efficient**: Streaming processing prevents loading entire EPUBs into memory
-- **Fast Parsing**: Uses optimized HTML parsing with `scraper`
+- **Fast Parsing**: Uses optimized HTML parsing with `tl`
 - **Async I/O**: Non-blocking file operations with Tokio
 - **Zero-Copy**: Minimal allocations and copying where possible
 
@@ -109,7 +109,7 @@ LexePub is designed for high performance:
 Run the included CLI tool:
 
 ```bash
-cargo run --bin lexepub -- path/to/your/book.epub
+cargo run --bin lexepub-cli -- path/to/your/book.epub
 ```
 
 ## Contributing

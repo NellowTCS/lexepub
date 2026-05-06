@@ -141,7 +141,7 @@ fn extract_text_recursive(handle: tl::NodeHandle, parser: &tl::Parser, output: &
 
 #[cfg(feature = "lowmem")]
 /// Lightweight HTML-to-text extractor for low-memory targets.
-// Not as robust as the scraper-based version, but avoids the overhead of building a full DOM tree, haha.
+// Not as robust as the tl-based version, but avoids the overhead of building a full DOM tree, haha.
 pub fn extract_text_content(html: &str) -> Result<String> {
     let mut out = String::new();
     let mut in_tag = false;
