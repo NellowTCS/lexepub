@@ -97,6 +97,10 @@ fn measure<F>(iterations: usize, mut op: F) -> Result<f64>
 where
     F: FnMut() -> Result<()>,
 {
+    if iterations == 0 {
+        return Err(anyhow!("iterations must be greater than zero"));
+    }
+
     let mut total_ns = 0u128;
     for _ in 0..iterations {
         let start = Instant::now();

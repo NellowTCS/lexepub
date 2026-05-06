@@ -113,20 +113,25 @@ fn extract_text_recursive(handle: tl::NodeHandle, parser: &tl::Parser, output: &
     if let Some(node) = handle.get(parser) {
         match node {
             tl::Node::Raw(text_bytes) => {
-                output.push_str(&text_bytes.as_utf8_str());
+                let text_str = text_bytes.as_utf8_str();
+                let decoded = html_escape::decode_html_entities(&text_str);
+                output.push_str(&decoded);
             }
             tl::Node::Tag(tag) => {
-                // Add newlines after block elements
                 let tag_name = tag.name().as_utf8_str();
-                if matches!(
+                let is_block = matches!(
                     tag_name.as_ref(),
                     "p" | "div" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "br" | "li"
-                ) {
-                    output.push('\n');
-                }
+                );
+
                 // Recursively process children
                 for child_handle in tag.children().top().iter() {
                     extract_text_recursive(*child_handle, parser, output);
+                }
+
+                // Add newlines after block elements
+                if is_block {
+                    output.push('\n');
                 }
             }
             tl::Node::Comment(_) => {}
@@ -222,7 +227,10 @@ fn node_to_ast(handle: tl::NodeHandle, parser: &tl::Parser) -> Option<AstNode> {
             // Get attributes from the element
             for attr in tag.attributes().iter() {
                 let key = attr.0.to_string();
-                let value = attr.1.map(|v| v.to_string()).unwrap_or_default();
+                let value = attr
+                    .1
+                    .map(|v| html_escape::decode_html_entities(&v.to_string()).into_owned())
+                    .unwrap_or_default();
                 attrs.insert(key, value);
             }
 
@@ -241,10 +249,10 @@ fn node_to_ast(handle: tl::NodeHandle, parser: &tl::Parser) -> Option<AstNode> {
             })
         }
         tl::Node::Raw(text_ref) => Some(AstNode::Text {
-            content: text_ref.as_utf8_str().to_string(),
+            content: html_escape::decode_html_entities(&text_ref.as_utf8_str()).into_owned(),
         }),
         tl::Node::Comment(comment_ref) => Some(AstNode::Comment {
-            content: comment_ref.as_utf8_str().to_string(),
+            content: html_escape::decode_html_entities(&comment_ref.as_utf8_str()).into_owned(),
         }),
     }
 }

@@ -284,7 +284,7 @@ fn print_summary(report: &ComparisonReport) {
     println!();
     println!(
         "{}",
-        "".repeat(label_width + 2 + CATEGORY_LABELS.len() * 22)
+        "-".repeat(label_width + 2 + CATEGORY_LABELS.len() * 22)
     );
 
     for lib in &report.libraries {
