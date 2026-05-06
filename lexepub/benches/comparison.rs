@@ -224,10 +224,7 @@ fn render_tui(report: &ComparisonReport) -> Result<()> {
             if let Some(worst_ms) = worst_loading {
                 for (i, lib) in report.libraries.iter().enumerate() {
                     if let Some(&area) = gauge_chunks.get(i + 1) {
-                        if let Some(ms) = timing_map(lib)
-                            .get(&Category::Loading)
-                            .copied()
-                        {
+                        if let Some(ms) = timing_map(lib).get(&Category::Loading).copied() {
                             let ratio = if worst_ms > 0.0 {
                                 (ms / worst_ms * 100.0) as u16
                             } else {
@@ -315,8 +312,7 @@ fn main() -> Result<()> {
     let output_path = if let Some(path) = args.output {
         path
     } else {
-        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR")
-            .unwrap_or_else(|_| ".".to_string());
+        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| ".".to_string());
         PathBuf::from(manifest_dir).join("target/comparisons/latest.json")
     };
 

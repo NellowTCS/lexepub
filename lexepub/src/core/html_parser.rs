@@ -109,6 +109,7 @@ pub fn extract_text_content(html: &str) -> Result<String> {
 }
 
 /// Recursively extract text from tl nodes
+#[allow(dead_code)]
 fn extract_text_recursive(handle: tl::NodeHandle, parser: &tl::Parser, output: &mut String) {
     if let Some(node) = handle.get(parser) {
         match node {

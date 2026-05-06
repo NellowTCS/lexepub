@@ -70,7 +70,7 @@ getrandom_04 = { package = "getrandom", version = "0.4.2", features = ["wasm_js"
 
 [[bench]]
 name = "bench_lib"
-path = "benches/bench_lib.rs"
+path = "benches/lib.rs"
 harness = false
 
 [[bench]]

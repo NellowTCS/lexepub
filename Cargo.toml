@@ -15,6 +15,6 @@ strip = "debuginfo"
 opt-level = 1
 
 [profile.bench]
-inherits = "release"
+inherits = "dev"
 strip = "none"
 debug = true
