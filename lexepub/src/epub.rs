@@ -1,7 +1,6 @@
 use crate::core::chapter::{Chapter, ChapterStream, ParsedChapter};
 use crate::core::container::ContainerParser;
 use crate::core::extractor::EpubExtractor;
-use crate::core::html_parser::extract_text_content;
 use crate::core::opf_parser::OpfParser;
 use crate::error::{LexEpubError, Result};
 use bytes::Bytes;
@@ -38,6 +37,33 @@ pub struct EpubMetadata {
     pub has_cover: bool,
     pub cover_image_format: Option<String>,
     pub chapter_count: usize,
+}
+
+/// Convert OPF metadata to EPUB metadata
+impl From<crate::core::opf_parser::OpfMetadata> for EpubMetadata {
+    fn from(opf: crate::core::opf_parser::OpfMetadata) -> Self {
+        let cover_image_format = opf
+            .cover_image_id
+            .as_ref()
+            .and_then(|id| opf.manifest.get(id).map(|(_, mime)| mime.clone()));
+        Self {
+            title: opf.title,
+            version: opf.version,
+            authors: opf.creators,
+            description: opf.description,
+            languages: opf.languages,
+            subjects: opf.subjects,
+            publisher: opf.publisher,
+            publication_date: opf.date,
+            identifiers: opf.identifiers,
+            rights: opf.rights,
+            contributors: opf.contributors,
+            spine: opf.spine.clone(),
+            has_cover: opf.cover_image_id.is_some(),
+            cover_image_format,
+            chapter_count: opf.spine.len(),
+        }
+    }
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -188,14 +214,7 @@ impl LexEpub {
     /// Open an EPUB from a file path
     pub async fn open<P: AsRef<Path>>(path: P) -> Result<Self> {
         let extractor = EpubExtractor::open(path.as_ref().to_path_buf()).await?;
-        Ok(Self {
-            extractor,
-            metadata: None,
-            chapters: None,
-            text_chapters: None,
-            cached_word_count: None,
-            cached_char_count: None,
-        })
+        Ok(Self::with_extractor(extractor))
     }
 
     /// Synchronous wrapper for `open` (used by FFI and sync callers)
@@ -206,14 +225,7 @@ impl LexEpub {
     /// Create an EPUB from bytes
     pub async fn from_bytes(data: Bytes) -> Result<Self> {
         let extractor = EpubExtractor::from_bytes(data).await?;
-        Ok(Self {
-            extractor,
-            metadata: None,
-            chapters: None,
-            text_chapters: None,
-            cached_word_count: None,
-            cached_char_count: None,
-        })
+        Ok(Self::with_extractor(extractor))
     }
 
     /// Create an EPUB from an async reader (streaming, does not copy the whole
@@ -223,14 +235,7 @@ impl LexEpub {
         R: futures::AsyncBufRead + futures::AsyncSeek + Unpin + Send + 'static,
     {
         let extractor = EpubExtractor::from_reader(reader)?;
-        Ok(Self {
-            extractor,
-            metadata: None,
-            chapters: None,
-            text_chapters: None,
-            cached_word_count: None,
-            cached_char_count: None,
-        })
+        Ok(Self::with_extractor(extractor))
     }
 
     /// Create an EPUB from a blocking reader by wrapping it with
@@ -240,14 +245,20 @@ impl LexEpub {
         R: std::io::Read + std::io::Seek + Send + 'static,
     {
         let extractor = EpubExtractor::from_sync_reader(reader)?;
-        Ok(Self {
+        Ok(Self::with_extractor(extractor))
+    }
+
+    /// Create a LexEpub with the given extractor and default cache state.
+    /// This is the SSOT for constructing LexEpub from an existing extractor.
+    fn with_extractor(extractor: EpubExtractor) -> Self {
+        Self {
             extractor,
             metadata: None,
             chapters: None,
             text_chapters: None,
             cached_word_count: None,
             cached_char_count: None,
-        })
+        }
     }
 
     /// Extract only text content from all chapters.
@@ -283,18 +294,11 @@ impl LexEpub {
 
     /// Extract chapters as a stream for memory-efficient processing
     pub async fn extract_chapters_stream(&mut self) -> Result<ChapterStream> {
-        // Get OPF location
-        let container_data = self.extractor.read_file("META-INF/container.xml").await?;
-        let mut container_parser = ContainerParser::new();
-        let opf_path = container_parser
-            .parse_container(&container_data)?
-            .rootfile_path;
-
-        // Parse OPF for spine and manifest
-        let opf_data = self.extractor.read_file(&opf_path).await?;
+        let (opf_path, opf_data) = self.read_opf().await?;
         let mut opf_parser = OpfParser::new();
-        let spine = opf_parser.parse_spine(&opf_data)?;
+        // parse_metadata() already populates spine
         let metadata = opf_parser.parse_metadata(&opf_data)?;
+        let spine = metadata.spine.clone();
 
         // Resolve full paths for spine entries and return a streaming iterator
         let mut entries = Vec::new();
@@ -338,27 +342,7 @@ impl LexEpub {
         let mut opf_parser = OpfParser::new();
         let opf_metadata = opf_parser.parse_metadata(&opf_data)?;
 
-        let epub_metadata = EpubMetadata {
-            title: opf_metadata.title,
-            version: opf_metadata.version,
-            authors: opf_metadata.creators,
-            description: opf_metadata.description,
-            languages: opf_metadata.languages,
-            subjects: opf_metadata.subjects,
-            publisher: opf_metadata.publisher,
-            publication_date: opf_metadata.date,
-            identifiers: opf_metadata.identifiers,
-            rights: opf_metadata.rights,
-            contributors: opf_metadata.contributors,
-            spine: opf_metadata.spine.clone(),
-            has_cover: opf_metadata.cover_image_id.is_some(),
-            cover_image_format: opf_metadata
-                .cover_image_id
-                .as_ref()
-                .and_then(|id| opf_metadata.manifest.get(id).map(|(_, mime)| mime.clone())),
-            chapter_count: opf_metadata.spine.len(),
-        };
-
+        let epub_metadata: EpubMetadata = opf_metadata.into();
         self.metadata = Some(epub_metadata.clone());
         Ok(epub_metadata)
     }
@@ -455,13 +439,8 @@ impl LexEpub {
             return Ok(meta.has_cover);
         }
 
-        let container_data = self.extractor.read_file("META-INF/container.xml").await?;
-        let mut container_parser = ContainerParser::new();
-        let opf_path = container_parser
-            .parse_container(&container_data)?
-            .rootfile_path;
-
-        let opf_data = self.extractor.read_file(&opf_path).await?;
+        // Use read_opf() SSOT for container.xml parsing
+        let (_opf_path, opf_data) = self.read_opf().await?;
         let mut opf_parser = OpfParser::new();
         let cover_id = opf_parser.get_cover_image_id(&opf_data)?;
 
@@ -474,13 +453,8 @@ impl LexEpub {
     }
 
     pub async fn cover_image(&mut self) -> Result<Vec<u8>> {
-        let container_data = self.extractor.read_file("META-INF/container.xml").await?;
-        let mut container_parser = ContainerParser::new();
-        let opf_path = container_parser
-            .parse_container(&container_data)?
-            .rootfile_path;
-
-        let opf_data = self.extractor.read_file(&opf_path).await?;
+        // Use read_opf() SSOT for container.xml parsing
+        let (opf_path, opf_data) = self.read_opf().await?;
         let mut opf_parser = OpfParser::new();
         let metadata = opf_parser.parse_metadata(&opf_data)?;
 
@@ -506,13 +480,8 @@ impl LexEpub {
         &mut self,
         writer: &mut W,
     ) -> Result<u64> {
-        let container_data = self.extractor.read_file("META-INF/container.xml").await?;
-        let mut container_parser = ContainerParser::new();
-        let opf_path = container_parser
-            .parse_container(&container_data)?
-            .rootfile_path;
-
-        let opf_data = self.extractor.read_file(&opf_path).await?;
+        // Use read_opf() SSOT for container.xml parsing
+        let (opf_path, opf_data) = self.read_opf().await?;
         let mut opf_parser = OpfParser::new();
         let metadata = opf_parser.parse_metadata(&opf_data)?;
 
@@ -549,8 +518,9 @@ impl LexEpub {
         // Read OPF once
         let (opf_path, opf_data) = self.read_opf().await?;
         let mut opf_parser = OpfParser::new();
-        let spine = opf_parser.parse_spine(&opf_data)?;
+        // parse_metadata() already populates spine, no need for separate parse_spine()
         let metadata = opf_parser.parse_metadata(&opf_data)?;
+        let spine = metadata.spine.clone();
 
         let opf_base = std::path::Path::new(&opf_path)
             .parent()
@@ -564,12 +534,8 @@ impl LexEpub {
                 let full_path_str = full_path.to_string_lossy();
                 match self.extractor.read_file(&full_path_str).await {
                     Ok(content) => {
-                        let chapter = Chapter {
-                            href: full_path_str.to_string(),
-                            id: item_id.clone(),
-                            media_type: "application/xhtml+xml".to_string(),
-                            content,
-                        };
+                        let chapter =
+                            Chapter::new(full_path_str.to_string(), item_id.clone(), content);
                         // Text-only parse: no AST, no CSS
                         let parser = crate::core::html_parser::ChapterParser::new().text_only();
                         match parser.parse_chapter(chapter) {
@@ -592,8 +558,9 @@ impl LexEpub {
 
         let (opf_path, opf_data) = self.read_opf().await?;
         let mut opf_parser = OpfParser::new();
-        let spine = opf_parser.parse_spine(&opf_data)?;
+        // parse_metadata() already populates spine, no need for separate parse_spine()
         let metadata = opf_parser.parse_metadata(&opf_data)?;
+        let spine = metadata.spine.clone();
 
         let opf_base = std::path::Path::new(&opf_path)
             .parent()
@@ -615,20 +582,15 @@ impl LexEpub {
         let stylesheet = crate::core::css::Stylesheet::parse(&css_text);
 
         let mut chapters = Vec::new();
+        let parser = crate::core::html_parser::ChapterParser::new();
         for item_id in spine {
             if let Some(href) = metadata.manifest.get(&item_id) {
                 let full_path = opf_base.join(&href.0);
                 let full_path_str = full_path.to_string_lossy();
                 match self.extractor.read_file(&full_path_str).await {
                     Ok(content) => {
-                        let chapter = Chapter {
-                            href: full_path_str.to_string(),
-                            id: item_id.clone(),
-                            media_type: "application/xhtml+xml".to_string(),
-                            content,
-                        };
-
-                        let parser = crate::core::html_parser::ChapterParser::new().with_both();
+                        let chapter =
+                            Chapter::new(full_path_str.to_string(), item_id.clone(), content);
                         let mut parsed_chapter = match parser.parse_chapter(chapter) {
                             Ok(p) => p,
                             Err(_) => continue,
@@ -789,60 +751,43 @@ pub struct AnalysisReport {
 /// Analyze an EPUB from an async reader (streaming, does not require full-copy).
 pub async fn analyze_reader<R>(reader: R) -> Result<AnalysisReport>
 where
-    R: futures::AsyncRead + futures::AsyncSeek + Unpin + Send + 'static,
+    R: futures::AsyncBufRead + futures::AsyncSeek + Unpin + Send + 'static,
 {
-    use async_zip::base::read::seek::ZipFileReader;
-    use futures::AsyncReadExt;
+    let extractor = EpubExtractor::from_reader(reader)?;
+    analyze_with_extractor(extractor).await
+}
 
-    let reader = futures::io::BufReader::new(reader);
-    let mut archive = ZipFileReader::new(reader)
-        .await
-        .map_err(LexEpubError::Zip)?;
+/// Analyze from a blocking reader
+pub fn analyze_sync_reader<R>(reader: R) -> Result<AnalysisReport>
+where
+    R: std::io::Read + std::io::Seek + Send + 'static,
+{
+    let extractor = EpubExtractor::from_sync_reader(reader)?;
+    futures::executor::block_on(analyze_with_extractor(extractor))
+}
 
-    async fn read_entry<Rdr>(archive: &mut ZipFileReader<Rdr>, path: &str) -> Result<Vec<u8>>
-    where
-        Rdr: futures::AsyncBufRead + futures::AsyncSeek + Unpin,
-    {
-        let entries = archive.file().entries();
-        let entry_index = entries
-            .iter()
-            .enumerate()
-            .find_map(|(i, entry)| {
-                entry
-                    .filename()
-                    .as_str()
-                    .ok()
-                    .and_then(|filename| (filename == path).then_some(i))
-            })
-            .ok_or_else(|| {
-                crate::error::LexEpubError::MissingFile(format!(
-                    "File '{}' not found in EPUB",
-                    path
-                ))
-            })?;
+/// Analyze from file path
+pub async fn analyze_path<P: AsRef<Path>>(path: P) -> Result<AnalysisReport> {
+    let extractor = EpubExtractor::open(path.as_ref().to_path_buf()).await?;
+    analyze_with_extractor(extractor).await
+}
 
-        let mut entry_reader = archive
-            .reader_without_entry(entry_index)
-            .await
-            .map_err(LexEpubError::Zip)?;
-        let mut buf = Vec::new();
-        entry_reader
-            .read_to_end(&mut buf)
-            .await
-            .map_err(LexEpubError::Io)?;
-        Ok(buf)
-    }
+/// Core analysis logic that reuses EpubExtractor
+async fn analyze_with_extractor(extractor: EpubExtractor) -> Result<AnalysisReport> {
+    use crate::core::html_parser::extract_text_content;
 
-    let container_data = read_entry(&mut archive, "META-INF/container.xml").await?;
+    // Read OPF using the extractor (same pattern as read_opf but without &mut self)
+    let container_data = extractor.read_file("META-INF/container.xml").await?;
     let mut container_parser = ContainerParser::new();
     let opf_path = container_parser
         .parse_container(&container_data)?
         .rootfile_path;
 
-    let opf_data = read_entry(&mut archive, &opf_path).await?;
+    let opf_data = extractor.read_file(&opf_path).await?;
     let mut opf_parser = OpfParser::new();
-    let spine = opf_parser.parse_spine(&opf_data)?;
+    // parse_metadata() already populates spine, no need for separate parse_spine()
     let metadata = opf_parser.parse_metadata(&opf_data)?;
+    let spine = metadata.spine.clone();
 
     let mut chapters_parsed = Vec::new();
     let opf_base = std::path::Path::new(&opf_path)
@@ -852,8 +797,8 @@ where
     for item_id in spine {
         if let Some(href) = metadata.manifest.get(&item_id) {
             let full_path = opf_base.join(&href.0);
-            let full_path_str = full_path.to_string_lossy();
-            if let Ok(content) = read_entry(&mut archive, &full_path_str).await {
+            let full_path_str = full_path.to_string_lossy().to_string();
+            if let Ok(content) = extractor.read_file(&full_path_str).await {
                 let html_content = String::from_utf8_lossy(&content);
                 let text_content = extract_text_content(&html_content)?;
                 let word_count = text_content.split_whitespace().count();
@@ -871,26 +816,7 @@ where
         .first()
         .map(|(s, _, _)| s.chars().take(300).collect::<String>());
 
-    let epub_metadata = EpubMetadata {
-        title: metadata.title,
-        version: metadata.version,
-        authors: metadata.creators,
-        description: metadata.description,
-        languages: metadata.languages,
-        subjects: metadata.subjects,
-        publisher: metadata.publisher,
-        publication_date: metadata.date,
-        identifiers: metadata.identifiers,
-        rights: metadata.rights,
-        contributors: metadata.contributors,
-        spine: metadata.spine.clone(),
-        has_cover: metadata.cover_image_id.is_some(),
-        cover_image_format: metadata
-            .cover_image_id
-            .as_ref()
-            .and_then(|id| metadata.manifest.get(id).map(|(_, mime)| mime.clone())),
-        chapter_count: metadata.spine.len(),
-    };
+    let epub_metadata: EpubMetadata = metadata.into();
 
     Ok(AnalysisReport {
         metadata: Some(epub_metadata),
@@ -899,20 +825,4 @@ where
         total_chars,
         first_chapter_preview,
     })
-}
-
-/// Analyze from a blocking reader (wraps with `AllowStdIo`)
-pub fn analyze_sync_reader<R>(reader: R) -> Result<AnalysisReport>
-where
-    R: std::io::Read + std::io::Seek + Send + 'static,
-{
-    let allow = futures::io::AllowStdIo::new(reader);
-    futures::executor::block_on(analyze_reader(allow))
-}
-
-/// Convenience: analyze an EPUB from a file path (streaming from disk).
-pub async fn analyze_path<P: AsRef<Path>>(path: P) -> Result<AnalysisReport> {
-    let file = std::fs::File::open(path.as_ref()).map_err(LexEpubError::Io)?;
-    let reader = futures::io::AllowStdIo::new(file);
-    analyze_reader(reader).await
 }

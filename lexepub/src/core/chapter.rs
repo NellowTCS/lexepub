@@ -8,8 +8,19 @@ pub struct Chapter {
     pub href: String,
     pub id: String,
     pub media_type: String,
-    #[serde(skip_serializing)]
     pub content: Vec<u8>,
+}
+
+impl Chapter {
+    /// Create a new Chapter with default media_type
+    pub fn new(href: String, id: String, content: Vec<u8>) -> Self {
+        Self {
+            href,
+            id,
+            media_type: "application/xhtml+xml".to_string(),
+            content,
+        }
+    }
 }
 
 /// AST node representation for parsed HTML
