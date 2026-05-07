@@ -43,7 +43,7 @@ jobs:
           workspaces: lexepub
 
       - name: Run tests
-        run: cd lexepub && cargo test --release
+        run: cd lexepub && cargo test
 
       - name: Run clippy
         run: cd lexepub && cargo clippy --release --all-features -- -D warnings
