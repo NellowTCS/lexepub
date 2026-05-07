@@ -188,9 +188,15 @@ fn render_tui(report: &ComparisonReport) -> Result<()> {
                     let m = timing_map(lib);
                     let cells: Vec<Cell> = std::iter::once(Cell::from(lib.library.clone()))
                         .chain(CATEGORIES.iter().zip(&bests).map(|(&cat, &best)| {
-                            let ms = m.get(&cat).copied().unwrap_or(0.0);
-                            let is_best = ms <= best * 1.05;
-                            Cell::from(fmt_ms(ms, best)).style(if is_best {
+                            let ms = m.get(&cat).copied();
+                            let (display, is_best) = match ms {
+                                Some(value) => {
+                                    let is_best = best.is_finite() && best > 0.0 && value <= best * 1.05;
+                                    (fmt_ms(value, best), is_best)
+                                }
+                                None => ("-".to_string(), false),
+                            };
+                            Cell::from(display).style(if is_best {
                                 Style::default().fg(Color::Green)
                             } else {
                                 Style::default().fg(Color::White)
@@ -304,15 +310,18 @@ fn print_summary(report: &ComparisonReport) {
         "-".repeat(label_width + 2 + CATEGORY_LABELS.len() * 22)
     );
 
-    for lib in &report.libraries {
-        let m = timing_map(lib);
-        print!("{:<width$}", lib.library, width = label_width + 2);
-        for (&cat, &best) in CATEGORIES.iter().zip(&bests) {
-            let ms = m.get(&cat).copied().unwrap_or(0.0);
-            print!("  {:<20}", fmt_ms(ms, best));
+        for lib in &report.libraries {
+            let m = timing_map(lib);
+            print!("{:<width$}", lib.library, width = label_width + 2);
+            for (&cat, &best) in CATEGORIES.iter().zip(&bests) {
+                let display = match m.get(&cat).copied() {
+                    Some(ms) => fmt_ms(ms, best),
+                    None => "-".to_string(),
+                };
+                print!("  {:<20}", display);
+            }
+            println!();
         }
-        println!();
-    }
     println!();
 }
 

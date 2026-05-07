@@ -120,7 +120,7 @@ impl futures::Stream for ChapterStream {
                     href: path.clone(),
                     id: String::new(),
                     media_type: "application/xhtml+xml".to_string(),
-                    content: Vec::new(),
+                    content: content.clone(),
                 };
 
                 Ok(crate::core::chapter::ParsedChapter {

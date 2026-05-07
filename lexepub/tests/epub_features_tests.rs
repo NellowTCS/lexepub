@@ -59,11 +59,13 @@ fn get_test_epubs() -> Vec<(&'static str, &'static str)> {
 
 /// Return only the EPUB paths that actually exist
 fn existing_epubs() -> Vec<&'static str> {
-    get_test_epubs()
+    let paths: Vec<&'static str> = get_test_epubs()
         .into_iter()
         .filter(|(path, _)| Path::new(path).exists())
         .map(|(path, _)| path)
-        .collect()
+        .collect();
+    assert!(!paths.is_empty(), "No test EPUB fixtures found. Ensure test fixtures are available at the paths returned by get_test_epubs().");
+    paths
 }
 
 #[cfg(test)]
