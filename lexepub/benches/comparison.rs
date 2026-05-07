@@ -75,6 +75,9 @@ fn best_for(report: &ComparisonReport, category: Category) -> f64 {
 
 /// Format a millisecond value with a relative indicator vs. the best performer.
 fn fmt_ms(ms: f64, best: f64) -> String {
+    if !best.is_finite() || best <= 0.0 {
+        return format!("{ms:.3} ms");
+    }
     let ratio = ms / best;
     if ratio < 1.05 {
         format!("{ms:.3} ms ✓")
@@ -90,9 +93,19 @@ impl TerminalGuard {
     fn enter() -> Result<Self> {
         enable_raw_mode().context("enable raw mode")?;
         let mut stdout = io::stdout();
-        stdout.execute(EnterAlternateScreen)?;
-        let terminal = Terminal::new(CrosstermBackend::new(stdout))?;
-        Ok(Self(terminal))
+        if let Err(e) = stdout.execute(EnterAlternateScreen) {
+            let _ = disable_raw_mode();
+            return Err(e).context("enter alternate screen");
+        }
+        let backend = CrosstermBackend::new(stdout);
+        match Terminal::new(backend) {
+            Ok(terminal) => Ok(Self(terminal)),
+            Err(e) => {
+                let _ = io::stdout().execute(LeaveAlternateScreen);
+                let _ = disable_raw_mode();
+                Err(e).context("create terminal")
+            }
+        }
     }
 }
 
@@ -337,7 +350,9 @@ fn main() -> Result<()> {
 
     // Persist JSON report.
     if let Some(parent) = output_path.parent() {
-        fs::create_dir_all(parent).with_context(|| format!("creating {}", parent.display()))?;
+        if !parent.as_os_str().is_empty() {
+            fs::create_dir_all(parent).with_context(|| format!("creating {}", parent.display()))?;
+        }
     }
     let json = serde_json::to_string_pretty(&report).context("serialising report")?;
     fs::write(&output_path, &json)
