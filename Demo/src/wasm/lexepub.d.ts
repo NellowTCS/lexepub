@@ -123,8 +123,8 @@ export interface InitOutput {
     readonly wasmepubextractor_load_from_bytes: (a: number, b: any) => any;
     readonly wasmepubextractor_new: () => number;
     readonly wasmepubextractor_resolve_chapter_resource_path: (a: number, b: number, c: number, d: number) => any;
-    readonly wasm_bindgen__convert__closures_____invoke__hab5d802ec56f1a23: (a: number, b: number, c: any) => [number, number];
-    readonly wasm_bindgen__convert__closures_____invoke__h00187f8f3fee2983: (a: number, b: number, c: any, d: any) => void;
+    readonly wasm_bindgen__convert__closures_____invoke__h64d2f1ae602a501f: (a: number, b: number, c: any) => [number, number];
+    readonly wasm_bindgen__convert__closures_____invoke__h022fdcc8ac41b2bf: (a: number, b: number, c: any, d: any) => void;
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
     readonly __wbindgen_exn_store: (a: number) => void;
