@@ -1,6 +1,6 @@
 [package]
 name = "lexepub"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["NellowTCS"]
 license = "Apache-2.0"
 description = "Fast and streaming EPUB parser library"

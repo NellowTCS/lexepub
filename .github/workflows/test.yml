@@ -26,4 +26,4 @@ jobs:
           workspaces: lexepub
 
       - name: Run tests
-        run: cd lexepub && cargo test --release --all-features
+        run: cd lexepub && cargo test --all-features

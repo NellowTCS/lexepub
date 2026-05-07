@@ -1,7 +1,7 @@
 use crate::core::chapter::{AstNode, Chapter, ParsedChapter};
-use crate::error::Result;
-use scraper::Html;
+use crate::error::{LexEpubError, Result};
 use std::collections::HashMap;
+use tl::ParserOptions;
 
 /// Configurable chapter parser
 #[derive(Clone)]
@@ -84,29 +84,17 @@ impl ChapterParser {
 }
 
 #[cfg(not(feature = "lowmem"))]
-/// Extract clean text content from HTML using scraper
+/// Extract clean text content from HTML using tl
 pub fn extract_text_content(html: &str) -> Result<String> {
-    let fragment = Html::parse_fragment(html);
+    let dom = tl::parse(html, ParserOptions::default())
+        .map_err(|e| LexEpubError::Html(format!("Failed to parse HTML: {}", e)))?;
 
+    let parser = dom.parser();
     let mut text = String::new();
 
-    // Extract text from body content
-    for element in fragment.root_element().descendants() {
-        match element.value() {
-            scraper::Node::Text(text_node) => {
-                text.push_str(text_node);
-            }
-            scraper::Node::Element(element_ref) => {
-                // Add newlines after block elements
-                if matches!(
-                    element_ref.name(),
-                    "p" | "div" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "br" | "li"
-                ) {
-                    text.push('\n');
-                }
-            }
-            _ => {}
-        }
+    // Extract text from top-level children
+    for handle in dom.children() {
+        extract_text_recursive(*handle, parser, &mut text);
     }
 
     // Clean up excess whitespace and newlines
@@ -120,9 +108,41 @@ pub fn extract_text_content(html: &str) -> Result<String> {
     Ok(cleaned)
 }
 
+/// Recursively extract text from tl nodes
+#[allow(dead_code)]
+fn extract_text_recursive(handle: tl::NodeHandle, parser: &tl::Parser, output: &mut String) {
+    if let Some(node) = handle.get(parser) {
+        match node {
+            tl::Node::Raw(text_bytes) => {
+                let text_str = text_bytes.as_utf8_str();
+                let decoded = html_escape::decode_html_entities(&text_str);
+                output.push_str(&decoded);
+            }
+            tl::Node::Tag(tag) => {
+                let tag_name = tag.name().as_utf8_str();
+                let is_block = matches!(
+                    tag_name.as_ref(),
+                    "p" | "div" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "br" | "li"
+                );
+
+                // Recursively process children
+                for child_handle in tag.children().top().iter() {
+                    extract_text_recursive(*child_handle, parser, output);
+                }
+
+                // Add newlines after block elements
+                if is_block {
+                    output.push('\n');
+                }
+            }
+            tl::Node::Comment(_) => {}
+        }
+    }
+}
+
 #[cfg(feature = "lowmem")]
 /// Lightweight HTML-to-text extractor for low-memory targets.
-// Not as robust as the scraper-based version, but avoids the overhead of building a full DOM tree, haha.
+// Not as robust as the tl-based version, but avoids the overhead of building a full DOM tree, haha.
 pub fn extract_text_content(html: &str) -> Result<String> {
     let mut out = String::new();
     let mut in_tag = false;
@@ -172,46 +192,69 @@ pub fn extract_text_content(html: &str) -> Result<String> {
     Ok(cleaned)
 }
 
-/// Parse HTML into AST structure using scraper
+/// Parse HTML into AST structure using tl
 fn parse_html_ast(html: &str) -> Result<AstNode> {
-    let fragment = Html::parse_fragment(html);
+    let dom = tl::parse(html, ParserOptions::default())
+        .map_err(|e| LexEpubError::Html(format!("Failed to parse HTML: {}", e)))?;
 
-    // Convert scraper tree to our AST format
-    Ok(element_to_ast(&fragment.root_element()))
-}
+    let parser = dom.parser();
 
-/// Convert scraper element to our AST format
-fn element_to_ast(element: &scraper::ElementRef) -> AstNode {
-    let mut attrs = HashMap::new();
+    // Convert tl tree to our AST format, starting from the children of root
+    let mut root_children = Vec::new();
 
-    // Get attributes from the element
-    for attr in element.value().attrs() {
-        attrs.insert(attr.0.to_string(), attr.1.to_string());
+    for handle in dom.children() {
+        if let Some(ast_child) = node_to_ast(*handle, parser) {
+            root_children.push(ast_child);
+        }
     }
 
-    let children: Vec<AstNode> = element
-        .children()
-        .filter_map(|child| match child.value() {
-            scraper::Node::Text(text_node) => Some(AstNode::Text {
-                content: text_node.to_string(),
-            }),
-            scraper::Node::Comment(comment_node) => Some(AstNode::Comment {
-                content: comment_node.to_string(),
-            }),
-            scraper::Node::Element(_) => {
-                scraper::ElementRef::wrap(child).map(|elem| element_to_ast(&elem))
-            }
-            _ => Some(AstNode::Text {
-                content: String::new(),
-            }),
-        })
-        .collect();
-
-    AstNode::Element {
-        tag: element.value().name().to_string(),
-        attrs,
+    // Return a root node containing all the parsed children
+    Ok(AstNode::Element {
+        tag: "root".to_string(),
+        attrs: HashMap::new(),
         styles: HashMap::new(),
-        children,
+        children: root_children,
+    })
+}
+
+/// Convert tl node handle to our AstNode format
+fn node_to_ast(handle: tl::NodeHandle, parser: &tl::Parser) -> Option<AstNode> {
+    let node = handle.get(parser)?;
+
+    match node {
+        tl::Node::Tag(tag) => {
+            let mut attrs = HashMap::new();
+
+            // Get attributes from the element
+            for attr in tag.attributes().iter() {
+                let key = attr.0.to_string();
+                let value = attr
+                    .1
+                    .map(|v| html_escape::decode_html_entities(&v.to_string()).into_owned())
+                    .unwrap_or_default();
+                attrs.insert(key, value);
+            }
+
+            let mut children = Vec::new();
+            for child_handle in tag.children().top().iter() {
+                if let Some(child_ast) = node_to_ast(*child_handle, parser) {
+                    children.push(child_ast);
+                }
+            }
+
+            Some(AstNode::Element {
+                tag: tag.name().as_utf8_str().to_string(),
+                attrs,
+                styles: HashMap::new(),
+                children,
+            })
+        }
+        tl::Node::Raw(text_ref) => Some(AstNode::Text {
+            content: html_escape::decode_html_entities(&text_ref.as_utf8_str()).into_owned(),
+        }),
+        tl::Node::Comment(comment_ref) => Some(AstNode::Comment {
+            content: html_escape::decode_html_entities(&comment_ref.as_utf8_str()).into_owned(),
+        }),
     }
 }
 
