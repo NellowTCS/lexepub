@@ -305,8 +305,10 @@ fn print_summary(report: &ComparisonReport) {
 
 // Entry point
 fn main() -> Result<()> {
-    // Strip `--bench` injected by `cargo bench` so Clap doesn't choke on it.
-    let filtered_args: Vec<String> = std::env::args().filter(|a| a != "--bench").collect();
+    // Strip cargo-injected benchmark flags so Clap only sees our CLI arguments.
+    let filtered_args: Vec<String> = std::env::args()
+        .filter(|a| a != "--bench" && a != "--nocapture")
+        .collect();
     let args = Args::parse_from(filtered_args);
 
     let output_path = if let Some(path) = args.output {
