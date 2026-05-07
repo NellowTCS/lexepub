@@ -9,6 +9,7 @@ repository = "https://github.com/NellowTCS/lexepub"
 keywords = ["epub", "parser", "streaming", "ebook", "fast"]
 categories = ["parser-implementations", "text-processing"]
 readme = "README.md"
+exclude = ["examples/*"]
 
 [lib]
 name = "lexepub"
