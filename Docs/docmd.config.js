@@ -13,6 +13,12 @@ module.exports = {
     codeHighlight: true,
     customCss: [],
   },
+  plugins: {
+    sitemap: {
+      defaultChangefreq: 'weekly',
+      defaultPriority: 0.8
+    }
+  },
   search: true,
   minify: true,
   autoTitleFromH1: true,
