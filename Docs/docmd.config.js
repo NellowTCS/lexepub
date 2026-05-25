@@ -37,7 +37,6 @@ module.exports = {
     {
       title: "Adapters",
       icon: "code",
-      path: "/adapters/",
       children: [
         { title: "C/C++", path: "/adapters/c/", icon: "terminal" },
         { title: "Rust", path: "/adapters/rust/", icon: "box" },
