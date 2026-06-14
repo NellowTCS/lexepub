@@ -628,6 +628,56 @@ impl LexEpub {
         Ok(chapters)
     }
 
+    /// Extract a single chapter by index without loading all chapters into memory.
+    /// Re-reads OPF data (small) but only reads and parses the requested chapter's XHTML.
+    pub async fn extract_single_chapter(&mut self, index: usize) -> Result<ParsedChapter> {
+        let (opf_path, opf_data) = self.read_opf().await?;
+        let mut opf_parser = OpfParser::new();
+        let metadata = opf_parser.parse_metadata(&opf_data)?;
+        let spine = metadata.spine.clone();
+
+        if index >= spine.len() {
+            return Err(LexEpubError::MissingFile(format!("Chapter index {} out of range", index)));
+        }
+
+        let opf_base = std::path::Path::new(&opf_path)
+            .parent()
+            .unwrap_or(std::path::Path::new(""))
+            .to_path_buf();
+
+        // Parse all CSS once
+        let mut css_text = String::new();
+        for (href, media_type) in metadata.manifest.values() {
+            if media_type == "text/css" {
+                let css_path = opf_base.join(href);
+                let css_path_str = css_path.to_string_lossy();
+                if let Ok(css_data) = self.extractor.read_file(&css_path_str).await {
+                    css_text.push_str(&String::from_utf8_lossy(&css_data));
+                    css_text.push('\n');
+                }
+            }
+        }
+        let stylesheet = crate::core::css::Stylesheet::parse(&css_text);
+
+        let item_id = &spine[index];
+        let href = metadata.manifest.get(item_id)
+            .ok_or_else(|| LexEpubError::MissingFile(format!("Item {} not in manifest", item_id)))?;
+        let full_path = opf_base.join(&href.0);
+        let full_path_str = full_path.to_string_lossy();
+        let content = self.extractor.read_file(&full_path_str).await?;
+
+        let parser = crate::core::html_parser::ChapterParser::new();
+        let chapter = Chapter::new(full_path_str.to_string(), item_id.clone(), content);
+        let mut parsed_chapter = parser.parse_chapter(chapter)?;
+
+        if let Some(ref mut ast) = parsed_chapter.ast {
+            normalize_ast_links(ast, &full_path_str);
+            stylesheet.apply_to_ast(ast);
+        }
+
+        Ok(parsed_chapter)
+    }
+
     /// Read and return (opf_path, opf_data), reusing the metadata cache's
     /// knowledge of opf_path when available to avoid re-reading container.xml.
     async fn read_opf(&mut self) -> Result<(String, Vec<u8>)> {

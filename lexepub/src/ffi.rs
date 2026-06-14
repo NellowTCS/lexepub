@@ -109,6 +109,21 @@ mod ffi {
             Self::write_json(to, &chapter)
         }
 
+        /// Extract a single chapter without loading all chapters into memory.
+        /// Uses extract_single_chapter() to read only the requested chapter file.
+        pub fn get_single_chapter_json(
+            &mut self,
+            index: usize,
+            to: &mut diplomat_runtime::DiplomatWrite,
+        ) -> Result<(), ()> {
+            let chapter =
+                match futures::executor::block_on(self.0.extract_single_chapter(index)) {
+                    Ok(c) => c,
+                    Err(_) => return Err(()),
+                };
+            Self::write_json(to, &chapter)
+        }
+
         pub fn get_toc_json(&mut self, to: &mut diplomat_runtime::DiplomatWrite) -> Result<(), ()> {
             let toc = futures::executor::block_on(self.0.get_toc()).map_err(|_| ())?;
             Self::write_json(to, &toc)
