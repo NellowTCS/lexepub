@@ -1,3 +1,28 @@
+// Streaming JSON serializer that writes directly to DiplomatWriteable
+// without allocating an intermediate String (avoids OOM on memory-constrained targets).
+
+struct DiplomatWriter<'a>(&'a mut diplomat_runtime::DiplomatWrite);
+
+impl<'a> std::io::Write for DiplomatWriter<'a> {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        let s = std::str::from_utf8(buf)
+            .map_err(|_| std::io::Error::new(std::io::ErrorKind::InvalidData, "not utf-8"))?;
+        <diplomat_runtime::DiplomatWrite as core::fmt::Write>::write_str(&mut *self.0, s)
+            .map_err(|_| std::io::Error::new(std::io::ErrorKind::Other, "write failed"))?;
+        Ok(buf.len())
+    }
+    fn flush(&mut self) -> std::io::Result<()> {
+        Ok(())
+    }
+}
+
+fn write_json_streaming<T: serde::Serialize>(
+    to: &mut diplomat_runtime::DiplomatWrite,
+    value: &T,
+) -> Result<(), ()> {
+    serde_json::to_writer(DiplomatWriter(to), value).map_err(|_| ())
+}
+
 #[diplomat::bridge]
 #[allow(clippy::module_inception)]
 mod ffi {
@@ -10,14 +35,6 @@ mod ffi {
     impl EpubExtractor {
         fn write_string(to: &mut diplomat_runtime::DiplomatWrite, s: &str) -> Result<(), ()> {
             to.write_str(s).map_err(|_| ())
-        }
-
-        fn write_json<T: serde::Serialize>(
-            to: &mut diplomat_runtime::DiplomatWrite,
-            value: &T,
-        ) -> Result<(), ()> {
-            let json = serde_json::to_string(value).map_err(|_| ())?;
-            Self::write_string(to, &json)
         }
 
         pub fn create(path: &str) -> Option<Box<EpubExtractor>> {
@@ -62,7 +79,7 @@ mod ffi {
             to: &mut diplomat_runtime::DiplomatWrite,
         ) -> Result<(), ()> {
             let metadata = self.0.get_metadata_sync().map_err(|_| ())?;
-            Self::write_json(to, &metadata)
+            super::write_json_streaming(to, &metadata)
         }
 
         pub fn get_metadata(&mut self, to: &mut diplomat_runtime::DiplomatWrite) -> Result<(), ()> {
@@ -75,7 +92,7 @@ mod ffi {
         ) -> Result<(), ()> {
             let chapters =
                 futures::executor::block_on(self.0.extract_text_only()).map_err(|_| ())?;
-            Self::write_json(to, &chapters)
+            super::write_json_streaming(to, &chapters)
         }
 
         pub fn get_chapters_text(
@@ -106,7 +123,7 @@ mod ffi {
                 Ok(chapters) => chapters.get(index).cloned().ok_or(())?,
                 Err(_) => return Err(()),
             };
-            Self::write_json(to, &chapter)
+            super::write_json_streaming(to, &chapter)
         }
 
         /// Extract a single chapter without loading all chapters into memory.
@@ -121,12 +138,15 @@ mod ffi {
                     Ok(c) => c,
                     Err(_) => return Err(()),
                 };
-            Self::write_json(to, &chapter)
+            super::write_json_streaming(to, &chapter)?;
+            // Keep the text buffer alive across calls to avoid heap fragmentation
+            self.0.save_text_buffer(chapter.content);
+            Ok(())
         }
 
         pub fn get_toc_json(&mut self, to: &mut diplomat_runtime::DiplomatWrite) -> Result<(), ()> {
             let toc = futures::executor::block_on(self.0.get_toc()).map_err(|_| ())?;
-            Self::write_json(to, &toc)
+            super::write_json_streaming(to, &toc)
         }
 
         pub fn get_toc(&mut self, to: &mut diplomat_runtime::DiplomatWrite) -> Result<(), ()> {
@@ -152,7 +172,7 @@ mod ffi {
             to: &mut diplomat_runtime::DiplomatWrite,
         ) -> Result<(), ()> {
             let bytes = futures::executor::block_on(self.0.read_resource(path)).map_err(|_| ())?;
-            Self::write_json(to, &bytes)
+            super::write_json_streaming(to, &bytes)
         }
 
         pub fn get_chapter_resource_json(
@@ -164,7 +184,7 @@ mod ffi {
             let bytes =
                 futures::executor::block_on(self.0.read_chapter_resource(chapter_index, href))
                     .map_err(|_| ())?;
-            Self::write_json(to, &bytes)
+            super::write_json_streaming(to, &bytes)
         }
 
         pub fn get_chapter(
@@ -212,7 +232,7 @@ mod ffi {
             to: &mut diplomat_runtime::DiplomatWrite,
         ) -> Result<(), ()> {
             let bytes = self.0.cover_image_sync().map_err(|_| ())?;
-            Self::write_json(to, &bytes)
+            super::write_json_streaming(to, &bytes)
         }
     }
 }

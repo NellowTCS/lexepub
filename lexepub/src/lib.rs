@@ -8,11 +8,15 @@ pub mod ffi;
 #[cfg(target_arch = "wasm32")]
 pub mod wasm;
 
+#[cfg(all(feature = "c-ffi", not(target_arch = "wasm32")))]
+mod allocator;
+
 // Re-export core modules for internal use
 pub use core::chapter::{AstNode, Chapter, ChapterStream, ParsedChapter};
 pub use core::container::ContainerParser;
 pub use core::extractor::EpubExtractor;
 pub use core::html_parser::ChapterParser;
+pub use core::ncx_parser::{NcxEntry, NcxInfo, NcxParser};
 pub use core::opf_parser::OpfParser;
 
 // Re-export main API
@@ -27,6 +31,7 @@ pub mod prelude {
     pub use crate::core::chapter::{AstNode, Chapter, ChapterStream, ParsedChapter};
     pub use crate::core::extractor::EpubExtractor;
     pub use crate::core::html_parser::ChapterParser;
+    pub use crate::core::ncx_parser::{NcxEntry, NcxInfo, NcxParser};
     pub use crate::epub::LexEpub;
     pub use crate::epub::{EpubMetadata, TocEntry};
     pub use crate::error::{LexEpubError, Result};
@@ -161,6 +166,36 @@ mod lib_tests {
                     // AST parsing not yet implemented
                     let _ = chapter;
                 }
+            }
+        });
+    }
+
+    #[test]
+    fn test_single_chapter_extraction() {
+        futures::executor::block_on(async {
+            let test_epub = Path::new("examples/epubs/test-book.epub");
+            if test_epub.exists() {
+                let mut epub = match LexEpub::open(test_epub).await {
+                    Ok(epub) => epub,
+                    Err(err) => panic!("Failed to open test EPUB: {err}"),
+                };
+
+                let metadata = match epub.get_metadata().await {
+                    Ok(m) => m,
+                    Err(err) => panic!("get_metadata failed: {err}"),
+                };
+
+                if metadata.chapter_count == 0 {
+                    return; // nothing to test
+                }
+
+                let chapter = match epub.extract_single_chapter(0).await {
+                    Ok(c) => c,
+                    Err(err) => panic!("extract_single_chapter(0) failed: {err}"),
+                };
+
+                assert!(!chapter.content.is_empty(), "Chapter content should not be empty");
+                assert!(chapter.word_count > 0, "Word count should be > 0");
             }
         });
     }
