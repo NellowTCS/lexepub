@@ -1,7 +1,7 @@
 use futures::StreamExt;
-use lexepub::epub::{extract_text_only, get_metadata, LexEpub};
 #[cfg(not(feature = "lowmem"))]
 use lexepub::epub::extract_ast;
+use lexepub::epub::{extract_text_only, get_metadata, LexEpub};
 use std::path::Path;
 
 #[cfg(test)]

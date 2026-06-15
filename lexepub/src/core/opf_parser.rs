@@ -109,12 +109,9 @@ impl OpfParser {
                         for attr in e.attributes().flatten() {
                             match attr.key.as_ref() {
                                 b"id" => id = String::from_utf8_lossy(&attr.value).to_string(),
-                                b"href" => {
-                                    href = String::from_utf8_lossy(&attr.value).to_string()
-                                }
+                                b"href" => href = String::from_utf8_lossy(&attr.value).to_string(),
                                 b"media-type" => {
-                                    media_type =
-                                        String::from_utf8_lossy(&attr.value).to_string()
+                                    media_type = String::from_utf8_lossy(&attr.value).to_string()
                                 }
                                 b"properties" => {
                                     let props = String::from_utf8_lossy(&attr.value);

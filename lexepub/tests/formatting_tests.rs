@@ -102,10 +102,14 @@ fn test_extract_text_script_stripped() {
 #[cfg(feature = "lowmem")]
 #[test]
 fn test_extract_text_style_stripped() {
-    let html = "<html><head><style>.red{color:red}</style></head><body><p>Visible</p></body></html>";
+    let html =
+        "<html><head><style>.red{color:red}</style></head><body><p>Visible</p></body></html>";
     let text = lexepub::core::html_parser::extract_text_content(html).unwrap();
     assert!(text.contains("Visible"));
-    assert!(!text.contains("color:red"), "style content should be stripped");
+    assert!(
+        !text.contains("color:red"),
+        "style content should be stripped"
+    );
 }
 
 #[test]
@@ -140,7 +144,8 @@ fn test_formatting_bold_tag_b() {
 
 #[test]
 fn test_formatting_bold_tag_strong() {
-    let runs = lexepub::core::html_parser::extract_formatting("<p><strong>bold</strong></p>").unwrap();
+    let runs =
+        lexepub::core::html_parser::extract_formatting("<p><strong>bold</strong></p>").unwrap();
     assert!(runs.iter().any(|r| r.style & STYLE_BOLD != 0));
 }
 
@@ -170,29 +175,25 @@ fn test_formatting_strikethrough_tag_s() {
 
 #[test]
 fn test_formatting_strikethrough_tag_del() {
-    let runs =
-        lexepub::core::html_parser::extract_formatting("<p><del>strike</del></p>").unwrap();
+    let runs = lexepub::core::html_parser::extract_formatting("<p><del>strike</del></p>").unwrap();
     assert!(runs.iter().any(|r| r.style & STYLE_STRIKETHROUGH != 0));
 }
 
 #[test]
 fn test_formatting_code_tag_code() {
-    let runs =
-        lexepub::core::html_parser::extract_formatting("<p><code>fn()</code></p>").unwrap();
+    let runs = lexepub::core::html_parser::extract_formatting("<p><code>fn()</code></p>").unwrap();
     assert!(runs.iter().any(|r| r.style & STYLE_CODE != 0));
 }
 
 #[test]
 fn test_formatting_code_tag_tt() {
-    let runs =
-        lexepub::core::html_parser::extract_formatting("<p><tt>mono</tt></p>").unwrap();
+    let runs = lexepub::core::html_parser::extract_formatting("<p><tt>mono</tt></p>").unwrap();
     assert!(runs.iter().any(|r| r.style & STYLE_CODE != 0));
 }
 
 #[test]
 fn test_formatting_code_tag_pre() {
-    let runs =
-        lexepub::core::html_parser::extract_formatting("<p><pre>code</pre></p>").unwrap();
+    let runs = lexepub::core::html_parser::extract_formatting("<p><pre>code</pre></p>").unwrap();
     assert!(runs.iter().any(|r| r.style & STYLE_CODE != 0));
 }
 
@@ -225,11 +226,10 @@ fn test_formatting_heading_text_content() {
 
 #[test]
 fn test_formatting_nested_bold_italic() {
-    let runs =
-        lexepub::core::html_parser::extract_formatting("<p><b><i>both</i></b></p>").unwrap();
-    let both = runs.iter().find(|r| {
-        r.style & STYLE_BOLD != 0 && r.style & STYLE_ITALIC != 0
-    });
+    let runs = lexepub::core::html_parser::extract_formatting("<p><b><i>both</i></b></p>").unwrap();
+    let both = runs
+        .iter()
+        .find(|r| r.style & STYLE_BOLD != 0 && r.style & STYLE_ITALIC != 0);
     assert!(
         both.is_some(),
         "nested <b><i> should produce a run with both flags"
@@ -238,10 +238,8 @@ fn test_formatting_nested_bold_italic() {
 
 #[test]
 fn test_formatting_adjacent_same_style_merged() {
-    let runs = lexepub::core::html_parser::extract_formatting(
-        "<p><b>foo</b><b>bar</b></p>",
-    )
-    .unwrap();
+    let runs =
+        lexepub::core::html_parser::extract_formatting("<p><b>foo</b><b>bar</b></p>").unwrap();
     let bold_runs: Vec<_> = runs.iter().filter(|r| r.style & STYLE_BOLD != 0).collect();
     assert_eq!(
         bold_runs.len(),
@@ -255,8 +253,7 @@ fn test_formatting_adjacent_same_style_merged() {
 
 #[test]
 fn test_formatting_paragraphs_separated() {
-    let runs =
-        lexepub::core::html_parser::extract_formatting("<p>First</p><p>Second</p>").unwrap();
+    let runs = lexepub::core::html_parser::extract_formatting("<p>First</p><p>Second</p>").unwrap();
     let newlines: Vec<_> = runs.iter().filter(|r| r.text == "\n").collect();
     assert!(
         !newlines.is_empty(),
@@ -266,8 +263,7 @@ fn test_formatting_paragraphs_separated() {
 
 #[test]
 fn test_formatting_br_newline() {
-    let runs =
-        lexepub::core::html_parser::extract_formatting("<p>A<br/>B<br/>C</p>").unwrap();
+    let runs = lexepub::core::html_parser::extract_formatting("<p>A<br/>B<br/>C</p>").unwrap();
     let newlines: Vec<_> = runs.iter().filter(|r| r.text == "\n").collect();
     assert!(!newlines.is_empty(), "<br> should produce newline runs");
 }
@@ -356,7 +352,10 @@ fn test_text_content_from_test_epub() {
             return;
         }
         let chapter = epub.extract_single_chapter(0).await.unwrap();
-        assert!(!chapter.content.is_empty(), "chapter content should not be empty");
+        assert!(
+            !chapter.content.is_empty(),
+            "chapter content should not be empty"
+        );
         assert!(chapter.word_count > 0);
         assert!(chapter.char_count > 0);
         assert!(chapter.char_count > chapter.word_count);

@@ -92,9 +92,15 @@ impl NcxParser {
                         cur_title.clear();
                         cur_src.clear();
                         nav_point_depth += 1;
-                    } else if len == 8 && name.eq_ignore_ascii_case(b"navlabel") && nav_point_depth > 0 {
+                    } else if len == 8
+                        && name.eq_ignore_ascii_case(b"navlabel")
+                        && nav_point_depth > 0
+                    {
                         in_nav_label = true;
-                    } else if len == 7 && name.eq_ignore_ascii_case(b"content") && nav_point_depth > 0 {
+                    } else if len == 7
+                        && name.eq_ignore_ascii_case(b"content")
+                        && nav_point_depth > 0
+                    {
                         for attr in e.attributes().flatten() {
                             if attr.key.as_ref() == b"src" {
                                 cur_src = String::from_utf8_lossy(&attr.value).to_string();
@@ -120,9 +126,15 @@ impl NcxParser {
 
                     if len == 6 && name.eq_ignore_ascii_case(b"navmap") {
                         in_nav_map = false;
-                    } else if len == 8 && name.eq_ignore_ascii_case(b"navlabel") && nav_point_depth > 0 {
+                    } else if len == 8
+                        && name.eq_ignore_ascii_case(b"navlabel")
+                        && nav_point_depth > 0
+                    {
                         in_nav_label = false;
-                    } else if len == 8 && name.eq_ignore_ascii_case(b"navpoint") && nav_point_depth > 0 {
+                    } else if len == 8
+                        && name.eq_ignore_ascii_case(b"navpoint")
+                        && nav_point_depth > 0
+                    {
                         nav_point_depth -= 1;
 
                         if !cur_src.is_empty() {
