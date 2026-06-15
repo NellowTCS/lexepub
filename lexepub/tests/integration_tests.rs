@@ -54,19 +54,20 @@ mod integration_tests {
             );
 
             // Test AST extraction
-            let ast_chapters = epub.extract_ast().await.unwrap();
-            assert_eq!(
-                ast_chapters.len(),
-                chapters.len(),
-                "AST chapters should match text chapters"
-            );
-
-            for ast_chapter in &ast_chapters {
-                // AST parsing not yet implemented, so ast will be None
-                assert!(
-                    !ast_chapter.content.is_empty(),
-                    "Content should not be empty"
+            #[cfg(not(feature = "lowmem"))]
+            {
+                let ast_chapters = epub.extract_ast().await.unwrap();
+                assert_eq!(
+                    ast_chapters.len(),
+                    chapters.len(),
+                    "AST chapters should match text chapters"
                 );
+                for ast_chapter in &ast_chapters {
+                    assert!(
+                        !ast_chapter.content.is_empty(),
+                        "Content should not be empty"
+                    );
+                }
             }
         });
     }
@@ -201,13 +202,14 @@ mod integration_tests {
             assert!(!text_chapters.is_empty());
 
             // Reset and test AST parsing
-            let ast_chapters = epub.extract_ast().await.unwrap();
-            assert!(!ast_chapters.is_empty());
-
-            // Verify AST structure
-            for chapter in ast_chapters {
-                if let Some(ast) = chapter.ast {
-                    assert_ast_structure(&ast);
+            #[cfg(not(feature = "lowmem"))]
+            {
+                let ast_chapters = epub.extract_ast().await.unwrap();
+                assert!(!ast_chapters.is_empty());
+                for chapter in ast_chapters {
+                    if let Some(ast) = chapter.ast {
+                        assert_ast_structure(&ast);
+                    }
                 }
             }
         });

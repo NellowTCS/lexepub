@@ -72,6 +72,7 @@ mod edge_case_tests {
         });
     }
 
+    #[cfg(not(feature = "lowmem"))]
     #[test]
     fn test_epub_with_nested_html() {
         futures::executor::block_on(async {
@@ -90,6 +91,7 @@ mod edge_case_tests {
         });
     }
 
+    #[cfg(not(feature = "lowmem"))]
     #[test]
     fn test_epub_with_broken_html() {
         futures::executor::block_on(async {

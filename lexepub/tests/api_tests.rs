@@ -1,5 +1,7 @@
 use futures::StreamExt;
-use lexepub::epub::{extract_ast, extract_text_only, get_metadata, LexEpub};
+use lexepub::epub::{extract_text_only, get_metadata, LexEpub};
+#[cfg(not(feature = "lowmem"))]
+use lexepub::epub::extract_ast;
 use std::path::Path;
 
 #[cfg(test)]
@@ -102,6 +104,7 @@ mod api_tests {
         });
     }
 
+    #[cfg(not(feature = "lowmem"))]
     #[test]
     fn test_extract_ast() {
         futures::executor::block_on(async {
@@ -197,9 +200,12 @@ mod api_tests {
                 assert!(!chapters.is_empty());
             }
 
-            let result = extract_ast(test_epub).await;
-            if let Ok(chapters) = result {
-                assert!(!chapters.is_empty());
+            #[cfg(not(feature = "lowmem"))]
+            {
+                let result = extract_ast(test_epub).await;
+                if let Ok(chapters) = result {
+                    assert!(!chapters.is_empty());
+                }
             }
 
             let result = get_metadata(test_epub).await;
@@ -238,8 +244,11 @@ mod api_tests {
                 println!("Found {} chapters in {}", chapters.len(), test_file);
 
                 // Test AST extraction
-                let ast_chapters = epub.extract_ast().await.unwrap();
-                println!("Found {} AST chapters in {}", ast_chapters.len(), test_file);
+                #[cfg(not(feature = "lowmem"))]
+                {
+                    let ast_chapters = epub.extract_ast().await.unwrap();
+                    println!("Found {} AST chapters in {}", ast_chapters.len(), test_file);
+                }
 
                 // Test streaming
                 let stream = epub.extract_chapters_stream().await.unwrap();
@@ -322,13 +331,16 @@ mod api_tests {
             }
 
             // Test AST extraction
-            let ast_chapters = epub.extract_ast().await.unwrap();
-            for chapter in &ast_chapters {
-                // Should have content
-                assert!(!chapter.content.is_empty());
-                let content = &chapter.content;
-                // Should be serializable
-                let _ = serde_json::to_string(content);
+            #[cfg(not(feature = "lowmem"))]
+            {
+                let ast_chapters = epub.extract_ast().await.unwrap();
+                for chapter in &ast_chapters {
+                    // Should have content
+                    assert!(!chapter.content.is_empty());
+                    let content = &chapter.content;
+                    // Should be serializable
+                    let _ = serde_json::to_string(content);
+                }
             }
         });
     }

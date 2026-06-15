@@ -1,5 +1,7 @@
 use futures::StreamExt;
-use lexepub::epub::{extract_ast, extract_text_only, get_metadata, LexEpub};
+use lexepub::epub::{extract_text_only, get_metadata, LexEpub};
+#[cfg(not(feature = "lowmem"))]
+use lexepub::epub::extract_ast;
 use std::path::Path;
 
 /// All available test EPUB files
@@ -222,6 +224,7 @@ mod epub_feature_tests {
     }
 
     // AST Extraction Tests
+    #[cfg(not(feature = "lowmem"))]
     #[test]
     fn test_ast_extraction_all_epubs() {
         futures::executor::block_on(async {
@@ -253,6 +256,7 @@ mod epub_feature_tests {
         });
     }
 
+    #[cfg(not(feature = "lowmem"))]
     #[test]
     fn test_ast_has_valid_structure() {
         futures::executor::block_on(async {
@@ -401,8 +405,11 @@ mod epub_feature_tests {
                 assert!(result.is_ok(), "extract_text_only failed for {}", epub_path);
 
                 // Test extract_ast
-                let result = extract_ast(epub_path).await;
-                assert!(result.is_ok(), "extract_ast failed for {}", epub_path);
+                #[cfg(not(feature = "lowmem"))]
+                {
+                    let result = extract_ast(epub_path).await;
+                    assert!(result.is_ok(), "extract_ast failed for {}", epub_path);
+                }
 
                 // Test get_metadata
                 let result = get_metadata(epub_path).await;

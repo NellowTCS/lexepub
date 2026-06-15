@@ -29,19 +29,24 @@ mod performance_tests {
             );
 
             // Test AST extraction performance
-            let start = Instant::now();
-            let ast_chapters = epub.extract_ast().await.unwrap();
-            let duration = start.elapsed();
-
-            println!("AST extraction took: {:?}", duration);
-            assert!(
-                duration.as_millis() < 5000,
-                "AST extraction should complete within 5 seconds"
-            );
+            #[cfg(not(feature = "lowmem"))]
+            let ast_chapters = {
+                let start = Instant::now();
+                let ast = epub.extract_ast().await.unwrap();
+                let duration = start.elapsed();
+                println!("AST extraction took: {:?}", duration);
+                assert!(
+                    duration.as_millis() < 5000,
+                    "AST extraction should complete within 5 seconds"
+                );
+                ast
+            };
 
             // Verify content was extracted
             assert!(!chapters.is_empty());
+            #[cfg(not(feature = "lowmem"))]
             assert!(!ast_chapters.is_empty());
+            #[cfg(not(feature = "lowmem"))]
             assert_eq!(chapters.len(), ast_chapters.len());
         });
     }

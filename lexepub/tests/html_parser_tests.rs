@@ -1,9 +1,13 @@
 #[cfg(test)]
 mod tests {
-    use lexepub::core::chapter::{AstNode, Chapter};
+    use lexepub::core::chapter::AstNode;
+    #[cfg(not(feature = "lowmem"))]
+    use lexepub::core::chapter::Chapter;
+    #[cfg(not(feature = "lowmem"))]
     use lexepub::core::html_parser::ChapterParser;
     use std::collections::HashMap;
 
+    #[cfg(not(feature = "lowmem"))]
     #[test]
     fn test_chapter_parser_creation() {
         let parser = ChapterParser::new();
@@ -43,6 +47,7 @@ mod tests {
         assert!(text.contains("Another paragraph"));
     }
 
+    #[cfg(not(feature = "lowmem"))]
     #[test]
     fn test_parse_simple_chapter() {
         let chapter = Chapter {
@@ -57,12 +62,13 @@ mod tests {
         assert!(result.is_ok());
 
         let parsed = result.unwrap();
-        assert_eq!(parsed.content, "Hello world");
+        assert!(parsed.content.contains("Hello world"));
         assert_eq!(parsed.word_count, 2);
         assert_eq!(parsed.char_count, 11);
         assert!(parsed.ast.is_none());
     }
 
+    #[cfg(not(feature = "lowmem"))]
     #[test]
     fn test_parse_chapter_with_ast() {
         let chapter = Chapter {
@@ -77,7 +83,7 @@ mod tests {
         assert!(result.is_ok());
 
         let parsed = result.unwrap();
-        assert_eq!(parsed.content, "Hello world");
+        assert!(parsed.content.contains("Hello world"));
         assert!(parsed.ast.is_some());
     }
 

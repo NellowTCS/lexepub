@@ -71,6 +71,20 @@ fn is_heading_tag(name: &[u8]) -> Option<u8> {
     None
 }
 
+/// Resolve a predefined XML/HTML entity name to its decoded character.
+/// Supports the five predefined XML entities (`amp`, `lt`, `gt`, `quot`, `apos`).
+/// Returns `None` for unknown entity names.
+fn resolve_entity(name: &[u8]) -> Option<&'static str> {
+    match name {
+        b"amp" => Some("&"),
+        b"lt" => Some("<"),
+        b"gt" => Some(">"),
+        b"quot" => Some("\""),
+        b"apos" => Some("'"),
+        _ => None,
+    }
+}
+
 fn is_block_tag(name: &[u8]) -> bool {
     let len = name.len();
     if len == 0 {
@@ -213,6 +227,11 @@ impl FormattingExtractor {
                     }
                 }
 
+                Ok(Event::GeneralRef(ref e)) => {
+                    if let Some(ch) = resolve_entity(e.as_ref()) {
+                        self.push_run(ch);
+                    }
+                }
                 Ok(Event::Eof) => break,
                 Err(e) => return Err(LexEpubError::Xml(e)),
                 _ => buf.clear(),
@@ -267,6 +286,13 @@ pub fn extract_text_content(html: &str) -> Result<String> {
                         if let Ok(decoded) = quick_xml::escape::unescape(s) {
                             out.push_str(&decoded);
                         }
+                    }
+                }
+            }
+            Ok(Event::GeneralRef(ref e)) => {
+                if !in_script {
+                    if let Some(ch) = resolve_entity(e.as_ref()) {
+                        out.push_str(ch);
                     }
                 }
             }
