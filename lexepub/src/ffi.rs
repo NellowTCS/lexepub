@@ -256,30 +256,33 @@ mod ffi {
             Some(Box::new(ChapterTextStream { content, pos: 0 }))
         }
 
-        /// Create a streaming formatting-aware reader for a single chapter.
-        ///
-        /// Unlike the plain-text stream, this returns individual
-        /// `FormattingRun` records with style flags and heading level so the
-        /// C renderer can style text properly instead of relying on
-        /// heuristic line-splitting.
-        ///
-        /// Usage:
-        ///   while (next_run()) {
-        ///       style  = run_style();
-        ///       heading = run_heading();
-        ///       run_text(to);     // writes run text to DiplomatWrite
-        ///       // process one styled run
-        ///   }
-        pub fn open_chapter_formatting_stream(
-            &mut self,
-            index: usize,
-        ) -> Option<Box<ChapterFormattingStream>> {
-            let chapter = futures::executor::block_on(self.0.extract_single_chapter(index)).ok()?;
-            Some(Box::new(ChapterFormattingStream {
-                runs: chapter.formatting_runs,
-                index: 0,
-            }))
-        }
+    /// Create a streaming formatting-aware reader for a single chapter.
+    ///
+    /// Unlike the plain-text stream, this returns individual
+    /// `FormattingRun` records with style flags and heading level so the
+    /// C renderer can style text properly instead of relying on
+    /// heuristic line-splitting.
+    ///
+    /// Usage:
+    ///   while (next_run()) {
+    ///       style  = run_style();
+    ///       heading = run_heading();
+    ///       run_text(to);     // writes run text to DiplomatWrite
+    ///       // process one styled run
+    ///   }
+    ///
+    /// Internally uses quick-xml StAX parsing driven incrementally by
+    /// `next_run()`.  Only one run's text is held in memory at a time,
+    /// so chapter size is bounded only by the single largest run (typically
+    /// a few hundred bytes).
+    pub fn open_chapter_formatting_stream(
+        &mut self,
+        index: usize,
+    ) -> Option<Box<ChapterFormattingStream>> {
+        let (html_bytes, _resolved_path) =
+            futures::executor::block_on(self.0.read_chapter_raw(index)).ok()?;
+        Some(Box::new(ChapterFormattingStream::new(html_bytes)))
+    }
     }
 
     /// Streaming text reader for a single EPUB chapter.
@@ -333,25 +336,219 @@ mod ffi {
     /// Created via `EpubExtractor::open_chapter_formatting_stream`.
     /// Iterate styled runs using `next_run()` / `run_style()` / `run_heading()`
     /// / `run_text()`.
+    ///
+    /// Internally uses quick-xml StAX parsing.  Each call to `next_run()`
+    /// advances the XML reader forward to the next text-yielding event and
+    /// caches that run's data.  Only one run's text (typically a few hundred
+    /// bytes) is held in memory at any time.
     #[diplomat::opaque]
     #[allow(dead_code)]
     pub struct ChapterFormattingStream {
-        runs: std::vec::Vec<crate::core::chapter::FormattingRun>,
-        index: usize,
+        reader: quick_xml::Reader<std::io::Cursor<Vec<u8>>>,
+        buf: Vec<u8>,
+        style_stack: Vec<u8>,
+        heading_level: u8,
+        text: String,
+        style: u8,
+        heading: u8,
+        valid: bool,
+        eof: bool,
     }
 
     impl ChapterFormattingStream {
+        fn new(html_bytes: Vec<u8>) -> Self {
+            let cursor = std::io::Cursor::new(html_bytes);
+            let mut reader = quick_xml::Reader::from_reader(cursor);
+            reader.config_mut().trim_text(true);
+            Self {
+                reader,
+                buf: Vec::new(),
+                style_stack: Vec::new(),
+                heading_level: 0,
+                text: String::new(),
+                style: 0,
+                heading: 0,
+                valid: false,
+                eof: false,
+            }
+        }
+
+        fn active_style(&self) -> u8 {
+            self.style_stack.iter().copied().fold(0, |acc, s| acc | s)
+        }
+
+        fn tag_is_style_start(_name: &[u8]) -> Option<u8> {
+            #[cfg(feature = "lowmem")]
+            { crate::core::html_parser::streaming::tag_is_style_start(_name) }
+            #[cfg(not(feature = "lowmem"))]
+            { None }
+        }
+
+        fn is_heading_tag(name: &[u8]) -> Option<u8> {
+            let len = name.len();
+            if len == 2 && (name[0] | 0x20) == b'h' {
+                let d = name[1];
+                if d.is_ascii_digit() && d != b'0' {
+                    return Some(d - b'0');
+                }
+            }
+            None
+        }
+
+        fn is_br(name: &[u8]) -> bool {
+            name.len() == 2
+                && (name[0] | 0x20) == b'b'
+                && (name[1] | 0x20) == b'r'
+        }
+
+        fn is_block_tag(name: &[u8]) -> bool {
+            let len = name.len();
+            if len == 0 { return false; }
+            let c0 = name[0] | 0x20;
+            if len == 1 { return c0 == b'p'; }
+            let c1 = name[1] | 0x20;
+            if len == 2 {
+                return (c0 == b'l' && c1 == b'i')
+                    || (c0 == b'b' && c1 == b'r')
+                    || (c0 == b'h' && c1.is_ascii_digit());
+            }
+            if len == 3 {
+                return c0 == b'd' && c1 == b'i' && (name[2] | 0x20) == b'v';
+            }
+            false
+        }
+
+        fn resolve_entity(name: &[u8]) -> Option<&'static str> {
+            match name {
+                b"amp" => Some("&"),
+                b"lt" => Some("<"),
+                b"gt" => Some(">"),
+                b"quot" => Some("\""),
+                b"apos" => Some("'"),
+                _ => None,
+            }
+        }
+
         /// Advance to the next formatted run.
         ///
         /// Returns `true` if a run is available (callers can then query
         /// `run_style`, `run_heading`, and `run_text`).  Returns `false`
         /// when the stream is exhausted.
+        ///
+        /// Each call drives the underlying XML parser incrementally — no
+        /// per-chapter allocation beyond a single run's text buffer.
         pub fn next_run(&mut self) -> bool {
-            if self.index >= self.runs.len() {
+            use quick_xml::events::Event;
+
+            if self.eof {
                 return false;
             }
-            self.index += 1;
-            true
+            self.text.clear();
+            self.valid = false;
+
+            loop {
+                self.buf.clear();
+                let ev = self.reader.read_event_into(&mut self.buf);
+
+                let mut tag: Vec<u8> = Vec::new();
+                let mut text: Option<String> = None;
+                let mut is_text = false;
+                let mut is_end = false;
+
+                match ev {
+                    Ok(Event::Start(ref e)) => {
+                        tag.extend_from_slice(e.name().as_ref());
+                    }
+                    Ok(Event::Empty(ref e)) => {
+                        tag.extend_from_slice(e.name().as_ref());
+                    }
+                    Ok(Event::End(ref e)) => {
+                        tag.extend_from_slice(e.name().as_ref());
+                        is_end = true;
+                    }
+                    Ok(Event::Text(ref e)) => {
+                        is_text = true;
+                        if let Ok(s) = core::str::from_utf8(e) {
+                            if let Ok(decoded) = quick_xml::escape::unescape(s) {
+                                text = Some(String::from(&*decoded));
+                            }
+                        }
+                    }
+                    Ok(Event::GeneralRef(ref e)) => {
+                        is_text = true;
+                        if let Some(ch) = Self::resolve_entity(e.as_ref()) {
+                            text = Some(String::from(ch));
+                        }
+                    }
+                    Ok(Event::Eof) => {
+                        self.eof = true;
+                        return false;
+                    }
+                    Err(_) => {
+                        self.eof = true;
+                        return false;
+                    }
+                    _ => {}
+                }
+
+                // Event data extracted; borrow of self.buf is released.
+                if is_text {
+                    if let Some(t) = text {
+                        let s = self.active_style();
+                        let h = self.heading_level;
+                        self.text = t;
+                        self.style = s;
+                        self.heading = h;
+                        self.valid = true;
+                        return true;
+                    }
+                    continue;
+                }
+
+                if tag.is_empty() {
+                    continue;
+                }
+
+                if !is_end {
+                    // Start/Empty events
+                    if let Some(s) = Self::tag_is_style_start(&tag) {
+                        self.style_stack.push(s);
+                    } else if let Some(h) = Self::is_heading_tag(&tag) {
+                        self.heading_level = h;
+                    } else if Self::is_br(&tag) {
+                        let s = self.active_style();
+                        let h = self.heading_level;
+                        self.text.clear();
+                        self.text.push('\n');
+                        self.style = s;
+                        self.heading = h;
+                        self.valid = true;
+                        return true;
+                    }
+                } else {
+                    // End events
+                    if Self::tag_is_style_start(&tag).is_some() {
+                        self.style_stack.pop();
+                    } else if Self::is_heading_tag(&tag).is_some() {
+                        self.heading_level = 0;
+                        self.text.clear();
+                        self.text.push('\n');
+                        self.style = 0;
+                        self.heading = 0;
+                        self.valid = true;
+                        return true;
+                    } else if Self::is_block_tag(&tag) {
+                        let s = self.active_style();
+                        let h = self.heading_level;
+                        self.text.clear();
+                        self.text.push('\n');
+                        self.style = s;
+                        self.heading = h;
+                        self.valid = true;
+                        return true;
+                    }
+                }
+            }
         }
 
         /// Style flags bitmask for the current run.
@@ -359,14 +556,16 @@ mod ffi {
         /// Must be called after `next_run()` returns `true`.
         /// Bits: 1=bold, 2=italic, 4=underline, 8=strikethrough, 16=code.
         pub fn run_style(&self) -> u8 {
-            self.runs[self.index - 1].style
+            debug_assert!(self.valid);
+            self.style
         }
 
         /// Heading level for the current run (0 = not a heading, 1-6).
         ///
         /// Must be called after `next_run()` returns `true`.
         pub fn run_heading(&self) -> u8 {
-            self.runs[self.index - 1].heading
+            debug_assert!(self.valid);
+            self.heading
         }
 
         /// Write the text of the current run into `to`.
@@ -374,8 +573,8 @@ mod ffi {
         /// Must be called after `next_run()` returns `true`.
         pub fn run_text(&self, to: &mut diplomat_runtime::DiplomatWrite) -> Result<(), ()> {
             use core::fmt::Write;
-            to.write_str(&self.runs[self.index - 1].text)
-                .map_err(|_| ())
+            debug_assert!(self.valid);
+            to.write_str(&self.text).map_err(|_| ())
         }
     }
 }

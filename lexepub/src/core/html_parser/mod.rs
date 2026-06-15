@@ -2,7 +2,7 @@ use crate::core::chapter::FormattingRun;
 use crate::error::Result;
 
 #[cfg(feature = "lowmem")]
-mod streaming;
+pub mod streaming;
 #[cfg(not(feature = "lowmem"))]
 mod tl;
 

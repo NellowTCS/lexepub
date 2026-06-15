@@ -851,6 +851,31 @@ impl LexEpub {
         Ok((opf_path, opf_data))
     }
 
+    /// Read raw HTML bytes for a chapter by index, without parsing.
+    /// Returns (raw_html_bytes, resolved_path).
+    /// Only available under lowmem (reuses the streaming HTML path).
+    pub async fn read_chapter_raw(&mut self, index: usize) -> Result<(Vec<u8>, String)> {
+        let metadata = self.get_metadata().await?;
+        let opf_base = self.opf_base.clone().unwrap_or_default();
+
+        if index >= metadata.spine.len() {
+            return Err(LexEpubError::MissingFile(format!(
+                "Chapter index {} out of range",
+                index
+            )));
+        }
+
+        let item_id = &metadata.spine[index];
+        let (href, _) = metadata.manifest.get(item_id).ok_or_else(|| {
+            LexEpubError::MissingFile(format!("Item {} not in manifest", item_id))
+        })?;
+        let resolved = std::path::Path::new(&opf_base).join(href);
+        let resolved_str = resolved.to_string_lossy().to_string();
+
+        let html = self.extractor.read_file(&resolved_str).await?;
+        Ok((html, resolved_str))
+    }
+
     /// Store a text buffer for reuse across chapter extractions.
     /// The buffer is cleared but its heap allocation is kept alive.
     pub fn save_text_buffer(&mut self, mut content: String) {

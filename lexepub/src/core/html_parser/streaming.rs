@@ -6,7 +6,7 @@ use quick_xml::events::Event;
 use quick_xml::Reader;
 use std::io::Cursor;
 
-fn tag_is_style_start(name: &[u8]) -> Option<u8> {
+pub fn tag_is_style_start(name: &[u8]) -> Option<u8> {
     let len = name.len();
     if len == 0 {
         return None;
@@ -61,7 +61,7 @@ fn tag_is_style_start(name: &[u8]) -> Option<u8> {
     None
 }
 
-fn is_heading_tag(name: &[u8]) -> Option<u8> {
+pub fn is_heading_tag(name: &[u8]) -> Option<u8> {
     if name.len() == 2 && (name[0] | 0x20) == b'h' {
         let d = name[1];
         if d.is_ascii_digit() && d != b'0' {
@@ -74,7 +74,7 @@ fn is_heading_tag(name: &[u8]) -> Option<u8> {
 /// Resolve a predefined XML/HTML entity name to its decoded character.
 /// Supports the five predefined XML entities (`amp`, `lt`, `gt`, `quot`, `apos`).
 /// Returns `None` for unknown entity names.
-fn resolve_entity(name: &[u8]) -> Option<&'static str> {
+pub fn resolve_entity(name: &[u8]) -> Option<&'static str> {
     match name {
         b"amp" => Some("&"),
         b"lt" => Some("<"),
@@ -85,7 +85,7 @@ fn resolve_entity(name: &[u8]) -> Option<&'static str> {
     }
 }
 
-fn is_block_tag(name: &[u8]) -> bool {
+pub fn is_block_tag(name: &[u8]) -> bool {
     let len = name.len();
     if len == 0 {
         return false;
