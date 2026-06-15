@@ -2,7 +2,6 @@ use crate::error::{LexEpubError, Result};
 use quick_xml::events::Event;
 use quick_xml::reader::Reader;
 use std::collections::HashMap;
-use std::io::Cursor;
 
 /// Metadata extracted from OPF file
 #[derive(Debug, Clone)]
@@ -23,22 +22,18 @@ pub struct OpfMetadata {
     pub cover_image_id: Option<String>,
 }
 
-pub struct OpfParser {
-    reader: Reader<Cursor<Vec<u8>>>,
-}
+pub struct OpfParser;
 
 impl OpfParser {
     /// Create a new OPF parser
     pub fn new() -> Self {
-        Self {
-            reader: Reader::from_reader(Cursor::new(Vec::new())),
-        }
+        Self
     }
 
     /// Parse OPF file for metadata
     pub fn parse_metadata(&mut self, data: &[u8]) -> Result<OpfMetadata> {
-        self.reader = Reader::from_reader(std::io::Cursor::new(data.to_vec()));
-        self.reader.config_mut().trim_text(true);
+        let mut reader = Reader::from_reader(std::io::Cursor::new(data));
+        reader.config_mut().trim_text(true);
 
         let mut metadata = OpfMetadata {
             title: None,
@@ -64,12 +59,13 @@ impl OpfParser {
         let mut buf = Vec::new();
 
         loop {
-            match self.reader.read_event_into(&mut buf) {
+            match reader.read_event_into(&mut buf) {
                 Ok(Event::Start(ref e)) | Ok(Event::Empty(ref e)) => {
-                    let tag_name = String::from_utf8_lossy(e.name().as_ref()).to_lowercase();
-                    current_element = tag_name.clone();
-
-                    if current_element == "package" {
+                    let qn = e.name();
+                    let name = qn.as_ref();
+                    let len = name.len();
+                    let is_package = len == 7 && name.eq_ignore_ascii_case(b"package");
+                    if is_package {
                         for attr in e.attributes().flatten() {
                             if attr.key.as_ref() == b"version" {
                                 metadata.version =
@@ -79,57 +75,16 @@ impl OpfParser {
                         }
                     }
 
-                    match current_element.as_str() {
-                        "metadata" => in_metadata = true,
-                        "manifest" => in_manifest = true,
-                        "spine" => in_spine = true,
-                        "item" if in_manifest => {
-                            let mut id = String::new();
-                            let mut href = String::new();
-                            let mut media_type = String::new();
-                            let mut is_cover = false;
-                            for attr in e.attributes().flatten() {
-                                match attr.key.as_ref() {
-                                    b"id" => id = String::from_utf8_lossy(&attr.value).to_string(),
-                                    b"href" => {
-                                        href = String::from_utf8_lossy(&attr.value).to_string()
-                                    }
-                                    b"media-type" => {
-                                        media_type =
-                                            String::from_utf8_lossy(&attr.value).to_string()
-                                    }
-                                    b"properties" => {
-                                        let props = String::from_utf8_lossy(&attr.value);
-                                        if props.contains("cover-image") {
-                                            is_cover = true;
-                                        }
-                                    }
-                                    _ => {}
-                                }
-                            }
-                            if !id.is_empty() && !href.is_empty() {
-                                if is_cover {
-                                    metadata.cover_image_id = Some(id.clone());
-                                }
-                                metadata.manifest.insert(id, (href, media_type));
-                            }
-                        }
-                        "itemref" if in_spine => {
-                            for attr in e.attributes().flatten() {
-                                if attr.key.as_ref() == b"idref" {
-                                    let idref = String::from_utf8_lossy(&attr.value).to_string();
-                                    metadata.spine.push(idref);
-                                    break;
-                                }
-                            }
-                        }
-                        "meta" if in_metadata => {
-                            let mut name = String::new();
+                    current_element.clear();
+                    if len == 4 && name.eq_ignore_ascii_case(b"meta") {
+                        current_element = "meta".to_string();
+                        if in_metadata {
+                            let mut name_attr = String::new();
                             let mut content = String::new();
                             for attr in e.attributes().flatten() {
                                 match attr.key.as_ref() {
                                     b"name" => {
-                                        name = String::from_utf8_lossy(&attr.value).to_string()
+                                        name_attr = String::from_utf8_lossy(&attr.value).to_string()
                                     }
                                     b"content" => {
                                         content = String::from_utf8_lossy(&attr.value).to_string()
@@ -137,14 +92,60 @@ impl OpfParser {
                                     _ => {}
                                 }
                             }
-                            if name == "cover"
+                            if name_attr == "cover"
                                 && !content.is_empty()
                                 && metadata.cover_image_id.is_none()
                             {
                                 metadata.cover_image_id = Some(content);
                             }
                         }
-                        _ => {}
+                    } else if len == 8 && name.eq_ignore_ascii_case(b"metadata") {
+                        in_metadata = true;
+                    } else if len == 4 && name.eq_ignore_ascii_case(b"item") && in_manifest {
+                        let mut id = String::new();
+                        let mut href = String::new();
+                        let mut media_type = String::new();
+                        let mut is_cover = false;
+                        for attr in e.attributes().flatten() {
+                            match attr.key.as_ref() {
+                                b"id" => id = String::from_utf8_lossy(&attr.value).to_string(),
+                                b"href" => {
+                                    href = String::from_utf8_lossy(&attr.value).to_string()
+                                }
+                                b"media-type" => {
+                                    media_type =
+                                        String::from_utf8_lossy(&attr.value).to_string()
+                                }
+                                b"properties" => {
+                                    let props = String::from_utf8_lossy(&attr.value);
+                                    if props.contains("cover-image") {
+                                        is_cover = true;
+                                    }
+                                }
+                                _ => {}
+                            }
+                        }
+                        if !id.is_empty() && !href.is_empty() {
+                            if is_cover {
+                                metadata.cover_image_id = Some(id.clone());
+                            }
+                            metadata.manifest.insert(id, (href, media_type));
+                        }
+                    } else if len == 7 && name.eq_ignore_ascii_case(b"itemref") && in_spine {
+                        for attr in e.attributes().flatten() {
+                            if attr.key.as_ref() == b"idref" {
+                                let idref = String::from_utf8_lossy(&attr.value).to_string();
+                                metadata.spine.push(idref);
+                                break;
+                            }
+                        }
+                    } else if len == 8 && name.eq_ignore_ascii_case(b"manifest") {
+                        in_manifest = true;
+                    } else if len == 5 && name.eq_ignore_ascii_case(b"spine") {
+                        in_spine = true;
+                    } else if in_metadata {
+                        // Track element name for text content matching
+                        current_element = String::from_utf8_lossy(name).to_string();
                     }
                 }
                 Ok(Event::Text(ref e)) => {
@@ -190,12 +191,15 @@ impl OpfParser {
                     }
                 }
                 Ok(Event::End(ref e)) => {
-                    let tag_name = String::from_utf8_lossy(e.name().as_ref()).to_lowercase();
-                    match tag_name.as_str() {
-                        "metadata" => in_metadata = false,
-                        "manifest" => in_manifest = false,
-                        "spine" => in_spine = false,
-                        _ => {}
+                    let qn = e.name();
+                    let name = qn.as_ref();
+                    let len = name.len();
+                    if len == 8 && name.eq_ignore_ascii_case(b"metadata") {
+                        in_metadata = false;
+                    } else if len == 8 && name.eq_ignore_ascii_case(b"manifest") {
+                        in_manifest = false;
+                    } else if len == 5 && name.eq_ignore_ascii_case(b"spine") {
+                        in_spine = false;
                     }
                 }
                 Ok(Event::Eof) => break,
@@ -209,21 +213,22 @@ impl OpfParser {
 
     /// Parse spine from OPF data
     pub fn parse_spine(&mut self, data: &[u8]) -> Result<Vec<String>> {
-        self.reader = Reader::from_reader(std::io::Cursor::new(data.to_vec()));
-        self.reader.config_mut().trim_text(true);
+        let mut reader = Reader::from_reader(std::io::Cursor::new(data));
+        reader.config_mut().trim_text(true);
 
         let mut spine = Vec::new();
         let mut in_spine = false;
         let mut buf = Vec::new();
 
         loop {
-            match self.reader.read_event_into(&mut buf) {
+            match reader.read_event_into(&mut buf) {
                 Ok(Event::Start(ref e)) | Ok(Event::Empty(ref e)) => {
-                    let tag_name = String::from_utf8_lossy(e.name().as_ref()).to_lowercase();
-
-                    if tag_name == "spine" {
+                    let qn = e.name();
+                    let name = qn.as_ref();
+                    let len = name.len();
+                    if len == 5 && name.eq_ignore_ascii_case(b"spine") {
                         in_spine = true;
-                    } else if tag_name == "itemref" && in_spine {
+                    } else if len == 7 && name.eq_ignore_ascii_case(b"itemref") && in_spine {
                         for attr in e.attributes().flatten() {
                             if attr.key.as_ref() == b"idref" {
                                 let idref = String::from_utf8_lossy(&attr.value).to_string();
@@ -234,8 +239,9 @@ impl OpfParser {
                     }
                 }
                 Ok(Event::End(ref e)) => {
-                    let tag_name = String::from_utf8_lossy(e.name().as_ref()).to_lowercase();
-                    if tag_name == "spine" {
+                    let qn = e.name();
+                    let name = qn.as_ref();
+                    if name.len() == 5 && name.eq_ignore_ascii_case(b"spine") {
                         in_spine = false;
                     }
                 }

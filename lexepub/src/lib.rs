@@ -8,19 +8,22 @@ pub mod ffi;
 #[cfg(target_arch = "wasm32")]
 pub mod wasm;
 
-#[cfg(all(feature = "c-ffi", not(target_arch = "wasm32")))]
+#[cfg(all(feature = "c-ffi", target_os = "espidf"))]
 mod allocator;
 
 // Re-export core modules for internal use
 pub use core::chapter::{AstNode, Chapter, ChapterStream, ParsedChapter};
 pub use core::container::ContainerParser;
 pub use core::extractor::EpubExtractor;
+#[cfg(not(feature = "lowmem"))]
 pub use core::html_parser::ChapterParser;
 pub use core::ncx_parser::{NcxEntry, NcxInfo, NcxParser};
 pub use core::opf_parser::OpfParser;
 
 // Re-export main API
-pub use epub::{extract_ast, extract_text_only, get_metadata, LexEpub};
+#[cfg(not(feature = "lowmem"))]
+pub use epub::extract_ast;
+pub use epub::{extract_text_only, get_metadata, LexEpub};
 pub use error::{LexEpubError, Result};
 
 // Re-export metadata types
@@ -30,6 +33,7 @@ pub use epub::{EpubMetadata, TocEntry};
 pub mod prelude {
     pub use crate::core::chapter::{AstNode, Chapter, ChapterStream, ParsedChapter};
     pub use crate::core::extractor::EpubExtractor;
+    #[cfg(not(feature = "lowmem"))]
     pub use crate::core::html_parser::ChapterParser;
     pub use crate::core::ncx_parser::{NcxEntry, NcxInfo, NcxParser};
     pub use crate::epub::LexEpub;
@@ -127,8 +131,11 @@ mod lib_tests {
                 );
 
                 // Test extract_ast
-                let result = extract_ast(test_epub).await;
-                assert!(result.is_ok(), "extract_ast failed: {:?}", result.err());
+                #[cfg(not(feature = "lowmem"))]
+                {
+                    let result = extract_ast(test_epub).await;
+                    assert!(result.is_ok(), "extract_ast failed: {:?}", result.err());
+                }
 
                 // Test get_metadata
                 let result = get_metadata(test_epub).await;
@@ -155,16 +162,17 @@ mod lib_tests {
                 assert!(!text_chapters.is_empty());
 
                 // Test AST parsing
-                let ast_chapters = match epub.extract_ast().await {
-                    Ok(chapters) => chapters,
-                    Err(err) => panic!("AST parsing failed: {err}"),
-                };
-                assert!(!ast_chapters.is_empty());
+                #[cfg(not(feature = "lowmem"))]
+                {
+                    let ast_chapters = match epub.extract_ast().await {
+                        Ok(chapters) => chapters,
+                        Err(err) => panic!("AST parsing failed: {err}"),
+                    };
+                    assert!(!ast_chapters.is_empty());
 
-                // Verify AST structure (TODO: currently not implemented)
-                for chapter in &ast_chapters {
-                    // AST parsing not yet implemented
-                    let _ = chapter;
+                    for chapter in &ast_chapters {
+                        let _ = chapter;
+                    }
                 }
             }
         });
@@ -194,7 +202,10 @@ mod lib_tests {
                     Err(err) => panic!("extract_single_chapter(0) failed: {err}"),
                 };
 
-                assert!(!chapter.content.is_empty(), "Chapter content should not be empty");
+                assert!(
+                    !chapter.content.is_empty(),
+                    "Chapter content should not be empty"
+                );
                 assert!(chapter.word_count > 0, "Word count should be > 0");
             }
         });

@@ -1,8 +1,21 @@
+//! ESP-IDF heap allocator shim.
+//!
+//! Maps Rust's `#[global_allocator]` interface onto `memalign`/`free`/`realloc`
+//! from ESP-IDF's heap API.  Only compiled for `target_os = "espidf"` (see
+//! `lib.rs`).
+//!
+//! The `__rust_no_alloc_shim_is_unstable` symbol is required by the Rust
+//! compiler on xtensa-esp32s3-espidf targets when a custom allocator is
+//! registered, if omitted you get a linker error about a missing allocator
+//! shim.
+
 use core::alloc::{GlobalAlloc, Layout};
 
 extern "C" {
     fn memalign(alignment: usize, size: usize) -> *mut u8;
     fn free(ptr: *mut u8);
+    /// ESP-IDF `realloc` follows standard semantics: if `ptr` is null it
+    /// behaves like `malloc`, and if `size` is zero it behaves like `free`.
     fn realloc(ptr: *mut u8, size: usize) -> *mut u8;
 }
 
@@ -25,5 +38,7 @@ unsafe impl GlobalAlloc for EspAlloc {
 #[global_allocator]
 static ALLOCATOR: EspAlloc = EspAlloc;
 
-#[export_name = "_RNvCs8KYW7hILzp0_7___rustc35___rust_no_alloc_shim_is_unstable_v2"]
-fn __rust_no_alloc_shim_is_unstable_v2() {}
+// Required by the Rust compiler on xtensa-espidf targets when a global
+// allocator is set.
+#[no_mangle]
+pub extern "C" fn __rust_no_alloc_shim_is_unstable() {}

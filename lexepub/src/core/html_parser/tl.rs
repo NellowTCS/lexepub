@@ -1,9 +1,12 @@
-use crate::core::chapter::{AstNode, Chapter, ParsedChapter};
+use crate::core::chapter::{
+    AstNode, Chapter, FormattingRun, ParsedChapter, STYLE_BOLD, STYLE_CODE, STYLE_ITALIC,
+    STYLE_STRIKETHROUGH, STYLE_UNDERLINE,
+};
 use crate::error::{LexEpubError, Result};
 use std::collections::HashMap;
 use tl::ParserOptions;
 
-/// Configurable chapter parser
+/// Configurable chapter parser using the `tl` DOM library.
 #[derive(Clone)]
 pub struct ChapterParser {
     pub text_only: bool,
@@ -20,46 +23,44 @@ impl Default for ChapterParser {
 }
 
 impl ChapterParser {
-    /// Create a new chapter parser with default settings
     pub fn new() -> Self {
         Self::default()
     }
 
-    /// Parse chapter text only (fastest)
     pub fn text_only(mut self) -> Self {
         self.text_only = true;
         self.with_ast = false;
         self
     }
 
-    /// Include AST generation
     pub fn with_ast(mut self) -> Self {
         self.text_only = false;
         self.with_ast = true;
         self
     }
 
-    /// Both text and AST
     pub fn with_both(mut self) -> Self {
         self.text_only = false;
         self.with_ast = true;
         self
     }
 
-    /// Parse a chapter into the requested format
     pub fn parse_chapter(&self, chapter: Chapter) -> Result<ParsedChapter> {
         let content_str = std::str::from_utf8(&chapter.content)?;
 
         let ast = if self.with_ast {
-            Some(parse_html_ast(content_str)?)
+            Some(super::parse_html_ast(content_str)?)
         } else {
             None
         };
 
-        let content = if !self.text_only && !self.with_ast {
-            content_str.to_string()
+        let (content, formatting_runs) = if !self.text_only && !self.with_ast {
+            (content_str.to_string(), Vec::new())
         } else {
-            extract_text_content(content_str)?
+            (
+                super::extract_text_content(content_str)?,
+                super::extract_formatting(content_str)?,
+            )
         };
 
         let word_count = content.split_whitespace().count();
@@ -77,15 +78,13 @@ impl ChapterParser {
             title,
             content,
             ast,
+            formatting_runs,
             word_count,
             char_count,
         })
     }
 }
 
-// extract_text_content
-#[cfg(not(feature = "lowmem"))]
-/// Extract clean text content from HTML using tl (full DOM).
 pub fn extract_text_content(html: &str) -> Result<String> {
     let dom = tl::parse(html, ParserOptions::default())
         .map_err(|e| LexEpubError::Html(format!("Failed to parse HTML: {}", e)))?;
@@ -93,12 +92,10 @@ pub fn extract_text_content(html: &str) -> Result<String> {
     let parser = dom.parser();
     let mut text = String::new();
 
-    // Extract text from top-level children
     for handle in dom.children() {
         extract_text_recursive(*handle, parser, &mut text);
     }
 
-    // Clean up excess whitespace and newlines
     let cleaned = text
         .lines()
         .map(|line| line.trim())
@@ -109,7 +106,6 @@ pub fn extract_text_content(html: &str) -> Result<String> {
     Ok(cleaned)
 }
 
-#[cfg(not(feature = "lowmem"))]
 fn extract_text_recursive(handle: tl::NodeHandle, parser: &tl::Parser, output: &mut String) {
     if let Some(node) = handle.get(parser) {
         match node {
@@ -125,12 +121,10 @@ fn extract_text_recursive(handle: tl::NodeHandle, parser: &tl::Parser, output: &
                     "p" | "div" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "br" | "li"
                 );
 
-                // Recursively process children
                 for child_handle in tag.children().top().iter() {
                     extract_text_recursive(*child_handle, parser, output);
                 }
 
-                // Add newlines after block elements
                 if is_block {
                     output.push('\n');
                 }
@@ -140,124 +134,131 @@ fn extract_text_recursive(handle: tl::NodeHandle, parser: &tl::Parser, output: &
     }
 }
 
-/// Lightweight streaming HTML-to-text extractor.
-///
-/// Processes byte chunks incrementally without holding the full HTML input
-/// in memory
-pub struct StreamingTextExtractor {
-    pub in_tag: bool,
-    pub last_was_space: bool,
-    pub output: String,
-    tag_buf: String,
-}
+/// Derive formatting runs from a parsed tl DOM by walking the AST.
+pub fn extract_formatting(html: &str) -> Result<Vec<FormattingRun>> {
+    let dom = tl::parse(html, ParserOptions::default())
+        .map_err(|e| LexEpubError::Html(format!("Failed to parse HTML: {}", e)))?;
 
-impl Default for StreamingTextExtractor {
-    fn default() -> Self {
-        Self::new()
-    }
-}
+    let parser = dom.parser();
+    let mut runs = Vec::new();
+    let mut style_stack = Vec::new();
+    let mut heading_level: u8 = 0;
 
-impl StreamingTextExtractor {
-    pub fn new() -> Self {
-        Self::with_output(String::new())
+    for handle in dom.children() {
+        collect_runs(
+            *handle,
+            parser,
+            &mut runs,
+            &mut style_stack,
+            &mut heading_level,
+        );
     }
 
-    pub fn with_output(output: String) -> Self {
-        Self {
-            in_tag: false,
-            last_was_space: false,
-            output,
-            tag_buf: String::new(),
+    // Flush trailing whitespace-only runs
+    runs.retain(|r| !r.text.is_empty() && r.text != " ");
+    Ok(runs)
+}
+
+fn collect_runs(
+    handle: tl::NodeHandle,
+    parser: &tl::Parser,
+    runs: &mut Vec<FormattingRun>,
+    style_stack: &mut Vec<u8>,
+    heading_level: &mut u8,
+) {
+    let Some(node) = handle.get(parser) else {
+        return;
+    };
+
+    match node {
+        tl::Node::Raw(text_bytes) => {
+            let text_str = text_bytes.as_utf8_str();
+            let decoded = html_escape::decode_html_entities(&text_str);
+            let style = style_stack.iter().fold(0u8, |acc, s| acc | s);
+            if let Some(last) = runs.last_mut() {
+                if last.style == style && last.heading == *heading_level {
+                    last.text.push_str(&decoded);
+                    return;
+                }
+            }
+            runs.push(FormattingRun {
+                text: decoded.into_owned(),
+                style,
+                heading: *heading_level,
+            });
         }
-    }
+        tl::Node::Tag(tag) => {
+            let tag_lower = tag.name().as_utf8_str().to_lowercase();
+            let prev_heading = *heading_level;
 
-    /// Feed a chunk of HTML bytes. Chunks are processed char-by-char with
-    /// simple tag-stripping and whitespace compaction. Multi-byte UTF-8
-    /// sequences that span chunk boundaries are handled via `from_utf8_lossy`.
-    pub fn feed(&mut self, chunk: &[u8]) {
-        let s = String::from_utf8_lossy(chunk);
-        for c in s.chars() {
-            if self.in_tag {
-                if c == '>' {
-                    self.in_tag = false;
-                    let tag = self.tag_buf.trim().trim_start_matches('/').to_ascii_lowercase();
-                    if tag.starts_with('p')
-                        || tag.starts_with("div")
-                        || tag.starts_with("br")
-                        || tag.starts_with('h')
-                        || tag.starts_with("li")
-                    {
-                        self.output.push('\n');
+            match tag_lower.as_str() {
+                "b" | "strong" => style_stack.push(STYLE_BOLD),
+                "i" | "em" => style_stack.push(STYLE_ITALIC),
+                "u" => style_stack.push(STYLE_UNDERLINE),
+                "s" | "strike" | "del" => style_stack.push(STYLE_STRIKETHROUGH),
+                "code" | "tt" | "pre" => style_stack.push(STYLE_CODE),
+                h if h.starts_with('h') && h.len() == 2 => {
+                    if let Ok(n) = h[1..].parse::<u8>() {
+                        if (1..=6).contains(&n) {
+                            *heading_level = n;
+                        }
                     }
-                    self.tag_buf.clear();
-                } else {
-                    self.tag_buf.push(c);
                 }
-            } else if c == '<' {
-                self.in_tag = true;
-                self.tag_buf.clear();
-            } else if c.is_whitespace() {
-                if !self.last_was_space {
-                    self.output.push(' ');
-                    self.last_was_space = true;
+                "br" => {
+                    runs.push(FormattingRun {
+                        text: "\n".into(),
+                        style: 0,
+                        heading: 0,
+                    });
                 }
-            } else {
-                self.output.push(c);
-                self.last_was_space = false;
+                _ => {}
             }
-        }
-    }
 
-    /// Finalize extraction, trim trailing whitespace from each line,
-    /// compact multiple blank lines, and return the result.
-    pub fn finish(mut self) -> Result<String> {
-        let bytes = unsafe { self.output.as_mut_vec() };
-        let len = bytes.len();
-        let mut write = 0usize;
-        let mut first_line = true;
-        let mut i = 0usize;
-        while i < len {
-            let line_start = i;
-            while i < len && bytes[i] != b'\n' {
-                i += 1;
+            for child_handle in tag.children().top().iter() {
+                collect_runs(*child_handle, parser, runs, style_stack, heading_level);
             }
-            let line_end = i;
-            // trim trailing whitespace on the line
-            let mut trim_end = line_end;
-            while trim_end > line_start && bytes[trim_end - 1].is_ascii_whitespace() {
-                trim_end -= 1;
-            }
-            if trim_end > line_start {
-                if !first_line {
-                    bytes[write] = b'\n';
-                    write += 1;
+
+            // Pop style
+            match tag_lower.as_str() {
+                "b" | "strong" => {
+                    style_stack.pop();
                 }
-                let seg_len = trim_end - line_start;
-                if write != line_start {
-                    bytes.copy_within(line_start..trim_end, write);
+                "i" | "em" => {
+                    style_stack.pop();
                 }
-                write += seg_len;
-                first_line = false;
+                "u" => {
+                    style_stack.pop();
+                }
+                "s" | "strike" | "del" => {
+                    style_stack.pop();
+                }
+                "code" | "tt" | "pre" => {
+                    style_stack.pop();
+                }
+                h if h.starts_with('h') && h.len() == 2 => {
+                    *heading_level = prev_heading;
+                }
+                _ => {}
             }
-            if i < len {
-                i += 1; // skip '\n'
+
+            // Block elements emit newline
+            let is_block = matches!(
+                tag_lower.as_str(),
+                "p" | "div" | "h1" | "h2" | "h3" | "h4" | "h5" | "h6" | "li"
+            );
+            if is_block {
+                runs.push(FormattingRun {
+                    text: "\n".into(),
+                    style: 0,
+                    heading: 0,
+                });
             }
         }
-        bytes.truncate(write);
-        Ok(self.output)
+        tl::Node::Comment(_) => {}
     }
 }
 
-#[cfg(feature = "lowmem")]
-/// Extract text from HTML using the streaming char-by-char path (no tl dependency).
-pub fn extract_text_content(html: &str) -> Result<String> {
-    let mut extractor = StreamingTextExtractor::new();
-    extractor.feed(html.as_bytes());
-    extractor.finish()
-}
-
-// AST parsing always uses tl (full HTML must be in memory)
-fn parse_html_ast(html: &str) -> Result<AstNode> {
+pub fn parse_html_ast(html: &str) -> Result<AstNode> {
     let dom = tl::parse(html, ParserOptions::default())
         .map_err(|e| LexEpubError::Html(format!("Failed to parse HTML: {}", e)))?;
 

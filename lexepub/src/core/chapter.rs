@@ -41,10 +41,29 @@ pub enum AstNode {
     },
 }
 
+/// Style flags bitmask for a formatting run.
+pub type StyleFlags = u8;
+pub const STYLE_BOLD: StyleFlags = 1 << 0;
+pub const STYLE_ITALIC: StyleFlags = 1 << 1;
+pub const STYLE_UNDERLINE: StyleFlags = 1 << 2;
+pub const STYLE_STRIKETHROUGH: StyleFlags = 1 << 3;
+pub const STYLE_CODE: StyleFlags = 1 << 4;
+
+/// A segment of text with uniform formatting, produced by HTML text extraction.
+///
+/// Multiple consecutive runs with the same style can be merged by the caller.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FormattingRun {
+    pub text: String,
+    pub style: StyleFlags,
+    /// 0 = not a heading, 1-6 = heading level
+    pub heading: u8,
+}
+
 /// A parsed EPUB chapter with content and metadata
 ///
 /// Contains the extracted text content, optional AST representation,
-/// and statistics about the chapter.
+/// formatting runs for styled rendering, and statistics.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ParsedChapter {
     /// Raw chapter information (ID, href, media type)
@@ -55,6 +74,8 @@ pub struct ParsedChapter {
     pub content: String,
     /// Optional HTML AST representation
     pub ast: Option<AstNode>,
+    /// Styled text segments with heading/style info
+    pub formatting_runs: Vec<FormattingRun>,
     /// Word count in the content
     pub word_count: usize,
     /// Character count in the content
@@ -109,9 +130,10 @@ impl futures::Stream for ChapterStream {
                 // read file bytes from the archive
                 let content = ex.read_file(&path).await?;
 
-                // parse html -> plain text
+                // parse html -> plain text + formatting runs
                 let html_content = String::from_utf8_lossy(&content);
                 let text_content = crate::core::html_parser::extract_text_content(&html_content)?;
+                let formatting_runs = crate::core::html_parser::extract_formatting(&html_content)?;
 
                 let word_count = text_content.split_whitespace().count();
                 let char_count = text_content.chars().count();
@@ -128,6 +150,7 @@ impl futures::Stream for ChapterStream {
                     title: None,
                     content: text_content,
                     ast: None,
+                    formatting_runs,
                     word_count,
                     char_count,
                 })

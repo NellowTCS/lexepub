@@ -11,6 +11,8 @@ namespace capi {
 #endif
 
 typedef struct EpubExtractor EpubExtractor;
+typedef struct ChapterTextStream ChapterTextStream;
+typedef struct ChapterFormattingStream ChapterFormattingStream;
 #ifdef __cplusplus
 } // namespace capi
 #endif
@@ -54,6 +56,10 @@ diplomat_result_void_void EpubExtractor_get_chapter_resource_json(EpubExtractor*
 
 diplomat_result_void_void EpubExtractor_get_chapter(EpubExtractor* self, size_t index, DiplomatWriteable* to);
 
+ChapterTextStream* EpubExtractor_open_chapter_text_stream(EpubExtractor* self, size_t index);
+
+ChapterFormattingStream* EpubExtractor_open_chapter_formatting_stream(EpubExtractor* self, size_t index);
+
 size_t EpubExtractor_get_total_word_count(EpubExtractor* self);
 
 size_t EpubExtractor_get_total_char_count(EpubExtractor* self);
@@ -65,6 +71,15 @@ size_t EpubExtractor_get_cover_image_len(EpubExtractor* self);
 diplomat_result_void_void EpubExtractor_get_cover_image_format(EpubExtractor* self, DiplomatWriteable* to);
 
 diplomat_result_void_void EpubExtractor_get_cover_image_json(EpubExtractor* self, DiplomatWriteable* to);
+bool ChapterTextStream_read_chunk(ChapterTextStream* self, DiplomatWriteable* to);
+void ChapterTextStream_destroy(ChapterTextStream* self);
+
+bool ChapterFormattingStream_next_run(ChapterFormattingStream* self);
+uint8_t ChapterFormattingStream_run_style(ChapterFormattingStream* self);
+uint8_t ChapterFormattingStream_run_heading(ChapterFormattingStream* self);
+diplomat_result_void_void ChapterFormattingStream_run_text(ChapterFormattingStream* self, DiplomatWriteable* to);
+void ChapterFormattingStream_destroy(ChapterFormattingStream* self);
+
 void EpubExtractor_destroy(EpubExtractor* self);
 
 #ifdef __cplusplus

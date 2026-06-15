@@ -403,6 +403,7 @@ impl LexEpub {
     }
 
     /// Extract chapters with AST for advanced processing
+    #[cfg(not(feature = "lowmem"))]
     pub async fn extract_ast(&mut self) -> Result<Vec<ParsedChapter>> {
         self.extract_chapters().await
     }
@@ -629,6 +630,7 @@ impl LexEpub {
             .await
     }
 
+    #[cfg(not(feature = "lowmem"))]
     pub async fn extract_with_ast(&mut self) -> Result<Vec<ParsedChapter>> {
         self.extract_ast().await
     }
@@ -659,14 +661,33 @@ impl LexEpub {
                 let full_path_str = full_path.to_string_lossy();
                 match self.extractor.read_file(&full_path_str).await {
                     Ok(content) => {
-                        let chapter =
-                            Chapter::new(full_path_str.to_string(), item_id.clone(), content);
-                        // Text-only parse: no AST, no CSS
-                        let parser = crate::core::html_parser::ChapterParser::new().text_only();
-                        match parser.parse_chapter(chapter) {
-                            Ok(parsed) => chapters.push(parsed),
+                        let content_str = match std::str::from_utf8(&content) {
+                            Ok(s) => s,
                             Err(_) => continue,
-                        }
+                        };
+                        let text = crate::core::html_parser::extract_text_content(content_str)
+                            .unwrap_or_default();
+                        let formatting = crate::core::html_parser::extract_formatting(content_str)
+                            .unwrap_or_default();
+                        let word_count = text.split_whitespace().count();
+                        let char_count = text.chars().count();
+                        let title = text
+                            .lines()
+                            .find(|l| !l.trim().is_empty())
+                            .map(|s| s.trim().to_string());
+                        chapters.push(ParsedChapter {
+                            chapter_info: Chapter::new(
+                                full_path_str.to_string(),
+                                item_id.clone(),
+                                content,
+                            ),
+                            title,
+                            content: text,
+                            ast: None,
+                            formatting_runs: formatting,
+                            word_count,
+                            char_count,
+                        });
                     }
                     Err(_) => continue,
                 }
@@ -676,6 +697,7 @@ impl LexEpub {
     }
 
     /// Full AST+CSS chapter extraction. Results cached in `self.chapters`.
+    #[cfg(not(feature = "lowmem"))]
     async fn extract_chapters(&mut self) -> Result<Vec<ParsedChapter>> {
         if let Some(ref chapters) = self.chapters {
             return Ok(chapters.clone());
@@ -745,10 +767,7 @@ impl LexEpub {
             self.text_chapters = Some(chapters.iter().map(|c| c.content.clone()).collect());
         }
 
-        #[cfg(not(feature = "lowmem"))]
-        {
-            self.chapters = Some(chapters.clone());
-        }
+        self.chapters = Some(chapters.clone());
 
         Ok(chapters)
     }
@@ -756,7 +775,7 @@ impl LexEpub {
     /// Extract a single chapter by index without loading all chapters into memory.
     ///
     /// With `lowmem` enabled, streams the decompressed XHTML through
-    /// `StreamingTextExtractor` (4 KiB chunk buffer, no large contiguous alloc).
+    /// `FormattingExtractor` (quick-xml StAX, no large contiguous alloc).
     /// Otherwise uses the full `tl` DOM parse.
     pub async fn extract_single_chapter(&mut self, index: usize) -> Result<ParsedChapter> {
         let metadata = self.get_metadata().await?;
@@ -770,38 +789,40 @@ impl LexEpub {
         }
 
         let item_id = &metadata.spine[index];
-        let (href, _) = metadata
-            .manifest
-            .get(item_id)
-            .ok_or_else(|| LexEpubError::MissingFile(format!("Item {} not in manifest", item_id)))?;
+        let (href, _) = metadata.manifest.get(item_id).ok_or_else(|| {
+            LexEpubError::MissingFile(format!("Item {} not in manifest", item_id))
+        })?;
         let resolved = std::path::Path::new(&opf_base).join(href);
         let resolved_str = resolved.to_string_lossy().to_string();
 
         #[cfg(feature = "lowmem")]
         {
-            let buf = self.text_buf.take().unwrap_or(String::new());
-            let mut extractor = crate::core::html_parser::StreamingTextExtractor::with_output(buf);
-            self.extractor
-                .read_entry_chunked(&resolved_str, 4096, &mut |chunk| {
-                    extractor.feed(chunk);
-                    Ok(())
-                })
-                .await?;
-            let content = extractor.finish()?;
+            // Accumulate the full HTML into a single buffer by reading from
+            // the chunked ZIP reader.  We need the full HTML for quick-xml
+            // StAX parsing (it operates on a byte cursor).
+            let html = self.extractor.read_file(&resolved_str).await?;
+            let html_str = std::str::from_utf8(&html)
+                .map_err(|_| LexEpubError::Html("Chapter content is not valid UTF-8".into()))?;
+
+            let formatting_runs = crate::core::html_parser::extract_formatting(html_str)?;
+            let content = crate::core::html_parser::extract_text_content(html_str)?;
+
             let word_count = content.split_whitespace().count();
             let char_count = content.chars().count();
             let title = content
                 .lines()
                 .find(|line| !line.trim().is_empty())
                 .map(|s| s.trim().to_string());
-            return Ok(ParsedChapter {
+
+            Ok(ParsedChapter {
                 chapter_info: Chapter::new(resolved_str, item_id.clone(), Vec::new()),
                 title,
                 content,
                 ast: None,
+                formatting_runs,
                 word_count,
                 char_count,
-            });
+            })
         }
 
         #[cfg(not(feature = "lowmem"))]
@@ -863,7 +884,9 @@ fn normalize_path_for_comparison(path: &str) -> String {
             prev_was_slash = false;
         }
     }
-    result.trim_end_matches('/').to_string()
+    let trim_len = result.trim_end_matches('/').len();
+    result.truncate(trim_len);
+    result
 }
 
 fn resolve_href_against(base_path: &str, href: &str) -> String {
@@ -923,6 +946,7 @@ fn normalize_internal_path(path: &str) -> String {
     parts.join("/")
 }
 
+#[cfg(not(feature = "lowmem"))]
 fn normalize_ast_links(ast: &mut crate::core::chapter::AstNode, chapter_href: &str) {
     use crate::core::chapter::AstNode;
 
@@ -953,6 +977,7 @@ pub async fn extract_text_only<P: AsRef<Path>>(path: P) -> Result<Vec<String>> {
 }
 
 /// Convenience function for AST extraction
+#[cfg(not(feature = "lowmem"))]
 pub async fn extract_ast<P: AsRef<Path>>(path: P) -> Result<Vec<ParsedChapter>> {
     let mut epub = LexEpub::open(path).await?;
     epub.extract_ast().await

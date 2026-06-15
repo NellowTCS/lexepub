@@ -190,10 +190,13 @@ fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     }
 
     // Extract with AST for advanced processing
-    println!("\nAST ANALYSIS");
-    println!("{}", "-".repeat(15));
-    let ast_chapters = futures::executor::block_on(epub.extract_ast())?;
-    println!("Chapters with AST: {}", ast_chapters.len());
+    #[cfg(not(feature = "lowmem"))]
+    {
+        println!("\nAST ANALYSIS");
+        println!("{}", "-".repeat(15));
+        let ast_chapters = futures::executor::block_on(epub.extract_ast())?;
+        println!("Chapters with AST: {}", ast_chapters.len());
+    }
 
     println!("\nEPUB analysis completed successfully!");
     println!("{}", "=".repeat(60));

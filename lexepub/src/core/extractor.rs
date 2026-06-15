@@ -12,8 +12,7 @@ trait AsyncReadSeek: futures::AsyncBufRead + futures::AsyncSeek + Unpin {}
 impl<T: futures::AsyncBufRead + futures::AsyncSeek + Unpin> AsyncReadSeek for T {}
 
 /// Concrete ZIP archive type for file-backed EPUBs.
-type FileArchive =
-    ZipFileReader<FuturesBufReader<AllowStdIo<std::fs::File>>>;
+type FileArchive = ZipFileReader<FuturesBufReader<AllowStdIo<std::fs::File>>>;
 
 /// Low-level EPUB extractor that handles file operations. The extractor can
 /// operate from a file path, an in-memory byte buffer, or a streaming reader
@@ -190,7 +189,10 @@ impl EpubExtractor {
         let mut buf = vec![0u8; chunk_size];
         use futures::AsyncReadExt;
         loop {
-            let n = entry_reader.read(&mut buf).await.map_err(LexEpubError::Io)?;
+            let n = entry_reader
+                .read(&mut buf)
+                .await
+                .map_err(LexEpubError::Io)?;
             if n == 0 {
                 break;
             }
