@@ -18,9 +18,11 @@ export default defineConfig({
         theme_color: '#2196F3',
       },
       workbox: {
+        // Keep docs paths out of app-shell fallback so /lexepub/docs pages are served normally.
+        navigateFallbackDenylist: [/^\/lexepub\/docs(?:\/|$)/],
         runtimeCaching: [
           {
-            urlPattern: /.*\.(js|css|html)$/,
+            urlPattern: /.*\.(js|css)$/,
             handler: 'NetworkFirst',
             options: { cacheName: 'app-shell' },
           },
