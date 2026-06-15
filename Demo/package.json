@@ -39,6 +39,6 @@
     "fs-extra": "^11.3.4",
     "globals": "^17.5.0",
     "rimraf": "^6.1.3",
-    "vite-plugin-pwa": "^1.2.0"
+    "vite-plugin-pwa": "^1.3.0"
   }
 }
