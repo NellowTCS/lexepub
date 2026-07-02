@@ -24,7 +24,7 @@ default = []
 # js = ["quickjs-rs"]
 wasm = []
 c-ffi = []
-embassy = ["embassy-executor/arch-std", "embassy-executor/executor-thread"]
+embassy = ["embassy-executor/platform-std", "embassy-executor/executor-thread"]
 lowmem = []
 
 [package.metadata.docs.rs]
