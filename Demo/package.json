@@ -32,7 +32,7 @@
   "devDependencies": {
     "@eslint/css": "^1.1.0",
     "@eslint/js": "^10.0.1",
-    "@eslint/json": "^1.2.0",
+    "@eslint/json": "^2.0.1",
     "@eslint/markdown": "^8.0.1",
     "babel-jest": "^30.3.0",
     "eslint": "^10.2.0",
