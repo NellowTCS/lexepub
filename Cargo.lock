@@ -1304,7 +1304,7 @@ dependencies = [
  "html-escape",
  "js-sys",
  "lib-epub",
- "quick-xml",
+ "quick-xml 0.40.1",
  "ratatui",
  "serde",
  "serde-wasm-bindgen",
@@ -1324,7 +1324,7 @@ checksum = "93e23438b5d8eb851a90d7f533ea32d4ac5f5857c24567579c4c9ce6795f186a"
 dependencies = [
  "indexmap",
  "log",
- "quick-xml",
+ "quick-xml 0.39.4",
  "sha1",
  "thiserror 2.0.18",
  "zip 8.6.0",
@@ -1830,9 +1830,18 @@ dependencies = [
 
 [[package]]
 name = "quick-xml"
-version = "0.39.3"
+version = "0.39.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "721da970c312655cde9b4ffe0547f20a8494866a4af5ff51f18b7c633d0c870b"
+checksum = "cdcc8dd4e2f670d309a5f0e83fe36dfdc05af317008fea29144da1a2ac858e5e"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
+name = "quick-xml"
+version = "0.40.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2474bd2e5029e7ccb6abb2ba48cf2383a333851dedf495901544281590c7da7f"
 dependencies = [
  "memchr",
 ]
