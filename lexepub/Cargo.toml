@@ -36,7 +36,7 @@ wasm-opt = true
 
 [dependencies]
 futures = "0.3.32"
-quick-xml = "0.40.1"
+quick-xml = "0.41.0"
 # quickjs-rs = { version = "0.5", optional = true }
 tl = "0.7"
 async_zip = { version = "0.0.18", features = ["deflate", "deflate64"] }
