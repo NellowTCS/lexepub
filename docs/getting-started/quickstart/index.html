@@ -10,7 +10,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <meta name="generator" content="docmd v0.5.x">
+    <meta name="generator" content="docmd v0.8.11">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>/**
  * --------------------------------------------------------------------
@@ -29,9 +29,27 @@
 (function () {
   try {
     // 1. Determine Theme
+    //
+    // Resolve from three sources, in priority order:
+    //   1. localStorage explicit user choice (light / dark)
+    //   2. window.DOCMD_APPEARANCE  (current canonical name, set by EJS templates)
+    //   3. window.DOCMD_DEFAULT_MODE (legacy alias kept for pre-0.8.7 outputs)
+    //   4. 'light' as the final fallback
+    //
+    // Note: localStorage is only honoured when it holds an explicit
+    // 'light' or 'dark' value. A stored 'system' value (from a prior
+    // session where the user picked "follow system") must NOT win over
+    // a freshly resolved config value — the resolved value will itself
+    // be 'system' in that case and the OS preference check below takes
+    // over, so this is a no-op for the in-session behaviour but keeps
+    // any future storage migration simple.
     var localValue = localStorage.getItem('docmd-theme');
-    var configValue = window.DOCMD_DEFAULT_MODE || 'light';
-    var theme = localValue ? localValue : configValue;
+    var configValue = window.DOCMD_APPEARANCE
+      || window.DOCMD_DEFAULT_MODE
+      || 'light';
+    var theme = (localValue === 'light' || localValue === 'dark')
+      ? localValue
+      : configValue;
 
     if (theme === 'system') {
       theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -72,10 +90,7 @@
       if (root === '') root = './';
       window.DOCMD_ROOT = root;
 
-      var siteRoot = "../../";
-      if (siteRoot && !siteRoot.endsWith('/')) siteRoot += '/';
-      if (siteRoot === '') siteRoot = './';
-      window.DOCMD_SITE_ROOT = siteRoot;
+      window.DOCMD_SITE_ROOT = "/";
 
       window.DOCMD_APPEARANCE = "system";
       window.DOCMD_VERSION_ROOT = "/";
@@ -86,13 +101,13 @@
     <title>
       Quick Start : LexePub
     </title>
+
+    <base href="/">
     
-    <link rel="stylesheet" href="../../assets/css/docmd-main.css?v=mrbag4np">
+    <link rel="stylesheet" href="../../assets/css/docmd-main.css?v=mrmwe3gz">
     
-    <link rel="stylesheet" href="../../assets/css/docmd-git.css?v=mrbag4np">
-    
-    <link rel="stylesheet" href="../../assets/css/docmd-highlight-light.css?v=mrbag4np" id="hljs-light" >
-    <link rel="stylesheet" href="../../assets/css/docmd-highlight-dark.css?v=mrbag4np" id="hljs-dark" disabled>
+    <link rel="stylesheet" href="../../assets/css/docmd-highlight-light.css?v=mrmwe3gz" id="hljs-light" >
+    <link rel="stylesheet" href="../../assets/css/docmd-highlight-dark.css?v=mrmwe3gz" id="hljs-dark" disabled>
     
     
 <meta name="description" content="Get started parsing EPUB files with LexEpub">
@@ -107,9 +122,9 @@
 
 
 
-<link rel="stylesheet" href="../../assets/css/docmd-theme-ruby.css?v=mrbag4np" >
-<link rel="stylesheet" href="../../assets/css/docmd-git.css?v=mrbag4np" >
-<link rel="stylesheet" href="../../assets/css/docmd-openapi.css?v=mrbag4np" >
+<link rel="stylesheet" href="../../assets/css/docmd-theme-ruby.css?v=mrmwe3gz" >
+<link rel="stylesheet" href="../../assets/css/docmd-git.css?v=mrmwe3gz" >
+<link rel="stylesheet" href="../../assets/css/docmd-openapi.css?v=mrmwe3gz" >
 
     
     <script>/**
@@ -129,9 +144,27 @@
 (function () {
   try {
     // 1. Determine Theme
+    //
+    // Resolve from three sources, in priority order:
+    //   1. localStorage explicit user choice (light / dark)
+    //   2. window.DOCMD_APPEARANCE  (current canonical name, set by EJS templates)
+    //   3. window.DOCMD_DEFAULT_MODE (legacy alias kept for pre-0.8.7 outputs)
+    //   4. 'light' as the final fallback
+    //
+    // Note: localStorage is only honoured when it holds an explicit
+    // 'light' or 'dark' value. A stored 'system' value (from a prior
+    // session where the user picked "follow system") must NOT win over
+    // a freshly resolved config value — the resolved value will itself
+    // be 'system' in that case and the OS preference check below takes
+    // over, so this is a no-op for the in-session behaviour but keeps
+    // any future storage migration simple.
     var localValue = localStorage.getItem('docmd-theme');
-    var configValue = window.DOCMD_DEFAULT_MODE || 'light';
-    var theme = localValue ? localValue : configValue;
+    var configValue = window.DOCMD_APPEARANCE
+      || window.DOCMD_DEFAULT_MODE
+      || 'light';
+    var theme = (localValue === 'light' || localValue === 'dark')
+      ? localValue
+      : configValue;
 
     if (theme === 'system') {
       theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -166,7 +199,7 @@
     data-default-collapsed="false"
     data-copy-code-enabled="true" data-spa-enabled="true" data-source-file="docs/getting-started/quickstart.md">
 
-    <a href="#main-content" class="skip-link">skipToContent</a>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
 
     
     
@@ -206,7 +239,7 @@
         </div>
         
 
-<nav class="sidebar-nav" aria-label="mainNavigation">
+<nav class="sidebar-nav" aria-label="Main Navigation">
   <ul>
     
       <li class="" >
@@ -536,6 +569,8 @@
         </div>
       </aside>
       
+      
+      
       <div class="main-content-wrapper">
         
         
@@ -543,7 +578,7 @@
             <div class="header-left">
               
                 <button id="sidebar-toggle-button" class="sidebar-toggle-button"
-                  aria-label="toggleSidebar">
+                  aria-label="Toggle Sidebar">
                   
 <svg class="lucide-icon icon-chevron-left " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
   class="lucide lucide-chevron-left"
@@ -575,7 +610,7 @@
 
 <div class="docmd-options-menu">
     
-    <button class="docmd-search-trigger" aria-label="search">
+    <button class="docmd-search-trigger" aria-label="Search">
         
 <svg class="lucide-icon icon-search " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
   class="lucide lucide-search"
@@ -593,7 +628,7 @@
   <circle cx="11" cy="11" r="8" />
 </svg>
 
-        <span class="search-label">search</span>
+        <span class="search-label">Search</span>
         <span class="search-keys"><kbd class="docmd-kbd">⌘</kbd><kbd class="docmd-kbd">K</kbd></span>
     </button>
     
@@ -603,7 +638,7 @@
     
 
     
-    <button class="theme-toggle-button" aria-label="toggleTheme">
+    <button class="theme-toggle-button" aria-label="Toggle theme">
         
 <svg class="lucide-icon icon-sun icon-sun" width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
   class="lucide lucide-sun"
@@ -657,17 +692,19 @@
           <main class="content-area" id="main-content">
             <div class="content-layout">
               <div class="main-content">
-                
-                  <nav aria-label="breadcrumb" class="docmd-breadcrumbs">
-                    <ol>
-                      
-                      
-                        <li class="breadcrumb-item " >
-                          
-                            <span>Getting Started</span>
-                          
-                          
-                            <span class="breadcrumb-separator">
+                <div class="docmd-breadcrumbs-row">
+                  <div id="docmd-raw-markdown" data-content="---%0Atitle%3A%20%22Quick%20Start%22%0Adescription%3A%20%22Get%20started%20parsing%20EPUB%20files%20with%20LexEpub%22%0A---%0A%0A%23%20Quick%20start%0A%0AThis%20guide%20outlines%20how%20to%20configure%20your%20project%20to%20use%20LexEpub.%20It%20assumes%20you%20are%20setting%20up%20the%20Rust%20adapter%20inside%20a%20standard%20Cargo%20project.%0A%0AFor%20other%20language%20adapters%2C%20refer%20to%3A%0A%0A-%20%5BRust%20Adapter%5D(%2Fadapters%2Frust%2Findex)%0A-%20%5BC%2FC%2B%2B%20Adapter%5D(%2Fadapters%2Fc%2Findex)%0A-%20%5BWASM%20Adapter%5D(%2Fadapters%2Fwasm%2Findex)%0A%0A%23%23%20Installation%0A%0AAdd%20the%20core%20library%20to%20your%20Rust%20dependencies%20in%20%60Cargo.toml%60%3A%0A%0A%60%60%60toml%0A%5Bdependencies%5D%0Alexepub%20%3D%20%220.1.1%22%0Atokio%20%3D%20%7B%20version%20%3D%20%221%22%2C%20features%20%3D%20%5B%22full%22%5D%20%7D%0A%60%60%60%0A%0AOptional%20features%3A%0A%0A%60%60%60toml%0Alexepub%20%3D%20%7B%20version%20%3D%20%220.1.1%22%2C%20features%20%3D%20%5B%22c-ffi%22%2C%20%22wasm%22%5D%20%7D%0A%60%60%60%0A%0A%23%23%20Useful%20Commands%0A%0AFrom%20the%20repository%20root%3A%0A%0A%60%60%60bash%0Acargo%20fmt%0Acargo%20clippy%20-p%20lexepub%20--all-targets%20--features%20c-ffi%20--%20-D%20warnings%0Acargo%20check%20-p%20lexepub%20--features%20c-ffi%0Acargo%20check%20-p%20lexepub%20--target%20wasm32-unknown-unknown%0A%60%60%60%0A%0AIf%20you%20are%20building%20demo%20WASM%20output%3A%0A%0A%60%60%60bash%0Acd%20lexepub%0Awasm-pack%20build%20--release%20--target%20web%20--out-dir%20%2Fworkspaces%2Flexepub%2FDemo%2Fsrc%2Fwasm%20--out-name%20lexepub%0A%60%60%60%0A%0A%23%23%20Basic%20usage%0A%0AThe%20fundamental%20entry%20point%20for%20parsing%20is%20the%20%60LexEpub%60%20struct.%20Here%20is%20how%20you%20initialize%20the%20parser%20and%20request%20standard%20metadata%3A%0A%0A%60%60%60rust%0Ause%20lexepub%3A%3ALexEpub%3B%0A%0A%23%5Btokio%3A%3Amain%5D%0Aasync%20fn%20main()%20-%3E%20Result%3C()%2C%20Box%3Cdyn%20std%3A%3Aerror%3A%3AError%3E%3E%20%7B%0A%20%20%20%20%2F%2F%20Instantiate%20a%20new%20parser%20against%20a%20local%20file.%0A%20%20%20%20let%20mut%20epub%20%3D%20LexEpub%3A%3Aopen(%22book.epub%22).await%3F%3B%0A%20%20%20%20%0A%20%20%20%20%2F%2F%20Asynchronously%20resolve%20and%20extract%20OPF%20metadata.%0A%20%20%20%20let%20metadata%20%3D%20epub.get_metadata().await%3F%3B%0A%20%20%20%20%0A%20%20%20%20%2F%2F%20Output%20the%20detected%20EPUB%20version.%0A%20%20%20%20println!(%22Detected%20EPUB%20version%3A%20%7B%3A%3F%7D%22%2C%20metadata.version)%3B%0A%20%20%20%20Ok(())%0A%7D%0A%60%60%60%0A%0A%23%23%20Core%20async%20methods%0A%0AUse%20these%20methods%20for%20most%20workflows%3A%0A%0A-%20%60extract_text_only()%60%20for%20plain%20chapter%20text.%0A-%20%60extract_ast()%60%20for%20chapter%20data%20with%20parsed%20AST.%0A-%20%60extract_chapters_stream()%60%20for%20stream-based%20chapter%20processing.%0A-%20%60total_word_count()%60%20and%20%60total_char_count()%60%20for%20aggregate%20analysis.%0A-%20%60has_cover()%60%20and%20%60cover_image()%60%20for%20cover%20lookup%2Fextraction.%0A-%20%60get_toc()%60%20for%20chapter-title-aware%20table%20of%20contents%20entries.%0A-%20%60resolve_chapter_resource_path()%60%20and%20%60read_chapter_resource()%60%20for%20chapter-relative%20internal%20resources.%0A-%20%60read_resource()%60%20for%20direct%20internal%20EPUB%20resource%20reads.%0A%0A%23%23%20Sync%20wrappers%0A%0AFor%20non-async%20contexts%2C%20%60LexEpub%60%20also%20exposes%20sync%20wrappers%3A%0A%0A-%20%60open_sync()%60%0A-%20%60get_metadata_sync()%60%0A-%20%60validate_metadata_sync()%60%0A-%20%60total_word_count_sync()%60%0A-%20%60total_char_count_sync()%60%0A-%20%60has_cover_sync()%60%0A-%20%60cover_image_sync()%60%0A%0A%23%23%20Convenience%20functions%0A%0A%60%60%60rust%0Ause%20lexepub%3A%3A%7Bextract_ast%2C%20extract_text_only%2C%20get_metadata%7D%3B%0A%0Alet%20text%20%3D%20extract_text_only(%22book.epub%22).await%3F%3B%0Alet%20ast%20%3D%20extract_ast(%22book.epub%22).await%3F%3B%0Alet%20metadata%20%3D%20get_metadata(%22book.epub%22).await%3F%3B%0A%60%60%60%0A%0A%23%23%20CSS%20behavior%20in%20AST%20mode%0A%0AWhen%20you%20call%20%60extract_ast()%60%2C%20LexePub%20reads%20%60text%2Fcss%60%20resources%20from%20the%20OPF%20manifest%2C%20parses%20them%2C%20and%20applies%20declarations%20onto%20AST%20elements.%0A%0A-%20AST%20styles%20are%20available%20in%20%60AstNode%3A%3AElement.styles%60.%0A-%20Inline%20%60style%60%20attributes%20are%20merged%20too.%0A-%20Selector%20matching%20is%20intentionally%20EPUB-focused%20(tag%2C%20class%2C%20id%2C%20grouped%20selectors).%0A%0A%3A%3A%3A%20callout%20tip%0AThe%20%60open%60%20invocation%20guarantees%20that%20the%20underlying%20archive%20structure%20is%20verified%20without%20fully%20loading%20the%20uncompressed%20data%20into%20memory.%20Check%20the%20adapter%20documentation%20for%20advanced%20usage%20regarding%20streams.%0A%3A%3A%3A%0A%0A%23%23%20Where%20to%20go%20next%0A%0A-%20Rust%20adapter%20details%3A%20%5BRust%20Adapter%5D(%2Fadapters%2Frust%2Findex)%0A-%20Browser%2FJS%20integration%3A%20%5BWASM%20Adapter%5D(%2Fadapters%2Fwasm%2Findex)%0A-%20Native%20C%2FC%2B%2B%20integration%3A%20%5BC%2FC%2B%2B%20Adapter%5D(%2Fadapters%2Fc%2Findex)%0A" style="display: none;"></div>
+                  
+                    <nav aria-label="breadcrumb" class="docmd-breadcrumbs">
+                      <ol>
+                        
+                        
+                          <li class="breadcrumb-item " >
+                            
+                              <span>Getting Started</span>
+                            
+                            
+                              <span class="breadcrumb-separator">
 <svg class="lucide-icon icon-chevron-right " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
   class="lucide lucide-chevron-right"
   xmlns="http://www.w3.org/2000/svg"
@@ -683,21 +720,69 @@
   <path d="m9 18 6-6-6-6" />
 </svg>
 </span>
-                          
-                        </li>
+                            
+                          </li>
+                        
+                          <li class="breadcrumb-item active" aria-current=&quot;page&quot;>
+                            
+                              <span>Quick Start</span>
+                            
+                            
+                          </li>
+                        
+                      </ol>
+                    </nav>
+                  
+
+                  
+                    <div class="docmd-copy-widgets">
                       
-                        <li class="breadcrumb-item active" aria-current=&quot;page&quot;>
-                          
-                            <span>Quick Start</span>
-                          
-                          
-                        </li>
+                        <button class="docmd-copy-btn docmd-copy-raw-btn" data-copied="Copied!" title="Copy Markdown" aria-label="Copy Markdown">
+                          <span class="docmd-btn-icon">
+<svg class="lucide-icon icon-copy " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+  class="lucide lucide-copy"
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+</svg>
+</span>
+                        </button>
                       
-                    </ol>
-                  </nav>
+                      
+                        <button class="docmd-copy-btn docmd-copy-context-btn" data-copied="Copied!" title="Copy Context">
+                          <span class="docmd-btn-icon">
+<svg class="lucide-icon icon-message-square " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+  class="lucide lucide-message-square"
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z" />
+</svg>
+</span>
+                          <span class="docmd-btn-text">Copy Context</span>
+                        </button>
+                      
+                    </div>
+                  
+                </div>
                 
-                
-                <h1 id="quick-start">Quick start</h1>
+                <h1 id="quick-start" class="docmd-heading"><a href="#quick-start" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>Quick start</h1>
 <p>This guide outlines how to configure your project to use LexEpub. It assumes you are setting up the Rust adapter inside a standard Cargo project.</p>
 <p>For other language adapters, refer to:</p>
 <ul>
@@ -707,27 +792,27 @@
 </ul>
 <h2 id="quick-start-installation" class="docmd-heading"><a href="#quick-start-installation" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>Installation</h2>
 <p>Add the core library to your Rust dependencies in <code>Cargo.toml</code>:</p>
-<pre class="hljs"><code>[dependencies]
+<pre class="hljs"><code class="language-toml">[dependencies]
 lexepub <span class="hljs-punctuation">=</span> <span class="hljs-string">&quot;0.1.1&quot;</span>
 tokio <span class="hljs-punctuation">=</span> { version <span class="hljs-punctuation">=</span> <span class="hljs-string">&quot;1&quot;</span>, features <span class="hljs-punctuation">=</span> [<span class="hljs-string">&quot;full&quot;</span>] }
 </code></pre>
 <p>Optional features:</p>
-<pre class="hljs"><code>lexepub <span class="hljs-punctuation">=</span> { version <span class="hljs-punctuation">=</span> <span class="hljs-string">&quot;0.1.1&quot;</span>, features <span class="hljs-punctuation">=</span> [<span class="hljs-string">&quot;c-ffi&quot;</span>, <span class="hljs-string">&quot;wasm&quot;</span>] }
+<pre class="hljs"><code class="language-toml">lexepub <span class="hljs-punctuation">=</span> { version <span class="hljs-punctuation">=</span> <span class="hljs-string">&quot;0.1.1&quot;</span>, features <span class="hljs-punctuation">=</span> [<span class="hljs-string">&quot;c-ffi&quot;</span>, <span class="hljs-string">&quot;wasm&quot;</span>] }
 </code></pre>
 <h2 id="quick-start-useful-commands" class="docmd-heading"><a href="#quick-start-useful-commands" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>Useful Commands</h2>
 <p>From the repository root:</p>
-<pre class="hljs"><code><span class="hljs-keyword">cargo</span> fmt
+<pre class="hljs"><code class="language-bash"><span class="hljs-keyword">cargo</span> fmt
 <span class="hljs-keyword">cargo</span> clippy <span class="hljs-punctuation">-</span>p lexepub <span class="hljs-punctuation">--</span>all<span class="hljs-punctuation">-</span>targets <span class="hljs-punctuation">--</span>features c<span class="hljs-punctuation">-</span>ffi <span class="hljs-punctuation">--</span> <span class="hljs-punctuation">-</span>D warnings
 <span class="hljs-keyword">cargo</span> check <span class="hljs-punctuation">-</span>p lexepub <span class="hljs-punctuation">--</span>features c<span class="hljs-punctuation">-</span>ffi
 <span class="hljs-keyword">cargo</span> check <span class="hljs-punctuation">-</span>p lexepub <span class="hljs-punctuation">--</span>target wasm32<span class="hljs-punctuation">-</span>unknown<span class="hljs-punctuation">-</span>unknown
 </code></pre>
 <p>If you are building demo WASM output:</p>
-<pre class="hljs"><code><span class="hljs-keyword">cd</span> lexepub
+<pre class="hljs"><code class="language-bash"><span class="hljs-keyword">cd</span> lexepub
 wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuation">--</span>release <span class="hljs-punctuation">--</span>target web <span class="hljs-punctuation">--</span>out<span class="hljs-punctuation">-</span>dir <span class="hljs-punctuation">/</span>workspaces<span class="hljs-punctuation">/</span>lexepub<span class="hljs-punctuation">/</span>Demo<span class="hljs-punctuation">/</span>src<span class="hljs-punctuation">/</span>wasm <span class="hljs-punctuation">--</span>out<span class="hljs-punctuation">-</span>name lexepub
 </code></pre>
 <h2 id="quick-start-basic-usage" class="docmd-heading"><a href="#quick-start-basic-usage" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>Basic usage</h2>
 <p>The fundamental entry point for parsing is the <code>LexEpub</code> struct. Here is how you initialize the parser and request standard metadata:</p>
-<pre class="hljs"><code><span class="hljs-keyword">use</span> lexepub<span class="hljs-punctuation">::</span>LexEpub;
+<pre class="hljs"><code class="language-rust"><span class="hljs-keyword">use</span> lexepub<span class="hljs-punctuation">::</span>LexEpub;
 
 <span class="hljs-comment">#[tokio::main]</span>
 <span class="hljs-keyword">async</span> <span class="hljs-keyword">fn</span> <span class="hljs-title function_">main</span>() <span class="hljs-punctuation">-&gt;</span> Result<span class="hljs-punctuation">&lt;</span>(), Box<span class="hljs-punctuation">&lt;</span>dyn std<span class="hljs-punctuation">::</span>error<span class="hljs-punctuation">::</span>Error<span class="hljs-punctuation">&gt;&gt;</span> {
@@ -766,7 +851,7 @@ wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuat
 <li><code>cover_image_sync()</code></li>
 </ul>
 <h2 id="quick-start-convenience-functions" class="docmd-heading"><a href="#quick-start-convenience-functions" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>Convenience functions</h2>
-<pre class="hljs"><code><span class="hljs-keyword">use</span> lexepub<span class="hljs-punctuation">::</span>{extract_ast, extract_text_only, get_metadata};
+<pre class="hljs"><code class="language-rust"><span class="hljs-keyword">use</span> lexepub<span class="hljs-punctuation">::</span>{extract_ast, extract_text_only, get_metadata};
 
 <span class="hljs-keyword">let</span> text <span class="hljs-punctuation">=</span> <span class="hljs-title function_">extract_text_only</span>(<span class="hljs-string">&quot;book.epub&quot;</span>).<span class="hljs-keyword">await</span><span class="hljs-punctuation">?</span>;
 <span class="hljs-keyword">let</span> ast <span class="hljs-punctuation">=</span> <span class="hljs-title function_">extract_ast</span>(<span class="hljs-string">&quot;book.epub&quot;</span>).<span class="hljs-keyword">await</span><span class="hljs-punctuation">?</span>;
@@ -810,14 +895,14 @@ wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuat
   <path d="M19 12H5" />
 </svg>
 
-                        <span><small>previous</small><strong>
+                        <span><small>Previous</small><strong>
                             Home
                           </strong></span>
                       </a>
                     
                     
                       <a href="../../adapters/c/" class="next-page">
-                        <span><small>next</small>
+                        <span><small>Next</small>
                           <strong>
                             C/C++
                           </strong></span>
@@ -848,7 +933,7 @@ wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuat
 
 
   <div class="toc-container">
-    <h2 class="toc-title">onThisPage<span class="mobile-view toc-menu-button float-right">
+    <h2 class="toc-title">On This Page<span class="mobile-view toc-menu-button float-right">
 <svg class="lucide-icon icon-chevron-down " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
   class="lucide lucide-chevron-down"
   xmlns="http://www.w3.org/2000/svg"
@@ -865,6 +950,10 @@ wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuat
 </svg>
 </span></h2>
     <ul class="toc-list">
+      
+        <li class="toc-item toc-level-1">
+          <a href="#quick-start" class="toc-link">Quick start</a>
+        </li>
       
         <li class="toc-item toc-level-2">
           <a href="#quick-start-installation" class="toc-link">Installation</a>
@@ -906,13 +995,13 @@ wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuat
             <div class="page-footer-actions">
               
               
-                <span class="git-last-updated" data-timestamp="1783467385000">
+                <span class="git-last-updated" data-timestamp="1784169366000">
                   <svg class="git-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <polyline points="12 6 12 12 16 14"></polyline>
                   </svg>
                   <span class="git-label">Last updated:</span>
-                  <span class="git-time" data-timestamp="1783467385000"></span>
+                  <span class="git-time" data-timestamp="1784169366000"></span>
                   
                   <div class="git-commit-tooltip" role="tooltip">
                     <div class="git-tooltip-title">Recent commits</div>
@@ -925,10 +1014,10 @@ wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuat
                             
                           </div>
                           <div class="git-commit-details">
-                            <div class="git-commit-message" title="Merge pull request #19 from NellowTCS/dependabot/cargo/html-escape-0.2.14">Merge pull request #19 from NellowTCS...</div>
+                            <div class="git-commit-message" title="Merge pull request #29 from NellowTCS/dependabot/npm_and_yarn/Docs/docmd/core-0.8.11">Merge pull request #29 from NellowTCS...</div>
                             <div class="git-commit-meta">
                               <span class="git-commit-author">NellowTCS</span>
-                              <span class="git-commit-date" data-timestamp="1783467385000"></span>
+                              <span class="git-commit-date" data-timestamp="1784169366000"></span>
                             </div>
                           </div>
                         </li>
@@ -950,7 +1039,7 @@ wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuat
     <div class="user-footer">Built with docmd.</div>
     
       <div class="branding-footer">
-        builtWith <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path><path d="M12 5 9.04 7.96a2.17 2.17 0 0 0 0 3.08c.82.82 2.13.85 3 .07l2.07-1.9a2.82 2.82 0 0 1 3.79 0l2.96 2.66"></path><path d="m18 15-2-2"></path><path d="m15 18-2-2"></path></svg> <a href="https://docmd.io" target="_blank" rel="noopener">docmd.</a>
+        Built with <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path><path d="M12 5 9.04 7.96a2.17 2.17 0 0 0 0 3.08c.82.82 2.13.85 3 .07l2.07-1.9a2.82 2.82 0 0 1 3.79 0l2.96 2.66"></path><path d="m18 15-2-2"></path><path d="m15 18-2-2"></path></svg> <a href="https://docmd.io" target="_blank" rel="noopener">docmd.</a>
       </div>
     
   </div>
@@ -959,17 +1048,16 @@ wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuat
         </div>
       </div>
       
-      <script src="../../assets/js/docmd-main.js?v=mrbag4np"></script>
+      <script src="../../assets/js/docmd-main.js?v=mrmwe3gz"></script>
       
-      <script src="../../assets/js/docmd-git.js?v=mrbag4np"></script>
-      <script src="../../assets/js/docmd-image-lightbox.js?v=mrbag4np" ></script>
+      <script src="../../assets/js/docmd-git.js?v=mrmwe3gz"></script>
+      <script src="../../assets/js/docmd-image-lightbox.js?v=mrmwe3gz" ></script>
 <script src="https://cdn.jsdelivr.net/npm/minisearch@7.2.0/dist/umd/index.min.js" ></script>
-<script src="../../assets/js/docmd-search.js?v=mrbag4np" ></script>
-<script src="../../assets/js/init-mermaid.js?v=mrbag4np" type="module"></script>
-<script src="../../assets/js/docmd-git.js?v=mrbag4np" type="module"></script>
+<script src="../../assets/js/docmd-search.js?v=mrmwe3gz" ></script>
+<script src="../../assets/js/docmd-git.js?v=mrmwe3gz" type="module"></script>
 
   <!-- Search Modal (Injected by @docmd/plugin-search) -->
-  <div id="docmd-search-modal" class="docmd-search-modal" style="display: none;"
+  <div id="docmd-search-modal" class="docmd-search-modal" style="display: none;" data-show-confidence="false" data-show-filters="true"
        data-search-placeholder="Search documentation..."
        data-search-no-results="No results found."
        data-search-error="Failed to load search index."
@@ -1040,6 +1128,8 @@ wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuat
     </script>
 
 <script>window.__git_config={"repo":null,"branch":"main","editLink":false,"lastUpdated":true,"commitHistory":true,"maxCommits":5,"dateFormat":"relative"};window.__git_i18n={"lastUpdated":"Last updated","recentCommits":"Recent commits","viewCommitHistory":"View commit history","editOnGitHub":"Edit on GitHub","editOnGitLab":"Edit on GitLab","editOnBitbucket":"Edit on Bitbucket","editThisPage":"Edit this page","justNow":"just now","minutesAgo":"{n}m ago","hoursAgo":"{n}h ago","daysAgo":"{n}d ago"}</script>
+      
+      
       
   </body>
 </html>

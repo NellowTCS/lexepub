@@ -10,7 +10,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <meta name="generator" content="docmd v0.5.x">
+    <meta name="generator" content="docmd v0.8.11">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>/**
  * --------------------------------------------------------------------
@@ -29,9 +29,27 @@
 (function () {
   try {
     // 1. Determine Theme
+    //
+    // Resolve from three sources, in priority order:
+    //   1. localStorage explicit user choice (light / dark)
+    //   2. window.DOCMD_APPEARANCE  (current canonical name, set by EJS templates)
+    //   3. window.DOCMD_DEFAULT_MODE (legacy alias kept for pre-0.8.7 outputs)
+    //   4. 'light' as the final fallback
+    //
+    // Note: localStorage is only honoured when it holds an explicit
+    // 'light' or 'dark' value. A stored 'system' value (from a prior
+    // session where the user picked "follow system") must NOT win over
+    // a freshly resolved config value — the resolved value will itself
+    // be 'system' in that case and the OS preference check below takes
+    // over, so this is a no-op for the in-session behaviour but keeps
+    // any future storage migration simple.
     var localValue = localStorage.getItem('docmd-theme');
-    var configValue = window.DOCMD_DEFAULT_MODE || 'light';
-    var theme = localValue ? localValue : configValue;
+    var configValue = window.DOCMD_APPEARANCE
+      || window.DOCMD_DEFAULT_MODE
+      || 'light';
+    var theme = (localValue === 'light' || localValue === 'dark')
+      ? localValue
+      : configValue;
 
     if (theme === 'system') {
       theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -72,10 +90,7 @@
       if (root === '') root = './';
       window.DOCMD_ROOT = root;
 
-      var siteRoot = "./";
-      if (siteRoot && !siteRoot.endsWith('/')) siteRoot += '/';
-      if (siteRoot === '') siteRoot = './';
-      window.DOCMD_SITE_ROOT = siteRoot;
+      window.DOCMD_SITE_ROOT = "/";
 
       window.DOCMD_APPEARANCE = "system";
       window.DOCMD_VERSION_ROOT = "/";
@@ -86,13 +101,13 @@
     <title>
       LexePub
     </title>
+
+    <base href="/">
     
-    <link rel="stylesheet" href="./assets/css/docmd-main.css?v=mrbag4np">
+    <link rel="stylesheet" href="./assets/css/docmd-main.css?v=mrmwe3gz">
     
-    <link rel="stylesheet" href="./assets/css/docmd-git.css?v=mrbag4np">
-    
-    <link rel="stylesheet" href="./assets/css/docmd-highlight-light.css?v=mrbag4np" id="hljs-light" >
-    <link rel="stylesheet" href="./assets/css/docmd-highlight-dark.css?v=mrbag4np" id="hljs-dark" disabled>
+    <link rel="stylesheet" href="./assets/css/docmd-highlight-light.css?v=mrmwe3gz" id="hljs-light" >
+    <link rel="stylesheet" href="./assets/css/docmd-highlight-dark.css?v=mrmwe3gz" id="hljs-dark" disabled>
     
     
 <meta name="description" content="High-performance, memory-efficient EPUB parsing for multiple runtimes">
@@ -107,9 +122,9 @@
 
 
 
-<link rel="stylesheet" href="./assets/css/docmd-theme-ruby.css?v=mrbag4np" >
-<link rel="stylesheet" href="./assets/css/docmd-git.css?v=mrbag4np" >
-<link rel="stylesheet" href="./assets/css/docmd-openapi.css?v=mrbag4np" >
+<link rel="stylesheet" href="./assets/css/docmd-theme-ruby.css?v=mrmwe3gz" >
+<link rel="stylesheet" href="./assets/css/docmd-git.css?v=mrmwe3gz" >
+<link rel="stylesheet" href="./assets/css/docmd-openapi.css?v=mrmwe3gz" >
 
     
     <script>/**
@@ -129,9 +144,27 @@
 (function () {
   try {
     // 1. Determine Theme
+    //
+    // Resolve from three sources, in priority order:
+    //   1. localStorage explicit user choice (light / dark)
+    //   2. window.DOCMD_APPEARANCE  (current canonical name, set by EJS templates)
+    //   3. window.DOCMD_DEFAULT_MODE (legacy alias kept for pre-0.8.7 outputs)
+    //   4. 'light' as the final fallback
+    //
+    // Note: localStorage is only honoured when it holds an explicit
+    // 'light' or 'dark' value. A stored 'system' value (from a prior
+    // session where the user picked "follow system") must NOT win over
+    // a freshly resolved config value — the resolved value will itself
+    // be 'system' in that case and the OS preference check below takes
+    // over, so this is a no-op for the in-session behaviour but keeps
+    // any future storage migration simple.
     var localValue = localStorage.getItem('docmd-theme');
-    var configValue = window.DOCMD_DEFAULT_MODE || 'light';
-    var theme = localValue ? localValue : configValue;
+    var configValue = window.DOCMD_APPEARANCE
+      || window.DOCMD_DEFAULT_MODE
+      || 'light';
+    var theme = (localValue === 'light' || localValue === 'dark')
+      ? localValue
+      : configValue;
 
     if (theme === 'system') {
       theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -166,7 +199,7 @@
     data-default-collapsed="false"
     data-copy-code-enabled="true" data-spa-enabled="true" data-source-file="docs/index.md">
 
-    <a href="#main-content" class="skip-link">skipToContent</a>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
 
     
     
@@ -206,7 +239,7 @@
         </div>
         
 
-<nav class="sidebar-nav" aria-label="mainNavigation">
+<nav class="sidebar-nav" aria-label="Main Navigation">
   <ul>
     
       <li class="active" >
@@ -536,6 +569,8 @@
         </div>
       </aside>
       
+      
+      
       <div class="main-content-wrapper">
         
         
@@ -543,7 +578,7 @@
             <div class="header-left">
               
                 <button id="sidebar-toggle-button" class="sidebar-toggle-button"
-                  aria-label="toggleSidebar">
+                  aria-label="Toggle Sidebar">
                   
 <svg class="lucide-icon icon-chevron-left " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
   class="lucide lucide-chevron-left"
@@ -575,7 +610,7 @@
 
 <div class="docmd-options-menu">
     
-    <button class="docmd-search-trigger" aria-label="search">
+    <button class="docmd-search-trigger" aria-label="Search">
         
 <svg class="lucide-icon icon-search " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
   class="lucide lucide-search"
@@ -593,7 +628,7 @@
   <circle cx="11" cy="11" r="8" />
 </svg>
 
-        <span class="search-label">search</span>
+        <span class="search-label">Search</span>
         <span class="search-keys"><kbd class="docmd-kbd">⌘</kbd><kbd class="docmd-kbd">K</kbd></span>
     </button>
     
@@ -603,7 +638,7 @@
     
 
     
-    <button class="theme-toggle-button" aria-label="toggleTheme">
+    <button class="theme-toggle-button" aria-label="Toggle theme">
         
 <svg class="lucide-icon icon-sun icon-sun" width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
   class="lucide lucide-sun"
@@ -657,21 +692,71 @@
           <main class="content-area" id="main-content">
             <div class="content-layout">
               <div class="main-content">
-                
-                  <nav aria-label="breadcrumb" class="docmd-breadcrumbs">
-                    <ol>
+                <div class="docmd-breadcrumbs-row">
+                  <div id="docmd-raw-markdown" data-content="---%0Atitle%3A%20%22LexePub%22%0Adescription%3A%20%22High-performance%2C%20memory-efficient%20EPUB%20parsing%20for%20multiple%20runtimes%22%0A---%0A%0A**LexePub**%20is%20a%20robust%20parser%20and%20extractor%20for%20EPUB%20files.%20It%20provides%20asynchronous%20streaming%2C%20metadata%20validation%2C%20and%20asset%20extraction%20across%20Rust%2C%20C%2FC%2B%2B%2C%20and%20WebAssembly%20from%20a%20single%20core%20implementation.%0A%0A%3A%3A%3A%20callout%20tip%0ALexePub%20focuses%20heavily%20on%20minimizing%20memory%20footprint.%20You%20can%20stream%20chapter%20extraction%20and%20still%20get%20structured%20AST%20output%20with%20CSS%20styles%20applied.%0A%3A%3A%3A%0A%0A%23%23%20What%20it%20solves%0A%0AYou&#039;re%20building%20an%20e-reader%20or%20book%20management%20system%20that%20needs%20to%20process%20EPUB%20files%20efficiently.%20Normally%2C%20that%20means%20loading%20massive%20archives%20entirely%20into%20memory%2C%20dealing%20with%20OPF%20manifest%20edge%20cases%2C%20or%20juggling%20different%20APIs%20for%20each%20runtime.%0A%0ALexePub%20replaces%20that%20with%20one%20core%20parser%20and%20thin%20language%20adapters.%20Parse%20once%20using%20memory-safe%20async%20streams%2C%20then%20consume%20the%20same%20chapter%2Fmetadata%20behavior%20from%20Rust%2C%20WASM%2C%20and%20C%2FC%2B%2B.%0A%0A%23%23%20Features%0A%0A%3A%3A%3A%20card%20Streaming-Friendly%20Core%0ARead%20chapters%20sequentially%20and%20process%20content%20without%20requiring%20full-book%20materialization%20in%20memory.%0A%3A%3A%3A%0A%0A%3A%3A%3A%20card%20Multi-Platform%20Adapters%0AWritten%20in%20async%20Rust%20at%20the%20core%2C%20exported%20to%20C%2FC%2B%2B%20via%20Diplomat%20and%20JavaScript%2FTypeScript%20via%20WebAssembly.%0A%3A%3A%3A%0A%0A%3A%3A%3A%20card%20Strict%20Metadata%20Validation%0AAutomatically%20detects%20EPUB%20versions%20(2.0%20vs%203.0)%2C%20resolves%20OPF%20manifest%20links%2C%20and%20validates%20required%20metadata%20structure%20according%20to%20the%20standards.%20%0A%3A%3A%3A%0A%0A%3A%3A%3A%20card%20CSS-Aware%20AST%0AManifest%20CSS%20resources%20are%20parsed%20and%20applied%20to%20chapter%20AST%20nodes.%20Styles%20are%20merged%20into%20each%20element&#039;s%20%60styles%60%20map.%0A%3A%3A%3A%0A%0A%3A%3A%3A%20card%20Resource%20%2B%20TOC%20Utilities%0AResolve%20chapter-relative%20links%2C%20load%20internal%20EPUB%20resources%20(images%2Fassets)%2C%20and%20consume%20normalized%20TOC%20entries%20with%20chapter%20titles.%0A%3A%3A%3A%0A%0A%23%23%20Adapter%20parity%0A%0ALexePub%20tries%20to%20have%20parity%20between%20adapters%2C%20C%2FC%2B%2B%2C%20WASM%2C%20and%20Rust.%0A%0A-%20Metadata%20APIs%20(structured%20%2B%20JSON%20%2B%20validation)%0A-%20Chapter%20APIs%20(text%20%2B%20AST%20%2B%20per-chapter%20lookup)%0A-%20TOC%20APIs%20(chapter%20titles%20%2B%20href%2Findex%20mapping)%0A-%20Resource%20APIs%20(resolve%20chapter%20href%2C%20read%20internal%20EPUB%20bytes)%0A-%20Cover%20APIs%20(presence%2C%20bytes%2Fjson%20bytes%2C%20mime%2C%20length)%0A%0AThe%20data%20transport%20differs%20by%20runtime%20(native%20structs%20vs%20JS%20objects%20vs%20C%20writeables)%2C%20however!%0A%0A%23%23%20API%20overview%0A%0A-%20Rust%20adapter%3A%20async%20API%20plus%20sync%20wrappers%20where%20relevant.%0A-%20WASM%20adapter%3A%20async%20JS-facing%20API%20from%20%60wasm-bindgen%60.%0A-%20C%2FC%2B%2B%20adapter%3A%20Diplomat-generated%20API%20using%20%60DiplomatWriteable%60%20for%20structured%20outputs.%0A%0AFor%20complete%20setup%20instructions%2C%20see%20%5BQuick%20Start%5D(%2Fgetting-started%2Fquickstart).%0AFor%20runtime-specific%20APIs%2C%20see%3A%0A%0A-%20%5BRust%20Adapter%5D(%2Fadapters%2Frust%2Findex)%0A-%20%5BC%2FC%2B%2B%20Adapter%5D(%2Fadapters%2Fc%2Findex)%0A-%20%5BWASM%20Adapter%5D(%2Fadapters%2Fwasm%2Findex)%0A" style="display: none;"></div>
+                  
+                    <nav aria-label="breadcrumb" class="docmd-breadcrumbs">
+                      <ol>
+                        
+                        
+                          <li class="breadcrumb-item active" aria-current=&quot;page&quot;>
+                            
+                              <span>Home</span>
+                            
+                            
+                          </li>
+                        
+                      </ol>
+                    </nav>
+                  
+
+                  
+                    <div class="docmd-copy-widgets">
+                      
+                        <button class="docmd-copy-btn docmd-copy-raw-btn" data-copied="Copied!" title="Copy Markdown" aria-label="Copy Markdown">
+                          <span class="docmd-btn-icon">
+<svg class="lucide-icon icon-copy " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+  class="lucide lucide-copy"
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+</svg>
+</span>
+                        </button>
                       
                       
-                        <li class="breadcrumb-item active" aria-current=&quot;page&quot;>
-                          
-                            <span>Home</span>
-                          
-                          
-                        </li>
+                        <button class="docmd-copy-btn docmd-copy-context-btn" data-copied="Copied!" title="Copy Context">
+                          <span class="docmd-btn-icon">
+<svg class="lucide-icon icon-message-square " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+  class="lucide lucide-message-square"
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z" />
+</svg>
+</span>
+                          <span class="docmd-btn-text">Copy Context</span>
+                        </button>
                       
-                    </ol>
-                  </nav>
-                
+                    </div>
+                  
+                </div>
                 
                 <p><strong>LexePub</strong> is a robust parser and extractor for EPUB files. It provides asynchronous streaming, metadata validation, and asset extraction across Rust, C/C++, and WebAssembly from a single core implementation.</p>
 <div class="docmd-container callout callout-tip"><div class="callout-content">
@@ -681,22 +766,12 @@
 <p>You’re building an e-reader or book management system that needs to process EPUB files efficiently. Normally, that means loading massive archives entirely into memory, dealing with OPF manifest edge cases, or juggling different APIs for each runtime.</p>
 <p>LexePub replaces that with one core parser and thin language adapters. Parse once using memory-safe async streams, then consume the same chapter/metadata behavior from Rust, WASM, and C/C++.</p>
 <h2 id="features" class="docmd-heading"><a href="#features" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>Features</h2>
-<div class="docmd-container card"><div class="card-title">Streaming-Friendly Core</div><div class="card-content">
-<p>Read chapters sequentially and process content without requiring full-book materialization in memory.</p>
-</div></div>
-<div class="docmd-container card"><div class="card-title">Multi-Platform Adapters</div><div class="card-content">
-<p>Written in async Rust at the core, exported to C/C++ via Diplomat and JavaScript/TypeScript via WebAssembly.</p>
-</div></div>
-<div class="docmd-container card"><div class="card-title">Strict Metadata Validation</div><div class="card-content">
-<p>Automatically detects EPUB versions (2.0 vs 3.0), resolves OPF manifest links, and validates required metadata structure according to the standards.</p>
-</div></div>
-<div class="docmd-container card"><div class="card-title">CSS-Aware AST</div><div class="card-content">
-<p>Manifest CSS resources are parsed and applied to chapter AST nodes. Styles are merged into each element’s <code>styles</code> map.</p>
-</div></div>
-<div class="docmd-container card"><div class="card-title">Resource + TOC Utilities</div><div class="card-content">
-<p>Resolve chapter-relative links, load internal EPUB resources (images/assets), and consume normalized TOC entries with chapter titles.</p>
-</div></div>
-<h2 id="adapter-parity" class="docmd-heading"><a href="#adapter-parity" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>Adapter parity</h2>
+<div class="docmd-container card"><div class="card-title">Streaming-Friendly Core</div><div class="card-content"><p>Read chapters sequentially and process content without requiring full-book materialization in memory.</p>
+</div></div><div class="docmd-container card"><div class="card-title">Multi-Platform Adapters</div><div class="card-content"><p>Written in async Rust at the core, exported to C/C++ via Diplomat and JavaScript/TypeScript via WebAssembly.</p>
+</div></div><div class="docmd-container card"><div class="card-title">Strict Metadata Validation</div><div class="card-content"><p>Automatically detects EPUB versions (2.0 vs 3.0), resolves OPF manifest links, and validates required metadata structure according to the standards.</p>
+</div></div><div class="docmd-container card"><div class="card-title">CSS-Aware AST</div><div class="card-content"><p>Manifest CSS resources are parsed and applied to chapter AST nodes. Styles are merged into each element’s <code>styles</code> map.</p>
+</div></div><div class="docmd-container card"><div class="card-title">Resource + TOC Utilities</div><div class="card-content"><p>Resolve chapter-relative links, load internal EPUB resources (images/assets), and consume normalized TOC entries with chapter titles.</p>
+</div></div><h2 id="adapter-parity" class="docmd-heading"><a href="#adapter-parity" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>Adapter parity</h2>
 <p>LexePub tries to have parity between adapters, C/C++, WASM, and Rust.</p>
 <ul>
 <li>Metadata APIs (structured + JSON + validation)</li>
@@ -728,7 +803,7 @@ For runtime-specific APIs, see:</p>
                     
                     
                       <a href="./getting-started/quickstart/" class="next-page">
-                        <span><small>next</small>
+                        <span><small>Next</small>
                           <strong>
                             Quick Start
                           </strong></span>
@@ -759,7 +834,7 @@ For runtime-specific APIs, see:</p>
 
 
   <div class="toc-container">
-    <h2 class="toc-title">onThisPage<span class="mobile-view toc-menu-button float-right">
+    <h2 class="toc-title">On This Page<span class="mobile-view toc-menu-button float-right">
 <svg class="lucide-icon icon-chevron-down " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
   class="lucide lucide-chevron-down"
   xmlns="http://www.w3.org/2000/svg"
@@ -801,13 +876,13 @@ For runtime-specific APIs, see:</p>
             <div class="page-footer-actions">
               
               
-                <span class="git-last-updated" data-timestamp="1783467385000">
+                <span class="git-last-updated" data-timestamp="1784169366000">
                   <svg class="git-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <polyline points="12 6 12 12 16 14"></polyline>
                   </svg>
                   <span class="git-label">Last updated:</span>
-                  <span class="git-time" data-timestamp="1783467385000"></span>
+                  <span class="git-time" data-timestamp="1784169366000"></span>
                   
                   <div class="git-commit-tooltip" role="tooltip">
                     <div class="git-tooltip-title">Recent commits</div>
@@ -820,10 +895,10 @@ For runtime-specific APIs, see:</p>
                             
                           </div>
                           <div class="git-commit-details">
-                            <div class="git-commit-message" title="Merge pull request #19 from NellowTCS/dependabot/cargo/html-escape-0.2.14">Merge pull request #19 from NellowTCS...</div>
+                            <div class="git-commit-message" title="Merge pull request #29 from NellowTCS/dependabot/npm_and_yarn/Docs/docmd/core-0.8.11">Merge pull request #29 from NellowTCS...</div>
                             <div class="git-commit-meta">
                               <span class="git-commit-author">NellowTCS</span>
-                              <span class="git-commit-date" data-timestamp="1783467385000"></span>
+                              <span class="git-commit-date" data-timestamp="1784169366000"></span>
                             </div>
                           </div>
                         </li>
@@ -845,7 +920,7 @@ For runtime-specific APIs, see:</p>
     <div class="user-footer">Built with docmd.</div>
     
       <div class="branding-footer">
-        builtWith <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path><path d="M12 5 9.04 7.96a2.17 2.17 0 0 0 0 3.08c.82.82 2.13.85 3 .07l2.07-1.9a2.82 2.82 0 0 1 3.79 0l2.96 2.66"></path><path d="m18 15-2-2"></path><path d="m15 18-2-2"></path></svg> <a href="https://docmd.io" target="_blank" rel="noopener">docmd.</a>
+        Built with <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path><path d="M12 5 9.04 7.96a2.17 2.17 0 0 0 0 3.08c.82.82 2.13.85 3 .07l2.07-1.9a2.82 2.82 0 0 1 3.79 0l2.96 2.66"></path><path d="m18 15-2-2"></path><path d="m15 18-2-2"></path></svg> <a href="https://docmd.io" target="_blank" rel="noopener">docmd.</a>
       </div>
     
   </div>
@@ -854,17 +929,16 @@ For runtime-specific APIs, see:</p>
         </div>
       </div>
       
-      <script src="./assets/js/docmd-main.js?v=mrbag4np"></script>
+      <script src="./assets/js/docmd-main.js?v=mrmwe3gz"></script>
       
-      <script src="./assets/js/docmd-git.js?v=mrbag4np"></script>
-      <script src="./assets/js/docmd-image-lightbox.js?v=mrbag4np" ></script>
+      <script src="./assets/js/docmd-git.js?v=mrmwe3gz"></script>
+      <script src="./assets/js/docmd-image-lightbox.js?v=mrmwe3gz" ></script>
 <script src="https://cdn.jsdelivr.net/npm/minisearch@7.2.0/dist/umd/index.min.js" ></script>
-<script src="./assets/js/docmd-search.js?v=mrbag4np" ></script>
-<script src="./assets/js/init-mermaid.js?v=mrbag4np" type="module"></script>
-<script src="./assets/js/docmd-git.js?v=mrbag4np" type="module"></script>
+<script src="./assets/js/docmd-search.js?v=mrmwe3gz" ></script>
+<script src="./assets/js/docmd-git.js?v=mrmwe3gz" type="module"></script>
 
   <!-- Search Modal (Injected by @docmd/plugin-search) -->
-  <div id="docmd-search-modal" class="docmd-search-modal" style="display: none;"
+  <div id="docmd-search-modal" class="docmd-search-modal" style="display: none;" data-show-confidence="false" data-show-filters="true"
        data-search-placeholder="Search documentation..."
        data-search-no-results="No results found."
        data-search-error="Failed to load search index."
@@ -935,6 +1009,8 @@ For runtime-specific APIs, see:</p>
     </script>
 
 <script>window.__git_config={"repo":null,"branch":"main","editLink":false,"lastUpdated":true,"commitHistory":true,"maxCommits":5,"dateFormat":"relative"};window.__git_i18n={"lastUpdated":"Last updated","recentCommits":"Recent commits","viewCommitHistory":"View commit history","editOnGitHub":"Edit on GitHub","editOnGitLab":"Edit on GitLab","editOnBitbucket":"Edit on Bitbucket","editThisPage":"Edit this page","justNow":"just now","minutesAgo":"{n}m ago","hoursAgo":"{n}h ago","daysAgo":"{n}d ago"}</script>
+      
+      
       
   </body>
 </html>

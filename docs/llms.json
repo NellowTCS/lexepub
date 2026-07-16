@@ -1,0 +1,36 @@
+{
+  "title": "LexePub",
+  "description": "",
+  "pages": [
+    {
+      "title": "C/C++ Adapter",
+      "url": "https://nellowtcs.me/lexepub/docs/adapters/c/",
+      "description": "Integration layer for native applications via Diplomat",
+      "priority": "medium"
+    },
+    {
+      "title": "Rust Adapter",
+      "url": "https://nellowtcs.me/lexepub/docs/adapters/rust/",
+      "description": "Native asynchronous integration for Rust developers",
+      "priority": "medium"
+    },
+    {
+      "title": "WASM Adapter",
+      "url": "https://nellowtcs.me/lexepub/docs/adapters/wasm/",
+      "description": "Cross-platform bindings for browsers and Node.js environments",
+      "priority": "medium"
+    },
+    {
+      "title": "Quick Start",
+      "url": "https://nellowtcs.me/lexepub/docs/getting-started/quickstart/",
+      "description": "Get started parsing EPUB files with LexEpub",
+      "priority": "medium"
+    },
+    {
+      "title": "LexePub",
+      "url": "https://nellowtcs.me/lexepub/docs/",
+      "description": "High-performance, memory-efficient EPUB parsing for multiple runtimes",
+      "priority": "high"
+    }
+  ]
+}

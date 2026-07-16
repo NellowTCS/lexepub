@@ -1,0 +1,56 @@
+okf_version: 0.8.11
+bundle:
+  name: lexepub
+  title: LexePub
+  description: ""
+  url: "https://nellowtcs.me/lexepub/docs"
+  generated_by: "@docmd/plugin-okf"
+  generated_at: "2026-07-16T02:36:34.678Z"
+  default_type: concept
+stats:
+  concepts: 5
+  by_type:
+    concept: 5
+  locales: 
+  versions: 
+concepts:
+  - id: adapters-c
+    type: concept
+    title: "C/C++ Adapter"
+    path: /adapters/c/
+    file: concepts/adapters-c.md
+    locale: ""
+    version: ""
+    tags: 
+  - id: adapters-rust
+    type: concept
+    title: "Rust Adapter"
+    path: /adapters/rust/
+    file: concepts/adapters-rust.md
+    locale: ""
+    version: ""
+    tags: 
+  - id: adapters-wasm
+    type: concept
+    title: "WASM Adapter"
+    path: /adapters/wasm/
+    file: concepts/adapters-wasm.md
+    locale: ""
+    version: ""
+    tags: 
+  - id: getting-started-quickstart
+    type: concept
+    title: "Quick Start"
+    path: /getting-started/quickstart/
+    file: concepts/getting-started-quickstart.md
+    locale: ""
+    version: ""
+    tags: 
+  - id: root
+    type: concept
+    title: LexePub
+    path: /
+    file: concepts/root.md
+    locale: ""
+    version: ""
+    tags: 

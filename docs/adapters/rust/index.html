@@ -10,7 +10,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <meta name="generator" content="docmd v0.5.x">
+    <meta name="generator" content="docmd v0.8.11">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>/**
  * --------------------------------------------------------------------
@@ -29,9 +29,27 @@
 (function () {
   try {
     // 1. Determine Theme
+    //
+    // Resolve from three sources, in priority order:
+    //   1. localStorage explicit user choice (light / dark)
+    //   2. window.DOCMD_APPEARANCE  (current canonical name, set by EJS templates)
+    //   3. window.DOCMD_DEFAULT_MODE (legacy alias kept for pre-0.8.7 outputs)
+    //   4. 'light' as the final fallback
+    //
+    // Note: localStorage is only honoured when it holds an explicit
+    // 'light' or 'dark' value. A stored 'system' value (from a prior
+    // session where the user picked "follow system") must NOT win over
+    // a freshly resolved config value — the resolved value will itself
+    // be 'system' in that case and the OS preference check below takes
+    // over, so this is a no-op for the in-session behaviour but keeps
+    // any future storage migration simple.
     var localValue = localStorage.getItem('docmd-theme');
-    var configValue = window.DOCMD_DEFAULT_MODE || 'light';
-    var theme = localValue ? localValue : configValue;
+    var configValue = window.DOCMD_APPEARANCE
+      || window.DOCMD_DEFAULT_MODE
+      || 'light';
+    var theme = (localValue === 'light' || localValue === 'dark')
+      ? localValue
+      : configValue;
 
     if (theme === 'system') {
       theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -72,10 +90,7 @@
       if (root === '') root = './';
       window.DOCMD_ROOT = root;
 
-      var siteRoot = "../../";
-      if (siteRoot && !siteRoot.endsWith('/')) siteRoot += '/';
-      if (siteRoot === '') siteRoot = './';
-      window.DOCMD_SITE_ROOT = siteRoot;
+      window.DOCMD_SITE_ROOT = "/";
 
       window.DOCMD_APPEARANCE = "system";
       window.DOCMD_VERSION_ROOT = "/";
@@ -86,13 +101,13 @@
     <title>
       Rust Adapter : LexePub
     </title>
+
+    <base href="/">
     
-    <link rel="stylesheet" href="../../assets/css/docmd-main.css?v=mrbag4np">
+    <link rel="stylesheet" href="../../assets/css/docmd-main.css?v=mrmwe3gz">
     
-    <link rel="stylesheet" href="../../assets/css/docmd-git.css?v=mrbag4np">
-    
-    <link rel="stylesheet" href="../../assets/css/docmd-highlight-light.css?v=mrbag4np" id="hljs-light" >
-    <link rel="stylesheet" href="../../assets/css/docmd-highlight-dark.css?v=mrbag4np" id="hljs-dark" disabled>
+    <link rel="stylesheet" href="../../assets/css/docmd-highlight-light.css?v=mrmwe3gz" id="hljs-light" >
+    <link rel="stylesheet" href="../../assets/css/docmd-highlight-dark.css?v=mrmwe3gz" id="hljs-dark" disabled>
     
     
 <meta name="description" content="Native asynchronous integration for Rust developers">
@@ -107,9 +122,9 @@
 
 
 
-<link rel="stylesheet" href="../../assets/css/docmd-theme-ruby.css?v=mrbag4np" >
-<link rel="stylesheet" href="../../assets/css/docmd-git.css?v=mrbag4np" >
-<link rel="stylesheet" href="../../assets/css/docmd-openapi.css?v=mrbag4np" >
+<link rel="stylesheet" href="../../assets/css/docmd-theme-ruby.css?v=mrmwe3gz" >
+<link rel="stylesheet" href="../../assets/css/docmd-git.css?v=mrmwe3gz" >
+<link rel="stylesheet" href="../../assets/css/docmd-openapi.css?v=mrmwe3gz" >
 
     
     <script>/**
@@ -129,9 +144,27 @@
 (function () {
   try {
     // 1. Determine Theme
+    //
+    // Resolve from three sources, in priority order:
+    //   1. localStorage explicit user choice (light / dark)
+    //   2. window.DOCMD_APPEARANCE  (current canonical name, set by EJS templates)
+    //   3. window.DOCMD_DEFAULT_MODE (legacy alias kept for pre-0.8.7 outputs)
+    //   4. 'light' as the final fallback
+    //
+    // Note: localStorage is only honoured when it holds an explicit
+    // 'light' or 'dark' value. A stored 'system' value (from a prior
+    // session where the user picked "follow system") must NOT win over
+    // a freshly resolved config value — the resolved value will itself
+    // be 'system' in that case and the OS preference check below takes
+    // over, so this is a no-op for the in-session behaviour but keeps
+    // any future storage migration simple.
     var localValue = localStorage.getItem('docmd-theme');
-    var configValue = window.DOCMD_DEFAULT_MODE || 'light';
-    var theme = localValue ? localValue : configValue;
+    var configValue = window.DOCMD_APPEARANCE
+      || window.DOCMD_DEFAULT_MODE
+      || 'light';
+    var theme = (localValue === 'light' || localValue === 'dark')
+      ? localValue
+      : configValue;
 
     if (theme === 'system') {
       theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -166,7 +199,7 @@
     data-default-collapsed="false"
     data-copy-code-enabled="true" data-spa-enabled="true" data-source-file="docs/adapters/rust/index.md">
 
-    <a href="#main-content" class="skip-link">skipToContent</a>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
 
     
     
@@ -206,7 +239,7 @@
         </div>
         
 
-<nav class="sidebar-nav" aria-label="mainNavigation">
+<nav class="sidebar-nav" aria-label="Main Navigation">
   <ul>
     
       <li class="" >
@@ -536,6 +569,8 @@
         </div>
       </aside>
       
+      
+      
       <div class="main-content-wrapper">
         
         
@@ -543,7 +578,7 @@
             <div class="header-left">
               
                 <button id="sidebar-toggle-button" class="sidebar-toggle-button"
-                  aria-label="toggleSidebar">
+                  aria-label="Toggle Sidebar">
                   
 <svg class="lucide-icon icon-chevron-left " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
   class="lucide lucide-chevron-left"
@@ -575,7 +610,7 @@
 
 <div class="docmd-options-menu">
     
-    <button class="docmd-search-trigger" aria-label="search">
+    <button class="docmd-search-trigger" aria-label="Search">
         
 <svg class="lucide-icon icon-search " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
   class="lucide lucide-search"
@@ -593,7 +628,7 @@
   <circle cx="11" cy="11" r="8" />
 </svg>
 
-        <span class="search-label">search</span>
+        <span class="search-label">Search</span>
         <span class="search-keys"><kbd class="docmd-kbd">⌘</kbd><kbd class="docmd-kbd">K</kbd></span>
     </button>
     
@@ -603,7 +638,7 @@
     
 
     
-    <button class="theme-toggle-button" aria-label="toggleTheme">
+    <button class="theme-toggle-button" aria-label="Toggle theme">
         
 <svg class="lucide-icon icon-sun icon-sun" width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
   class="lucide lucide-sun"
@@ -657,17 +692,19 @@
           <main class="content-area" id="main-content">
             <div class="content-layout">
               <div class="main-content">
-                
-                  <nav aria-label="breadcrumb" class="docmd-breadcrumbs">
-                    <ol>
-                      
-                      
-                        <li class="breadcrumb-item " >
-                          
-                            <span>Adapters</span>
-                          
-                          
-                            <span class="breadcrumb-separator">
+                <div class="docmd-breadcrumbs-row">
+                  <div id="docmd-raw-markdown" data-content="---%0Atitle%3A%20%22Rust%20Adapter%22%0Adescription%3A%20%22Native%20asynchronous%20integration%20for%20Rust%20developers%22%0A---%0A%0A%23%20Rust%20Adapter%0A%0AThe%20native%20Rust%20API%20exposes%20the%20full%20LexePub%20capability%20set%20through%20%60tokio%60%20or%20any%20compatible%20async%20executor.%0A%0A%23%23%20Primary%20types%0A%0A-%20%60LexEpub%60%3A%20main%20parser%2Fentry%20point.%0A-%20%60EpubMetadata%60%3A%20normalized%20metadata%20model.%0A-%20%60ParsedChapter%60%3A%20chapter%20payload%20with%20text%2C%20counts%2C%20and%20optional%20AST.%0A-%20%60AstNode%60%3A%20HTML%20AST%20node%20model%20(%60Element%60%2C%20%60Text%60%2C%20%60Comment%60).%0A%0A%23%23%20Async%20API%20reference%0A%0A-%20%60LexEpub%3A%3Aopen(path)%60%0A-%20%60LexEpub%3A%3Afrom_bytes(data)%60%0A-%20%60LexEpub%3A%3Afrom_reader(reader)%60%0A-%20%60LexEpub%3A%3Aextract_text_only()%60%0A-%20%60LexEpub%3A%3Aextract_ast()%60%0A-%20%60LexEpub%3A%3Aextract_chapters_stream()%60%0A-%20%60LexEpub%3A%3Aget_metadata()%60%0A-%20%60LexEpub%3A%3Avalidate_metadata()%60%0A-%20%60LexEpub%3A%3Aget_toc()%60%0A-%20%60LexEpub%3A%3Aread_resource(path)%60%0A-%20%60LexEpub%3A%3Aresolve_chapter_resource_path(chapter_index%2C%20href)%60%0A-%20%60LexEpub%3A%3Aread_chapter_resource(chapter_index%2C%20href)%60%0A-%20%60LexEpub%3A%3Atotal_word_count()%60%0A-%20%60LexEpub%3A%3Atotal_char_count()%60%0A-%20%60LexEpub%3A%3Ahas_cover()%60%0A-%20%60LexEpub%3A%3Acover_image()%60%0A-%20%60LexEpub%3A%3Acover_image_to_writer(writer)%60%0A%0A%23%23%20Sync%20wrapper%20API%0A%0A-%20%60LexEpub%3A%3Aopen_sync(path)%60%0A-%20%60LexEpub%3A%3Afrom_sync_reader(reader)%60%0A-%20%60LexEpub%3A%3Aget_metadata_sync()%60%0A-%20%60LexEpub%3A%3Avalidate_metadata_sync()%60%0A-%20%60LexEpub%3A%3Atotal_word_count_sync()%60%0A-%20%60LexEpub%3A%3Atotal_char_count_sync()%60%0A-%20%60LexEpub%3A%3Ahas_cover_sync()%60%0A-%20%60LexEpub%3A%3Acover_image_sync()%60%0A%0A%23%23%20CSS%20and%20AST%20integration%0A%0ACalling%20%60extract_ast()%60%20performs%20CSS-aware%20AST%20generation%3A%0A%0A-%20OPF%20%60text%2Fcss%60%20manifest%20items%20are%20parsed.%0A-%20Rules%20are%20applied%20to%20AST%20element%20nodes.%0A-%20Applied%20declarations%20are%20stored%20in%20%60AstNode%3A%3AElement.styles%60.%0A-%20Inline%20style%20attributes%20are%20merged%20during%20application.%0A%0AAlso%2C%20chapter-relative%20%60href%60%2F%60src%60%20values%20are%20normalized%20during%20extraction%20to%20make%20runtime%20rendering%2Flink%20navigation%20simpler%20across%20adapters.%0A%0A%23%23%20Building%20and%20Testing%0A%0ASimply%20add%20LexePub%20as%20a%20Cargo%20dependency.%20Integration%20tests%20and%20API%20tests%20ensure%20the%20parsing%20logic%20remains%20deterministic%20and%20resilient%20across%20versions.%0A%0A%60%60%60bash%0Acargo%20build%20--release%0Acargo%20test%0A%60%60%60%0A%0A%23%23%20Convenience%20functions%0A%0AThe%20crate%20also%20exports%20async%20helpers%3A%0A%0A-%20%60extract_text_only(path)%60%0A-%20%60extract_ast(path)%60%0A-%20%60get_metadata(path)%60%0A%0A%23%23%20Extra%20analysis%20helpers%0A%0AThe%20core%20module%20also%20exposes%20high-level%20analysis%20entry%20points%3A%0A%0A-%20%60analyze_reader(reader)%60%0A-%20%60analyze_sync_reader(reader)%60%0A" style="display: none;"></div>
+                  
+                    <nav aria-label="breadcrumb" class="docmd-breadcrumbs">
+                      <ol>
+                        
+                        
+                          <li class="breadcrumb-item " >
+                            
+                              <span>Adapters</span>
+                            
+                            
+                              <span class="breadcrumb-separator">
 <svg class="lucide-icon icon-chevron-right " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
   class="lucide lucide-chevron-right"
   xmlns="http://www.w3.org/2000/svg"
@@ -683,21 +720,69 @@
   <path d="m9 18 6-6-6-6" />
 </svg>
 </span>
-                          
-                        </li>
+                            
+                          </li>
+                        
+                          <li class="breadcrumb-item active" aria-current=&quot;page&quot;>
+                            
+                              <span>Rust</span>
+                            
+                            
+                          </li>
+                        
+                      </ol>
+                    </nav>
+                  
+
+                  
+                    <div class="docmd-copy-widgets">
                       
-                        <li class="breadcrumb-item active" aria-current=&quot;page&quot;>
-                          
-                            <span>Rust</span>
-                          
-                          
-                        </li>
+                        <button class="docmd-copy-btn docmd-copy-raw-btn" data-copied="Copied!" title="Copy Markdown" aria-label="Copy Markdown">
+                          <span class="docmd-btn-icon">
+<svg class="lucide-icon icon-copy " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+  class="lucide lucide-copy"
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+</svg>
+</span>
+                        </button>
                       
-                    </ol>
-                  </nav>
+                      
+                        <button class="docmd-copy-btn docmd-copy-context-btn" data-copied="Copied!" title="Copy Context">
+                          <span class="docmd-btn-icon">
+<svg class="lucide-icon icon-message-square " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+  class="lucide lucide-message-square"
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z" />
+</svg>
+</span>
+                          <span class="docmd-btn-text">Copy Context</span>
+                        </button>
+                      
+                    </div>
+                  
+                </div>
                 
-                
-                <h1 id="rust-adapter">Rust Adapter</h1>
+                <h1 id="rust-adapter" class="docmd-heading"><a href="#rust-adapter" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>Rust Adapter</h1>
 <p>The native Rust API exposes the full LexePub capability set through <code>tokio</code> or any compatible async executor.</p>
 <h2 id="rust-adapter-primary-types" class="docmd-heading"><a href="#rust-adapter-primary-types" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>Primary types</h2>
 <ul>
@@ -748,7 +833,7 @@
 <p>Also, chapter-relative <code>href</code>/<code>src</code> values are normalized during extraction to make runtime rendering/link navigation simpler across adapters.</p>
 <h2 id="rust-adapter-building-and-testing" class="docmd-heading"><a href="#rust-adapter-building-and-testing" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>Building and Testing</h2>
 <p>Simply add LexePub as a Cargo dependency. Integration tests and API tests ensure the parsing logic remains deterministic and resilient across versions.</p>
-<pre class="hljs"><code><span class="hljs-keyword">cargo</span> build <span class="hljs-punctuation">--</span>release
+<pre class="hljs"><code class="language-bash"><span class="hljs-keyword">cargo</span> build <span class="hljs-punctuation">--</span>release
 <span class="hljs-keyword">cargo</span> test
 </code></pre>
 <h2 id="rust-adapter-convenience-functions" class="docmd-heading"><a href="#rust-adapter-convenience-functions" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>Convenience functions</h2>
@@ -786,14 +871,14 @@
   <path d="M19 12H5" />
 </svg>
 
-                        <span><small>previous</small><strong>
+                        <span><small>Previous</small><strong>
                             C/C++
                           </strong></span>
                       </a>
                     
                     
                       <a href="../../adapters/wasm/" class="next-page">
-                        <span><small>next</small>
+                        <span><small>Next</small>
                           <strong>
                             WASM
                           </strong></span>
@@ -824,7 +909,7 @@
 
 
   <div class="toc-container">
-    <h2 class="toc-title">onThisPage<span class="mobile-view toc-menu-button float-right">
+    <h2 class="toc-title">On This Page<span class="mobile-view toc-menu-button float-right">
 <svg class="lucide-icon icon-chevron-down " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
   class="lucide lucide-chevron-down"
   xmlns="http://www.w3.org/2000/svg"
@@ -841,6 +926,10 @@
 </svg>
 </span></h2>
     <ul class="toc-list">
+      
+        <li class="toc-item toc-level-1">
+          <a href="#rust-adapter" class="toc-link">Rust Adapter</a>
+        </li>
       
         <li class="toc-item toc-level-2">
           <a href="#rust-adapter-primary-types" class="toc-link">Primary types</a>
@@ -878,13 +967,13 @@
             <div class="page-footer-actions">
               
               
-                <span class="git-last-updated" data-timestamp="1783467385000">
+                <span class="git-last-updated" data-timestamp="1784169366000">
                   <svg class="git-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <polyline points="12 6 12 12 16 14"></polyline>
                   </svg>
                   <span class="git-label">Last updated:</span>
-                  <span class="git-time" data-timestamp="1783467385000"></span>
+                  <span class="git-time" data-timestamp="1784169366000"></span>
                   
                   <div class="git-commit-tooltip" role="tooltip">
                     <div class="git-tooltip-title">Recent commits</div>
@@ -897,10 +986,10 @@
                             
                           </div>
                           <div class="git-commit-details">
-                            <div class="git-commit-message" title="Merge pull request #19 from NellowTCS/dependabot/cargo/html-escape-0.2.14">Merge pull request #19 from NellowTCS...</div>
+                            <div class="git-commit-message" title="Merge pull request #29 from NellowTCS/dependabot/npm_and_yarn/Docs/docmd/core-0.8.11">Merge pull request #29 from NellowTCS...</div>
                             <div class="git-commit-meta">
                               <span class="git-commit-author">NellowTCS</span>
-                              <span class="git-commit-date" data-timestamp="1783467385000"></span>
+                              <span class="git-commit-date" data-timestamp="1784169366000"></span>
                             </div>
                           </div>
                         </li>
@@ -922,7 +1011,7 @@
     <div class="user-footer">Built with docmd.</div>
     
       <div class="branding-footer">
-        builtWith <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path><path d="M12 5 9.04 7.96a2.17 2.17 0 0 0 0 3.08c.82.82 2.13.85 3 .07l2.07-1.9a2.82 2.82 0 0 1 3.79 0l2.96 2.66"></path><path d="m18 15-2-2"></path><path d="m15 18-2-2"></path></svg> <a href="https://docmd.io" target="_blank" rel="noopener">docmd.</a>
+        Built with <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path><path d="M12 5 9.04 7.96a2.17 2.17 0 0 0 0 3.08c.82.82 2.13.85 3 .07l2.07-1.9a2.82 2.82 0 0 1 3.79 0l2.96 2.66"></path><path d="m18 15-2-2"></path><path d="m15 18-2-2"></path></svg> <a href="https://docmd.io" target="_blank" rel="noopener">docmd.</a>
       </div>
     
   </div>
@@ -931,17 +1020,16 @@
         </div>
       </div>
       
-      <script src="../../assets/js/docmd-main.js?v=mrbag4np"></script>
+      <script src="../../assets/js/docmd-main.js?v=mrmwe3gz"></script>
       
-      <script src="../../assets/js/docmd-git.js?v=mrbag4np"></script>
-      <script src="../../assets/js/docmd-image-lightbox.js?v=mrbag4np" ></script>
+      <script src="../../assets/js/docmd-git.js?v=mrmwe3gz"></script>
+      <script src="../../assets/js/docmd-image-lightbox.js?v=mrmwe3gz" ></script>
 <script src="https://cdn.jsdelivr.net/npm/minisearch@7.2.0/dist/umd/index.min.js" ></script>
-<script src="../../assets/js/docmd-search.js?v=mrbag4np" ></script>
-<script src="../../assets/js/init-mermaid.js?v=mrbag4np" type="module"></script>
-<script src="../../assets/js/docmd-git.js?v=mrbag4np" type="module"></script>
+<script src="../../assets/js/docmd-search.js?v=mrmwe3gz" ></script>
+<script src="../../assets/js/docmd-git.js?v=mrmwe3gz" type="module"></script>
 
   <!-- Search Modal (Injected by @docmd/plugin-search) -->
-  <div id="docmd-search-modal" class="docmd-search-modal" style="display: none;"
+  <div id="docmd-search-modal" class="docmd-search-modal" style="display: none;" data-show-confidence="false" data-show-filters="true"
        data-search-placeholder="Search documentation..."
        data-search-no-results="No results found."
        data-search-error="Failed to load search index."
@@ -1012,6 +1100,8 @@
     </script>
 
 <script>window.__git_config={"repo":null,"branch":"main","editLink":false,"lastUpdated":true,"commitHistory":true,"maxCommits":5,"dateFormat":"relative"};window.__git_i18n={"lastUpdated":"Last updated","recentCommits":"Recent commits","viewCommitHistory":"View commit history","editOnGitHub":"Edit on GitHub","editOnGitLab":"Edit on GitLab","editOnBitbucket":"Edit on Bitbucket","editThisPage":"Edit this page","justNow":"just now","minutesAgo":"{n}m ago","hoursAgo":"{n}h ago","daysAgo":"{n}d ago"}</script>
+      
+      
       
   </body>
 </html>

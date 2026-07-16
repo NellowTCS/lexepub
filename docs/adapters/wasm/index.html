@@ -10,7 +10,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <meta name="generator" content="docmd v0.5.x">
+    <meta name="generator" content="docmd v0.8.11">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>/**
  * --------------------------------------------------------------------
@@ -29,9 +29,27 @@
 (function () {
   try {
     // 1. Determine Theme
+    //
+    // Resolve from three sources, in priority order:
+    //   1. localStorage explicit user choice (light / dark)
+    //   2. window.DOCMD_APPEARANCE  (current canonical name, set by EJS templates)
+    //   3. window.DOCMD_DEFAULT_MODE (legacy alias kept for pre-0.8.7 outputs)
+    //   4. 'light' as the final fallback
+    //
+    // Note: localStorage is only honoured when it holds an explicit
+    // 'light' or 'dark' value. A stored 'system' value (from a prior
+    // session where the user picked "follow system") must NOT win over
+    // a freshly resolved config value — the resolved value will itself
+    // be 'system' in that case and the OS preference check below takes
+    // over, so this is a no-op for the in-session behaviour but keeps
+    // any future storage migration simple.
     var localValue = localStorage.getItem('docmd-theme');
-    var configValue = window.DOCMD_DEFAULT_MODE || 'light';
-    var theme = localValue ? localValue : configValue;
+    var configValue = window.DOCMD_APPEARANCE
+      || window.DOCMD_DEFAULT_MODE
+      || 'light';
+    var theme = (localValue === 'light' || localValue === 'dark')
+      ? localValue
+      : configValue;
 
     if (theme === 'system') {
       theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -72,10 +90,7 @@
       if (root === '') root = './';
       window.DOCMD_ROOT = root;
 
-      var siteRoot = "../../";
-      if (siteRoot && !siteRoot.endsWith('/')) siteRoot += '/';
-      if (siteRoot === '') siteRoot = './';
-      window.DOCMD_SITE_ROOT = siteRoot;
+      window.DOCMD_SITE_ROOT = "/";
 
       window.DOCMD_APPEARANCE = "system";
       window.DOCMD_VERSION_ROOT = "/";
@@ -86,13 +101,13 @@
     <title>
       WASM Adapter : LexePub
     </title>
+
+    <base href="/">
     
-    <link rel="stylesheet" href="../../assets/css/docmd-main.css?v=mrbag4np">
+    <link rel="stylesheet" href="../../assets/css/docmd-main.css?v=mrmwe3gz">
     
-    <link rel="stylesheet" href="../../assets/css/docmd-git.css?v=mrbag4np">
-    
-    <link rel="stylesheet" href="../../assets/css/docmd-highlight-light.css?v=mrbag4np" id="hljs-light" >
-    <link rel="stylesheet" href="../../assets/css/docmd-highlight-dark.css?v=mrbag4np" id="hljs-dark" disabled>
+    <link rel="stylesheet" href="../../assets/css/docmd-highlight-light.css?v=mrmwe3gz" id="hljs-light" >
+    <link rel="stylesheet" href="../../assets/css/docmd-highlight-dark.css?v=mrmwe3gz" id="hljs-dark" disabled>
     
     
 <meta name="description" content="Cross-platform bindings for browsers and Node.js environments">
@@ -107,9 +122,9 @@
 
 
 
-<link rel="stylesheet" href="../../assets/css/docmd-theme-ruby.css?v=mrbag4np" >
-<link rel="stylesheet" href="../../assets/css/docmd-git.css?v=mrbag4np" >
-<link rel="stylesheet" href="../../assets/css/docmd-openapi.css?v=mrbag4np" >
+<link rel="stylesheet" href="../../assets/css/docmd-theme-ruby.css?v=mrmwe3gz" >
+<link rel="stylesheet" href="../../assets/css/docmd-git.css?v=mrmwe3gz" >
+<link rel="stylesheet" href="../../assets/css/docmd-openapi.css?v=mrmwe3gz" >
 
     
     <script>/**
@@ -129,9 +144,27 @@
 (function () {
   try {
     // 1. Determine Theme
+    //
+    // Resolve from three sources, in priority order:
+    //   1. localStorage explicit user choice (light / dark)
+    //   2. window.DOCMD_APPEARANCE  (current canonical name, set by EJS templates)
+    //   3. window.DOCMD_DEFAULT_MODE (legacy alias kept for pre-0.8.7 outputs)
+    //   4. 'light' as the final fallback
+    //
+    // Note: localStorage is only honoured when it holds an explicit
+    // 'light' or 'dark' value. A stored 'system' value (from a prior
+    // session where the user picked "follow system") must NOT win over
+    // a freshly resolved config value — the resolved value will itself
+    // be 'system' in that case and the OS preference check below takes
+    // over, so this is a no-op for the in-session behaviour but keeps
+    // any future storage migration simple.
     var localValue = localStorage.getItem('docmd-theme');
-    var configValue = window.DOCMD_DEFAULT_MODE || 'light';
-    var theme = localValue ? localValue : configValue;
+    var configValue = window.DOCMD_APPEARANCE
+      || window.DOCMD_DEFAULT_MODE
+      || 'light';
+    var theme = (localValue === 'light' || localValue === 'dark')
+      ? localValue
+      : configValue;
 
     if (theme === 'system') {
       theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -166,7 +199,7 @@
     data-default-collapsed="false"
     data-copy-code-enabled="true" data-spa-enabled="true" data-source-file="docs/adapters/wasm/index.md">
 
-    <a href="#main-content" class="skip-link">skipToContent</a>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
 
     
     
@@ -206,7 +239,7 @@
         </div>
         
 
-<nav class="sidebar-nav" aria-label="mainNavigation">
+<nav class="sidebar-nav" aria-label="Main Navigation">
   <ul>
     
       <li class="" >
@@ -536,6 +569,8 @@
         </div>
       </aside>
       
+      
+      
       <div class="main-content-wrapper">
         
         
@@ -543,7 +578,7 @@
             <div class="header-left">
               
                 <button id="sidebar-toggle-button" class="sidebar-toggle-button"
-                  aria-label="toggleSidebar">
+                  aria-label="Toggle Sidebar">
                   
 <svg class="lucide-icon icon-chevron-left " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
   class="lucide lucide-chevron-left"
@@ -575,7 +610,7 @@
 
 <div class="docmd-options-menu">
     
-    <button class="docmd-search-trigger" aria-label="search">
+    <button class="docmd-search-trigger" aria-label="Search">
         
 <svg class="lucide-icon icon-search " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
   class="lucide lucide-search"
@@ -593,7 +628,7 @@
   <circle cx="11" cy="11" r="8" />
 </svg>
 
-        <span class="search-label">search</span>
+        <span class="search-label">Search</span>
         <span class="search-keys"><kbd class="docmd-kbd">⌘</kbd><kbd class="docmd-kbd">K</kbd></span>
     </button>
     
@@ -603,7 +638,7 @@
     
 
     
-    <button class="theme-toggle-button" aria-label="toggleTheme">
+    <button class="theme-toggle-button" aria-label="Toggle theme">
         
 <svg class="lucide-icon icon-sun icon-sun" width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
   class="lucide lucide-sun"
@@ -657,17 +692,19 @@
           <main class="content-area" id="main-content">
             <div class="content-layout">
               <div class="main-content">
-                
-                  <nav aria-label="breadcrumb" class="docmd-breadcrumbs">
-                    <ol>
-                      
-                      
-                        <li class="breadcrumb-item " >
-                          
-                            <span>Adapters</span>
-                          
-                          
-                            <span class="breadcrumb-separator">
+                <div class="docmd-breadcrumbs-row">
+                  <div id="docmd-raw-markdown" data-content="---%0Atitle%3A%20%22WASM%20Adapter%22%0Adescription%3A%20%22Cross-platform%20bindings%20for%20browsers%20and%20Node.js%20environments%22%0A---%0A%0A%23%20WebAssembly%20Adapter%0A%0ALexePub%20exposes%20async%20EPUB%20parsing%20to%20JavaScript%20and%20TypeScript%20through%20%60wasm-bindgen%60.%0A%0A%23%23%20Publishing%20and%20Setup%0A%0ABuild%20locally%20using%20%60wasm-pack%60%3A%0A%0A%60%60%60bash%0A%23%20Build%20the%20artifact%20for%20web%20invocation%0Awasm-pack%20build%20--target%20web%0A%60%60%60%0A%0A%23%23%20API%20reference%0A%0A%60WasmEpubExtractor%60%20methods%3A%0A%0A-%20%60new()%60%0A-%20%60load_from_bytes(uint8Array)%60%0A-%20%60get_metadata()%60%0A-%20%60get_metadata_json()%60%0A-%20%60get_metadata_is_valid()%60%0A-%20%60get_chapter_count()%60%0A-%20%60get_toc()%60%0A-%20%60get_toc_json()%60%0A-%20%60resolve_chapter_resource_path(chapterIndex%2C%20href)%60%0A-%20%60get_resource(path)%60%0A-%20%60get_chapter_resource(chapterIndex%2C%20href)%60%0A-%20%60get_title()%60%0A-%20%60get_chapters_text()%60%0A-%20%60get_chapters_text_json()%60%0A-%20%60get_chapter(index)%60%0A-%20%60get_chapter_json(index)%60%0A-%20%60get_chapter_text(index)%60%0A-%20%60get_total_word_count()%60%0A-%20%60get_total_char_count()%60%0A-%20%60has_cover()%60%0A-%20%60get_cover_image()%60%0A-%20%60get_cover_image_len()%60%0A-%20%60get_cover_image_format()%60%0A%0A%23%23%20Example%0A%0A%60%60%60js%0Aimport%20init%2C%20%7B%20WasmEpubExtractor%20%7D%20from%20%22.%2Fpkg%2Flexepub.js%22%3B%0A%0Aasync%20function%20run(arrayBuffer)%20%7B%0A%09await%20init()%3B%0A%0A%09const%20ex%20%3D%20new%20WasmEpubExtractor()%3B%0A%09await%20ex.load_from_bytes(new%20Uint8Array(arrayBuffer))%3B%0A%0A%09const%20metadata%20%3D%20await%20ex.get_metadata()%3B%0A%09const%20chapter%20%3D%20await%20ex.get_chapter(0)%3B%0A%09const%20textChapters%20%3D%20await%20ex.get_chapters_text()%3B%0A%0A%09console.log(metadata)%3B%0A%09console.log(chapter)%3B%0A%09console.log(textChapters.length)%3B%0A%7D%0A%60%60%60%0A%0A%23%23%20CSS%20and%20AST%0A%0A-%20%60get_chapter(index)%60%20returns%20parsed%20chapter%20data%20generated%20by%20the%20Rust%20core.%0A-%20During%20AST%20extraction%2C%20manifest%20CSS%20resources%20are%20applied%20and%20reflected%20in%20element%20%60styles%60%20fields.%0A%0A%23%23%20Notes%0A%0A-%20Filesystem-path%20loading%20is%20intentionally%20not%20exposed%20in%20browser-oriented%20WASM%20flows%3B%20byte%20loading%20is%20the%20primary%20entrypoint.%0A-%20Linked%20resources%20inside%20EPUB%20archives%20can%20be%20rendered%20by%20combining%3A%0A%09-%20normalized%20%60src%60%2F%60href%60%20from%20AST%2C%0A%09-%20%60resolve_chapter_resource_path(...)%60%2C%20and%0A%09-%20%60get_chapter_resource(...)%60%20or%20%60get_resource(...)%60.%0A" style="display: none;"></div>
+                  
+                    <nav aria-label="breadcrumb" class="docmd-breadcrumbs">
+                      <ol>
+                        
+                        
+                          <li class="breadcrumb-item " >
+                            
+                              <span>Adapters</span>
+                            
+                            
+                              <span class="breadcrumb-separator">
 <svg class="lucide-icon icon-chevron-right " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
   class="lucide lucide-chevron-right"
   xmlns="http://www.w3.org/2000/svg"
@@ -683,25 +720,73 @@
   <path d="m9 18 6-6-6-6" />
 </svg>
 </span>
-                          
-                        </li>
+                            
+                          </li>
+                        
+                          <li class="breadcrumb-item active" aria-current=&quot;page&quot;>
+                            
+                              <span>WASM</span>
+                            
+                            
+                          </li>
+                        
+                      </ol>
+                    </nav>
+                  
+
+                  
+                    <div class="docmd-copy-widgets">
                       
-                        <li class="breadcrumb-item active" aria-current=&quot;page&quot;>
-                          
-                            <span>WASM</span>
-                          
-                          
-                        </li>
+                        <button class="docmd-copy-btn docmd-copy-raw-btn" data-copied="Copied!" title="Copy Markdown" aria-label="Copy Markdown">
+                          <span class="docmd-btn-icon">
+<svg class="lucide-icon icon-copy " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+  class="lucide lucide-copy"
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+</svg>
+</span>
+                        </button>
                       
-                    </ol>
-                  </nav>
+                      
+                        <button class="docmd-copy-btn docmd-copy-context-btn" data-copied="Copied!" title="Copy Context">
+                          <span class="docmd-btn-icon">
+<svg class="lucide-icon icon-message-square " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
+  class="lucide lucide-message-square"
+  xmlns="http://www.w3.org/2000/svg"
+  width="24"
+  height="24"
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z" />
+</svg>
+</span>
+                          <span class="docmd-btn-text">Copy Context</span>
+                        </button>
+                      
+                    </div>
+                  
+                </div>
                 
-                
-                <h1 id="webassembly-adapter">WebAssembly Adapter</h1>
+                <h1 id="webassembly-adapter" class="docmd-heading"><a href="#webassembly-adapter" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>WebAssembly Adapter</h1>
 <p>LexePub exposes async EPUB parsing to JavaScript and TypeScript through <code>wasm-bindgen</code>.</p>
 <h2 id="webassembly-adapter-publishing-and-setup" class="docmd-heading"><a href="#webassembly-adapter-publishing-and-setup" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>Publishing and Setup</h2>
 <p>Build locally using <code>wasm-pack</code>:</p>
-<pre class="hljs"><code><span class="hljs-comment"># Build the artifact for web invocation</span>
+<pre class="hljs"><code class="language-bash"><span class="hljs-comment"># Build the artifact for web invocation</span>
 wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuation">--</span>target web
 </code></pre>
 <h2 id="webassembly-adapter-api-reference" class="docmd-heading"><a href="#webassembly-adapter-api-reference" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>API reference</h2>
@@ -732,7 +817,7 @@ wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuat
 <li><code>get_cover_image_format()</code></li>
 </ul>
 <h2 id="webassembly-adapter-example" class="docmd-heading"><a href="#webassembly-adapter-example" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>Example</h2>
-<pre class="hljs"><code><span class="hljs-keyword">import</span> init, { WasmEpubExtractor } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;./pkg/lexepub.js&quot;</span>;
+<pre class="hljs"><code class="language-js"><span class="hljs-keyword">import</span> init, { WasmEpubExtractor } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;./pkg/lexepub.js&quot;</span>;
 
 <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">run</span>(arrayBuffer) {
 	<span class="hljs-keyword">await</span> <span class="hljs-title function_">init</span>();
@@ -787,7 +872,7 @@ wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuat
   <path d="M19 12H5" />
 </svg>
 
-                        <span><small>previous</small><strong>
+                        <span><small>Previous</small><strong>
                             Rust
                           </strong></span>
                       </a>
@@ -804,7 +889,7 @@ wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuat
 
 
   <div class="toc-container">
-    <h2 class="toc-title">onThisPage<span class="mobile-view toc-menu-button float-right">
+    <h2 class="toc-title">On This Page<span class="mobile-view toc-menu-button float-right">
 <svg class="lucide-icon icon-chevron-down " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
   class="lucide lucide-chevron-down"
   xmlns="http://www.w3.org/2000/svg"
@@ -821,6 +906,10 @@ wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuat
 </svg>
 </span></h2>
     <ul class="toc-list">
+      
+        <li class="toc-item toc-level-1">
+          <a href="#webassembly-adapter" class="toc-link">WebAssembly Adapter</a>
+        </li>
       
         <li class="toc-item toc-level-2">
           <a href="#webassembly-adapter-publishing-and-setup" class="toc-link">Publishing and Setup</a>
@@ -850,13 +939,13 @@ wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuat
             <div class="page-footer-actions">
               
               
-                <span class="git-last-updated" data-timestamp="1783467385000">
+                <span class="git-last-updated" data-timestamp="1784169366000">
                   <svg class="git-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <polyline points="12 6 12 12 16 14"></polyline>
                   </svg>
                   <span class="git-label">Last updated:</span>
-                  <span class="git-time" data-timestamp="1783467385000"></span>
+                  <span class="git-time" data-timestamp="1784169366000"></span>
                   
                   <div class="git-commit-tooltip" role="tooltip">
                     <div class="git-tooltip-title">Recent commits</div>
@@ -869,10 +958,10 @@ wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuat
                             
                           </div>
                           <div class="git-commit-details">
-                            <div class="git-commit-message" title="Merge pull request #19 from NellowTCS/dependabot/cargo/html-escape-0.2.14">Merge pull request #19 from NellowTCS...</div>
+                            <div class="git-commit-message" title="Merge pull request #29 from NellowTCS/dependabot/npm_and_yarn/Docs/docmd/core-0.8.11">Merge pull request #29 from NellowTCS...</div>
                             <div class="git-commit-meta">
                               <span class="git-commit-author">NellowTCS</span>
-                              <span class="git-commit-date" data-timestamp="1783467385000"></span>
+                              <span class="git-commit-date" data-timestamp="1784169366000"></span>
                             </div>
                           </div>
                         </li>
@@ -894,7 +983,7 @@ wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuat
     <div class="user-footer">Built with docmd.</div>
     
       <div class="branding-footer">
-        builtWith <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path><path d="M12 5 9.04 7.96a2.17 2.17 0 0 0 0 3.08c.82.82 2.13.85 3 .07l2.07-1.9a2.82 2.82 0 0 1 3.79 0l2.96 2.66"></path><path d="m18 15-2-2"></path><path d="m15 18-2-2"></path></svg> <a href="https://docmd.io" target="_blank" rel="noopener">docmd.</a>
+        Built with <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path><path d="M12 5 9.04 7.96a2.17 2.17 0 0 0 0 3.08c.82.82 2.13.85 3 .07l2.07-1.9a2.82 2.82 0 0 1 3.79 0l2.96 2.66"></path><path d="m18 15-2-2"></path><path d="m15 18-2-2"></path></svg> <a href="https://docmd.io" target="_blank" rel="noopener">docmd.</a>
       </div>
     
   </div>
@@ -903,17 +992,16 @@ wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuat
         </div>
       </div>
       
-      <script src="../../assets/js/docmd-main.js?v=mrbag4np"></script>
+      <script src="../../assets/js/docmd-main.js?v=mrmwe3gz"></script>
       
-      <script src="../../assets/js/docmd-git.js?v=mrbag4np"></script>
-      <script src="../../assets/js/docmd-image-lightbox.js?v=mrbag4np" ></script>
+      <script src="../../assets/js/docmd-git.js?v=mrmwe3gz"></script>
+      <script src="../../assets/js/docmd-image-lightbox.js?v=mrmwe3gz" ></script>
 <script src="https://cdn.jsdelivr.net/npm/minisearch@7.2.0/dist/umd/index.min.js" ></script>
-<script src="../../assets/js/docmd-search.js?v=mrbag4np" ></script>
-<script src="../../assets/js/init-mermaid.js?v=mrbag4np" type="module"></script>
-<script src="../../assets/js/docmd-git.js?v=mrbag4np" type="module"></script>
+<script src="../../assets/js/docmd-search.js?v=mrmwe3gz" ></script>
+<script src="../../assets/js/docmd-git.js?v=mrmwe3gz" type="module"></script>
 
   <!-- Search Modal (Injected by @docmd/plugin-search) -->
-  <div id="docmd-search-modal" class="docmd-search-modal" style="display: none;"
+  <div id="docmd-search-modal" class="docmd-search-modal" style="display: none;" data-show-confidence="false" data-show-filters="true"
        data-search-placeholder="Search documentation..."
        data-search-no-results="No results found."
        data-search-error="Failed to load search index."
@@ -984,6 +1072,8 @@ wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuat
     </script>
 
 <script>window.__git_config={"repo":null,"branch":"main","editLink":false,"lastUpdated":true,"commitHistory":true,"maxCommits":5,"dateFormat":"relative"};window.__git_i18n={"lastUpdated":"Last updated","recentCommits":"Recent commits","viewCommitHistory":"View commit history","editOnGitHub":"Edit on GitHub","editOnGitLab":"Edit on GitLab","editOnBitbucket":"Edit on Bitbucket","editThisPage":"Edit this page","justNow":"just now","minutesAgo":"{n}m ago","hoursAgo":"{n}h ago","daysAgo":"{n}d ago"}</script>
+      
+      
       
   </body>
 </html>
