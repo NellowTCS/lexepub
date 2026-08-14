@@ -58,7 +58,7 @@ epubie-lib = "0.1.1"
 ratatui = "0.30.0"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-diplomat = "0.15.0"
+diplomat = "0.16.0"
 diplomat-runtime = "0.16.0"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
