@@ -7,7 +7,7 @@ path: /adapters/rust/
 updated: 2026-08-14
 okf:
   generated_by: "@docmd/plugin-okf"
-  generated_at: "2026-08-14T07:06:18.093Z"
+  generated_at: "2026-08-14T07:07:10.439Z"
 ---
 ---
 title: "Rust Adapter"
