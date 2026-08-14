@@ -10,8 +10,23 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <meta name="generator" content="docmd v0.8.16">
+    <meta name="generator" content="docmd v0.8.17">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <script>
+      var root = "../../";
+      if (root && !root.endsWith('/')) root += '/';
+      if (root === '') root = './';
+      window.DOCMD_ROOT = root;
+
+      window.DOCMD_SITE_ROOT = "/lexepub/docs/";
+
+      window.DOCMD_APPEARANCE = "system";
+      window.DOCMD_VERSION_ROOT = "/";
+      window.DOCMD_BASE = "/lexepub/docs/";
+      window.DOCMD_LOCALE = "";
+      window.DOCMD_DEFAULT_LOCALE = "";
+    </script>
     <script>/**
  * --------------------------------------------------------------------
  * docmd : the zero-config documentation engine.
@@ -83,31 +98,17 @@
         visibility: hidden;
       }
     </style>
-    
-    <script>
-      var root = "/lexepub/docs/";
-      if (root && !root.endsWith('/')) root += '/';
-      if (root === '') root = './';
-      window.DOCMD_ROOT = root;
-
-      window.DOCMD_SITE_ROOT = "/lexepub/docs/";
-
-      window.DOCMD_APPEARANCE = "system";
-      window.DOCMD_VERSION_ROOT = "/";
-      window.DOCMD_BASE = "/lexepub/docs/";
-      window.DOCMD_LOCALE = "";
-      window.DOCMD_DEFAULT_LOCALE = "";
-    </script>
     <title>
       C/C++ Adapter : LexePub
     </title>
-    <base href="/lexepub/docs/">
     
-      <link id="site-favicon" rel="icon" href="/lexepub/docs/assets/favicon.ico?v=msslpt7s">
-    <link rel="stylesheet" href="/lexepub/docs/assets/css/docmd-main.css?v=msslpt7s">
     
-    <link rel="stylesheet" href="/lexepub/docs/assets/css/docmd-highlight-light.css?v=msslpt7s" id="hljs-light" >
-    <link rel="stylesheet" href="/lexepub/docs/assets/css/docmd-highlight-dark.css?v=msslpt7s" id="hljs-dark" disabled>
+
+    <link id="site-favicon" rel="icon" href="../../assets/favicon.ico?v=msslq049">
+    <link rel="stylesheet" href="../../assets/css/docmd-main.css?v=msslq049">
+    
+    <link rel="stylesheet" href="../../assets/css/docmd-highlight-light.css?v=msslq049" id="hljs-light" >
+    <link rel="stylesheet" href="../../assets/css/docmd-highlight-dark.css?v=msslq049" id="hljs-dark" disabled>
     
     
 <meta name="description" content="Integration layer for native applications via Diplomat">
@@ -122,77 +123,12 @@
 
 
 
-<link rel="stylesheet" href="/lexepub/docs/assets/css/docmd-theme-ruby.css?v=msslpt7s" >
-<link rel="stylesheet" href="/lexepub/docs/assets/css/docmd-git.css?v=msslpt7s" >
-<link rel="stylesheet" href="/lexepub/docs/assets/css/docmd-openapi.css?v=msslpt7s" >
+<link rel="stylesheet" href="../../assets/css/docmd-theme-ruby.css?v=msslq049" >
+<link rel="stylesheet" href="../../assets/css/docmd-git.css?v=msslq049" >
+<link rel="stylesheet" href="../../assets/css/docmd-openapi.css?v=msslq049" >
 
     
-    <script>/**
- * --------------------------------------------------------------------
- * docmd : the zero-config documentation engine.
- *
- * @package     @docmd/core (and ecosystem)
- * @website     https://docmd.io
- * @repository  https://github.com/docmd-io/docmd
- * @license     MIT
- * @copyright   Copyright (c) 2025-present docmd.io
- *
- * [docmd-source] - Please do not remove this header.
- * --------------------------------------------------------------------
- */
-
-(function () {
-  try {
-    // 1. Determine Theme
-    //
-    // Resolve from three sources, in priority order:
-    //   1. localStorage explicit user choice (light / dark)
-    //   2. window.DOCMD_APPEARANCE  (current canonical name, set by EJS templates)
-    //   3. window.DOCMD_DEFAULT_MODE (legacy alias kept for pre-0.8.7 outputs)
-    //   4. 'light' as the final fallback
-    //
-    // Note: localStorage is only honoured when it holds an explicit
-    // 'light' or 'dark' value. A stored 'system' value (from a prior
-    // session where the user picked "follow system") must NOT win over
-    // a freshly resolved config value — the resolved value will itself
-    // be 'system' in that case and the OS preference check below takes
-    // over, so this is a no-op for the in-session behaviour but keeps
-    // any future storage migration simple.
-    var localValue = localStorage.getItem('docmd-theme');
-    var configValue = window.DOCMD_APPEARANCE
-      || window.DOCMD_DEFAULT_MODE
-      || 'light';
-    var theme = (localValue === 'light' || localValue === 'dark')
-      ? localValue
-      : configValue;
-
-    if (theme === 'system') {
-      theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-
-    // 2. Apply to Root
-    document.documentElement.setAttribute('data-theme', theme);
-
-    // 3. Highlight.js Toggle Strategy
-    var lightLink = document.getElementById('hljs-light');
-    var darkLink = document.getElementById('hljs-dark');
-
-    if (lightLink && darkLink) {
-      if (theme === 'dark') {
-        lightLink.disabled = true;
-        darkLink.disabled = false;
-      } else {
-        lightLink.disabled = false;
-        darkLink.disabled = true;
-      }
-    }
-
-    document.documentElement.style.visibility = "visible";
-  } catch (e) {
-    document.documentElement.style.visibility = "visible";
-    console.error('Theme init failed', e);
-  }
-})();</script>
+    
   </head>
   <body
     class="sidebar-collapsible"
@@ -206,7 +142,7 @@
       <aside class="sidebar">
         <div class="sidebar-header">
           
-<h1><a href="/lexepub/docs/">
+<h1><a href="../../">
                 LexePub
               </a></h1>
           
@@ -244,7 +180,7 @@
     
       <li class="" >
       
-        <a href="/lexepub/docs/" class=" "
+        <a href="../../" class=" "
           >
            
 <svg class="lucide-icon icon-home " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
@@ -310,7 +246,7 @@
             
       <li class="" >
       
-        <a href="/lexepub/docs/getting-started/quickstart/" class=" "
+        <a href="../../getting-started/quickstart/" class=" "
           >
            
 <svg class="lucide-icon icon-play " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
@@ -394,7 +330,7 @@
             
       <li class="active" >
       
-        <a href="/lexepub/docs/adapters/c/" class="active "
+        <a href="../../adapters/c/" class="active "
           >
            
 <svg class="lucide-icon icon-terminal " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
@@ -427,7 +363,7 @@
     
       <li class="" >
       
-        <a href="/lexepub/docs/adapters/rust/" class=" "
+        <a href="../../adapters/rust/" class=" "
           >
            
 <svg class="lucide-icon icon-box " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
@@ -461,7 +397,7 @@
     
       <li class="" >
       
-        <a href="/lexepub/docs/adapters/wasm/" class=" "
+        <a href="../../adapters/wasm/" class=" "
           >
            
 <svg class="lucide-icon icon-cpu " width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
@@ -881,7 +817,7 @@ diplomat<span class="hljs-punctuation">-</span>tool c include<span class="hljs-p
                 
                   <div class="page-navigation">
                     
-                      <a href="/lexepub/docs/getting-started/quickstart/" class="prev-page">
+                      <a href="../../getting-started/quickstart/" class="prev-page">
                         
 <svg class="lucide-icon icon-arrow-left page-nav-icon" width="1em" height="1em" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"
   class="lucide lucide-arrow-left"
@@ -905,7 +841,7 @@ diplomat<span class="hljs-punctuation">-</span>tool c include<span class="hljs-p
                       </a>
                     
                     
-                      <a href="/lexepub/docs/adapters/rust/" class="next-page">
+                      <a href="../../adapters/rust/" class="next-page">
                         <span><small>Next</small>
                           <strong>
                             Rust
@@ -932,6 +868,7 @@ diplomat<span class="hljs-punctuation">-</span>tool c include<span class="hljs-p
                   </div>
                 
               </div>
+              
               <div class="toc-sidebar">
                 
 
@@ -979,17 +916,18 @@ diplomat<span class="hljs-punctuation">-</span>tool c include<span class="hljs-p
   </div>
 
               </div>
+              
             </div>
             <div class="page-footer-actions">
               
               
-                <span class="git-last-updated" data-timestamp="1786691005000">
+                <span class="git-last-updated" data-timestamp="1786691016000">
                   <svg class="git-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <polyline points="12 6 12 12 16 14"></polyline>
                   </svg>
                   <span class="git-label">Last updated:</span>
-                  <span class="git-time" data-timestamp="1786691005000"></span>
+                  <span class="git-time" data-timestamp="1786691016000"></span>
                   
                   <div class="git-commit-tooltip" role="tooltip">
                     <div class="git-tooltip-title">Recent commits</div>
@@ -1002,10 +940,10 @@ diplomat<span class="hljs-punctuation">-</span>tool c include<span class="hljs-p
                             
                           </div>
                           <div class="git-commit-details">
-                            <div class="git-commit-message" title="Merge pull request #40 from NellowTCS/dependabot/cargo/clap-4.6.3">Merge pull request #40 from NellowTCS...</div>
+                            <div class="git-commit-message" title="Merge pull request #41 from NellowTCS/dependabot/npm_and_yarn/Docs/docmd/core-0.8.17">Merge pull request #41 from NellowTCS...</div>
                             <div class="git-commit-meta">
                               <span class="git-commit-author">NellowTCS</span>
-                              <span class="git-commit-date" data-timestamp="1786691005000"></span>
+                              <span class="git-commit-date" data-timestamp="1786691016000"></span>
                             </div>
                           </div>
                         </li>
@@ -1036,13 +974,13 @@ diplomat<span class="hljs-punctuation">-</span>tool c include<span class="hljs-p
         </div>
       </div>
       
-      <script src="/lexepub/docs/assets/js/docmd-main.js?v=msslpt7s"></script>
+      <script src="../../assets/js/docmd-main.js?v=msslq049"></script>
       
-      <script src="/lexepub/docs/assets/js/docmd-git.js?v=msslpt7s"></script>
-      <script src="/lexepub/docs/assets/js/docmd-image-lightbox.js?v=msslpt7s" ></script>
-<script src="/lexepub/docs/assets/js/vendor/minisearch.js?v=msslpt7s" ></script>
-<script src="/lexepub/docs/assets/js/docmd-search.js?v=msslpt7s" ></script>
-<script src="/lexepub/docs/assets/js/docmd-git.js?v=msslpt7s" type="module"></script>
+      <script src="../../assets/js/docmd-git.js?v=msslq049"></script>
+      <script src="../../assets/js/docmd-image-lightbox.js?v=msslq049" ></script>
+<script src="../../assets/js/vendor/minisearch.js?v=msslq049" ></script>
+<script src="../../assets/js/docmd-search.js?v=msslq049" ></script>
+<script src="../../assets/js/docmd-git.js?v=msslq049" type="module"></script>
 
   <!-- Search Modal (Injected by @docmd/plugin-search) -->
   <div id="docmd-search-modal" class="docmd-search-modal" style="display: none;" data-show-confidence="false" data-show-filters="true"
@@ -1050,6 +988,7 @@ diplomat<span class="hljs-punctuation">-</span>tool c include<span class="hljs-p
        data-search-no-results="No results found."
        data-search-error="Failed to load search index."
        data-search-offline="Search requires a web server. Open this site via http://localhost instead of file:// to enable search."
+       data-search-offline-build="Search is disabled because these docs were built with the --offline flag. Rebuild the site without the flag to enable search."
        data-search-initial="Type to start searching..."
        data-search-navigate="to navigate"
        data-search-escape="to close">

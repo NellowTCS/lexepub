@@ -7,7 +7,7 @@ path: /
 updated: 2026-08-14
 okf:
   generated_by: "@docmd/plugin-okf"
-  generated_at: "2026-08-14T07:04:05.245Z"
+  generated_at: "2026-08-14T07:04:14.210Z"
 ---
 ---
 title: "LexePub"
