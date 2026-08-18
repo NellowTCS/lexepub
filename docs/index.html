@@ -10,7 +10,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <meta name="generator" content="docmd v0.8.17">
+    <meta name="generator" content="docmd v0.9.2">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <script>
@@ -104,11 +104,11 @@
     
     
 
-    <link id="site-favicon" rel="icon" href="./assets/favicon.ico?v=msslxxf1">
-    <link rel="stylesheet" href="./assets/css/docmd-main.css?v=msslxxf1">
+    <link id="site-favicon" rel="icon" href="./assets/favicon.ico?v=msy3b4g4">
+    <link rel="stylesheet" href="./assets/css/docmd-main.css?v=msy3b4g4">
     
-    <link rel="stylesheet" href="./assets/css/docmd-highlight-light.css?v=msslxxf1" id="hljs-light" >
-    <link rel="stylesheet" href="./assets/css/docmd-highlight-dark.css?v=msslxxf1" id="hljs-dark" disabled>
+    <link rel="stylesheet" href="./assets/css/docmd-highlight-light.css?v=msy3b4g4" id="hljs-light" >
+    <link rel="stylesheet" href="./assets/css/docmd-highlight-dark.css?v=msy3b4g4" id="hljs-dark" disabled>
     
     
 <meta name="description" content="High-performance, memory-efficient EPUB parsing for multiple runtimes">
@@ -123,9 +123,11 @@
 
 
 
-<link rel="stylesheet" href="./assets/css/docmd-theme-ruby.css?v=msslxxf1" >
-<link rel="stylesheet" href="./assets/css/docmd-git.css?v=msslxxf1" >
-<link rel="stylesheet" href="./assets/css/docmd-openapi.css?v=msslxxf1" >
+
+<link rel="stylesheet" href="./assets/css/docmd-theme-ruby.css?v=msy3b4g4" >
+<link rel="stylesheet" href="./assets/css/docmd-git.css?v=msy3b4g4" >
+<link rel="stylesheet" href="./assets/css/docmd-openapi.css?v=msy3b4g4" >
+<link rel="stylesheet" href="./assets/css/docmd-ai.css?v=msy3b4g4" >
 
     
     
@@ -136,6 +138,9 @@
     data-copy-code-enabled="true" data-spa-enabled="true" data-source-file="docs/index.md">
 
     <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    
+    
 
     
     
@@ -505,9 +510,8 @@
         </div>
       </aside>
       
-      
-      
       <div class="main-content-wrapper">
+        
         
         
           <header class="page-header">
@@ -702,11 +706,11 @@
 <p>You’re building an e-reader or book management system that needs to process EPUB files efficiently. Normally, that means loading massive archives entirely into memory, dealing with OPF manifest edge cases, or juggling different APIs for each runtime.</p>
 <p>LexePub replaces that with one core parser and thin language adapters. Parse once using memory-safe async streams, then consume the same chapter/metadata behavior from Rust, WASM, and C/C++.</p>
 <h2 id="features" class="docmd-heading"><a href="#features" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>Features</h2>
-<div class="docmd-container card"><div class="card-title">Streaming-Friendly Core</div><div class="card-content"><p>Read chapters sequentially and process content without requiring full-book materialization in memory.</p>
-</div></div><div class="docmd-container card"><div class="card-title">Multi-Platform Adapters</div><div class="card-content"><p>Written in async Rust at the core, exported to C/C++ via Diplomat and JavaScript/TypeScript via WebAssembly.</p>
-</div></div><div class="docmd-container card"><div class="card-title">Strict Metadata Validation</div><div class="card-content"><p>Automatically detects EPUB versions (2.0 vs 3.0), resolves OPF manifest links, and validates required metadata structure according to the standards.</p>
-</div></div><div class="docmd-container card"><div class="card-title">CSS-Aware AST</div><div class="card-content"><p>Manifest CSS resources are parsed and applied to chapter AST nodes. Styles are merged into each element’s <code>styles</code> map.</p>
-</div></div><div class="docmd-container card"><div class="card-title">Resource + TOC Utilities</div><div class="card-content"><p>Resolve chapter-relative links, load internal EPUB resources (images/assets), and consume normalized TOC entries with chapter titles.</p>
+<div class="docmd-container card"><div class="card-title">Streaming-Friendly</div><div class="card-content"><p>Read chapters sequentially and process content without requiring full-book materialization in memory.</p>
+</div></div><div class="docmd-container card"><div class="card-title">Multi-Platform</div><div class="card-content"><p>Written in async Rust at the core, exported to C/C++ via Diplomat and JavaScript/TypeScript via WebAssembly.</p>
+</div></div><div class="docmd-container card"><div class="card-title">Strict</div><div class="card-content"><p>Automatically detects EPUB versions (2.0 vs 3.0), resolves OPF manifest links, and validates required metadata structure according to the standards.</p>
+</div></div><div class="docmd-container card"><div class="card-title">CSS-Aware</div><div class="card-content"><p>Manifest CSS resources are parsed and applied to chapter AST nodes. Styles are merged into each element’s <code>styles</code> map.</p>
+</div></div><div class="docmd-container card"><div class="card-title">Resource</div><div class="card-content"><p>Resolve chapter-relative links, load internal EPUB resources (images/assets), and consume normalized TOC entries with chapter titles.</p>
 </div></div><h2 id="adapter-parity" class="docmd-heading"><a href="#adapter-parity" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>Adapter parity</h2>
 <p>LexePub tries to have parity between adapters, C/C++, WASM, and Rust.</p>
 <ul>
@@ -814,13 +818,13 @@ For runtime-specific APIs, see:</p>
             <div class="page-footer-actions">
               
               
-                <span class="git-last-updated" data-timestamp="1786691395000">
+                <span class="git-last-updated" data-timestamp="1787022898000">
                   <svg class="git-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <polyline points="12 6 12 12 16 14"></polyline>
                   </svg>
                   <span class="git-label">Last updated:</span>
-                  <span class="git-time" data-timestamp="1786691395000"></span>
+                  <span class="git-time" data-timestamp="1787022898000"></span>
                   
                   <div class="git-commit-tooltip" role="tooltip">
                     <div class="git-tooltip-title">Recent commits</div>
@@ -833,10 +837,10 @@ For runtime-specific APIs, see:</p>
                             
                           </div>
                           <div class="git-commit-details">
-                            <div class="git-commit-message" title="Merge pull request #38 from NellowTCS/dependabot/npm_and_yarn/Demo/fs-extra-11.4.0">Merge pull request #38 from NellowTCS...</div>
+                            <div class="git-commit-message" title="Merge pull request #55 from NellowTCS/dependabot/npm_and_yarn/Docs/docmd/core-0.9.2">Merge pull request #55 from NellowTCS...</div>
                             <div class="git-commit-meta">
                               <span class="git-commit-author">NellowTCS</span>
-                              <span class="git-commit-date" data-timestamp="1786691395000"></span>
+                              <span class="git-commit-date" data-timestamp="1787022898000"></span>
                             </div>
                           </div>
                         </li>
@@ -867,13 +871,14 @@ For runtime-specific APIs, see:</p>
         </div>
       </div>
       
-      <script src="./assets/js/docmd-main.js?v=msslxxf1"></script>
+      <script src="./assets/js/docmd-main.js?v=msy3b4g4"></script>
       
-      <script src="./assets/js/docmd-git.js?v=msslxxf1"></script>
-      <script src="./assets/js/docmd-image-lightbox.js?v=msslxxf1" ></script>
-<script src="./assets/js/vendor/minisearch.js?v=msslxxf1" ></script>
-<script src="./assets/js/docmd-search.js?v=msslxxf1" ></script>
-<script src="./assets/js/docmd-git.js?v=msslxxf1" type="module"></script>
+      <script src="./assets/js/docmd-git.js?v=msy3b4g4"></script>
+      <script src="./assets/js/docmd-image-lightbox.js?v=msy3b4g4" ></script>
+<script src="./assets/js/vendor/minisearch.js?v=msy3b4g4" ></script>
+<script src="./assets/js/docmd-search.js?v=msy3b4g4" ></script>
+<script src="./assets/js/docmd-git.js?v=msy3b4g4" type="module"></script>
+<script src="./assets/js/docmd-ai.js?v=msy3b4g4" type="module"></script>
 
   <!-- Search Modal (Injected by @docmd/plugin-search) -->
   <div id="docmd-search-modal" class="docmd-search-modal" style="display: none;" data-show-confidence="false" data-show-filters="true"
@@ -949,6 +954,7 @@ For runtime-specific APIs, see:</p>
     </script>
 
 <script>window.__git_config={"repo":null,"branch":"main","editLink":false,"lastUpdated":true,"commitHistory":true,"maxCommits":5,"dateFormat":"relative"};window.__git_i18n={"lastUpdated":"Last updated","recentCommits":"Recent commits","viewCommitHistory":"View commit history","editOnGitHub":"Edit on GitHub","editOnGitLab":"Edit on GitLab","editOnBitbucket":"Edit on Bitbucket","editThisPage":"Edit this page","justNow":"just now","minutesAgo":"{n}m ago","hoursAgo":"{n}h ago","daysAgo":"{n}d ago"}</script>
+<div id="docmd-ai-root"></div><script>window.__docmd_ai_config={"endpoint":"","cloud":{},"captcha":true,"position":"bottom-center","siteTitle":"LexePub","siteBase":"/lexepub/docs/","siteUrl":"https://nellowtcs.me/lexepub/docs","versions":null,"i18n":null,"navigation":[{"title":"Home","path":"/","icon":"home"},{"title":"Getting Started","icon":"rocket","collapsible":false,"children":[{"title":"Quick Start","path":"/getting-started/quickstart/","icon":"play"}]},{"title":"Adapters","icon":"code","children":[{"title":"C/C++","path":"/adapters/c/","icon":"terminal"},{"title":"Rust","path":"/adapters/rust/","icon":"box"},{"title":"WASM","path":"/adapters/wasm/","icon":"cpu"}]},{"title":"GitHub","path":"https://github.com/NellowTCS/lexepub","icon":"github","external":true}],"searchCapabilities":{"keyword":true,"semantic":false},"isWorkspace":false,"workspaceProjects":[]};</script>
       
       
       

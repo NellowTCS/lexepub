@@ -10,7 +10,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <meta name="generator" content="docmd v0.8.17">
+    <meta name="generator" content="docmd v0.9.2">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <script>
@@ -104,11 +104,11 @@
     
     
 
-    <link id="site-favicon" rel="icon" href="../../assets/favicon.ico?v=msslxxf1">
-    <link rel="stylesheet" href="../../assets/css/docmd-main.css?v=msslxxf1">
+    <link id="site-favicon" rel="icon" href="../../assets/favicon.ico?v=msy3b4g4">
+    <link rel="stylesheet" href="../../assets/css/docmd-main.css?v=msy3b4g4">
     
-    <link rel="stylesheet" href="../../assets/css/docmd-highlight-light.css?v=msslxxf1" id="hljs-light" >
-    <link rel="stylesheet" href="../../assets/css/docmd-highlight-dark.css?v=msslxxf1" id="hljs-dark" disabled>
+    <link rel="stylesheet" href="../../assets/css/docmd-highlight-light.css?v=msy3b4g4" id="hljs-light" >
+    <link rel="stylesheet" href="../../assets/css/docmd-highlight-dark.css?v=msy3b4g4" id="hljs-dark" disabled>
     
     
 <meta name="description" content="Get started parsing EPUB files with LexEpub">
@@ -123,9 +123,11 @@
 
 
 
-<link rel="stylesheet" href="../../assets/css/docmd-theme-ruby.css?v=msslxxf1" >
-<link rel="stylesheet" href="../../assets/css/docmd-git.css?v=msslxxf1" >
-<link rel="stylesheet" href="../../assets/css/docmd-openapi.css?v=msslxxf1" >
+
+<link rel="stylesheet" href="../../assets/css/docmd-theme-ruby.css?v=msy3b4g4" >
+<link rel="stylesheet" href="../../assets/css/docmd-git.css?v=msy3b4g4" >
+<link rel="stylesheet" href="../../assets/css/docmd-openapi.css?v=msy3b4g4" >
+<link rel="stylesheet" href="../../assets/css/docmd-ai.css?v=msy3b4g4" >
 
     
     
@@ -136,6 +138,9 @@
     data-copy-code-enabled="true" data-spa-enabled="true" data-source-file="docs/getting-started/quickstart.md">
 
     <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    
+    
 
     
     
@@ -505,9 +510,8 @@
         </div>
       </aside>
       
-      
-      
       <div class="main-content-wrapper">
+        
         
         
           <header class="page-header">
@@ -729,37 +733,37 @@
 <h2 id="quick-start-installation" class="docmd-heading"><a href="#quick-start-installation" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>Installation</h2>
 <p>Add the core library to your Rust dependencies in <code>Cargo.toml</code>:</p>
 <pre class="hljs"><code class="language-toml">[dependencies]
-lexepub <span class="hljs-punctuation">=</span> <span class="hljs-string">&quot;0.1.1&quot;</span>
-tokio <span class="hljs-punctuation">=</span> { version <span class="hljs-punctuation">=</span> <span class="hljs-string">&quot;1&quot;</span>, features <span class="hljs-punctuation">=</span> [<span class="hljs-string">&quot;full&quot;</span>] }
+lexepub <span class="hljs-operator">=</span> <span class="hljs-string">&quot;0.1.1&quot;</span>
+tokio <span class="hljs-operator">=</span> { version <span class="hljs-operator">=</span> <span class="hljs-string">&quot;1&quot;</span>, features <span class="hljs-operator">=</span> [<span class="hljs-string">&quot;full&quot;</span>] }
 </code></pre>
 <p>Optional features:</p>
-<pre class="hljs"><code class="language-toml">lexepub <span class="hljs-punctuation">=</span> { version <span class="hljs-punctuation">=</span> <span class="hljs-string">&quot;0.1.1&quot;</span>, features <span class="hljs-punctuation">=</span> [<span class="hljs-string">&quot;c-ffi&quot;</span>, <span class="hljs-string">&quot;wasm&quot;</span>] }
+<pre class="hljs"><code class="language-toml">lexepub <span class="hljs-operator">=</span> { version <span class="hljs-operator">=</span> <span class="hljs-string">&quot;0.1.1&quot;</span>, features <span class="hljs-operator">=</span> [<span class="hljs-string">&quot;c-ffi&quot;</span>, <span class="hljs-string">&quot;wasm&quot;</span>] }
 </code></pre>
 <h2 id="quick-start-useful-commands" class="docmd-heading"><a href="#quick-start-useful-commands" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>Useful Commands</h2>
 <p>From the repository root:</p>
 <pre class="hljs"><code class="language-bash"><span class="hljs-keyword">cargo</span> fmt
-<span class="hljs-keyword">cargo</span> clippy <span class="hljs-punctuation">-</span>p lexepub <span class="hljs-punctuation">--</span>all<span class="hljs-punctuation">-</span>targets <span class="hljs-punctuation">--</span>features c<span class="hljs-punctuation">-</span>ffi <span class="hljs-punctuation">--</span> <span class="hljs-punctuation">-</span>D warnings
-<span class="hljs-keyword">cargo</span> check <span class="hljs-punctuation">-</span>p lexepub <span class="hljs-punctuation">--</span>features c<span class="hljs-punctuation">-</span>ffi
-<span class="hljs-keyword">cargo</span> check <span class="hljs-punctuation">-</span>p lexepub <span class="hljs-punctuation">--</span>target wasm32<span class="hljs-punctuation">-</span>unknown<span class="hljs-punctuation">-</span>unknown
+<span class="hljs-keyword">cargo</span> clippy <span class="hljs-operator">-</span>p lexepub <span class="hljs-operator">--</span>all<span class="hljs-operator">-</span>targets <span class="hljs-operator">--</span>features c<span class="hljs-operator">-</span>ffi <span class="hljs-operator">--</span> <span class="hljs-operator">-</span>D warnings
+<span class="hljs-keyword">cargo</span> check <span class="hljs-operator">-</span>p lexepub <span class="hljs-operator">--</span>features c<span class="hljs-operator">-</span>ffi
+<span class="hljs-keyword">cargo</span> check <span class="hljs-operator">-</span>p lexepub <span class="hljs-operator">--</span>target wasm32<span class="hljs-operator">-</span>unknown<span class="hljs-operator">-</span>unknown
 </code></pre>
 <p>If you are building demo WASM output:</p>
 <pre class="hljs"><code class="language-bash"><span class="hljs-keyword">cd</span> lexepub
-wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuation">--</span>release <span class="hljs-punctuation">--</span>target web <span class="hljs-punctuation">--</span>out<span class="hljs-punctuation">-</span>dir <span class="hljs-punctuation">/</span>workspaces<span class="hljs-punctuation">/</span>lexepub<span class="hljs-punctuation">/</span>Demo<span class="hljs-punctuation">/</span>src<span class="hljs-punctuation">/</span>wasm <span class="hljs-punctuation">--</span>out<span class="hljs-punctuation">-</span>name lexepub
+wasm<span class="hljs-operator">-</span>pack build <span class="hljs-operator">--</span>release <span class="hljs-operator">--</span>target web <span class="hljs-operator">--</span>out<span class="hljs-operator">-</span>dir <span class="hljs-operator">/</span>workspaces<span class="hljs-operator">/</span>lexepub<span class="hljs-operator">/</span>Demo<span class="hljs-operator">/</span>src<span class="hljs-operator">/</span>wasm <span class="hljs-operator">--</span>out<span class="hljs-operator">-</span>name lexepub
 </code></pre>
 <h2 id="quick-start-basic-usage" class="docmd-heading"><a href="#quick-start-basic-usage" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>Basic usage</h2>
 <p>The fundamental entry point for parsing is the <code>LexEpub</code> struct. Here is how you initialize the parser and request standard metadata:</p>
-<pre class="hljs"><code class="language-rust"><span class="hljs-keyword">use</span> lexepub<span class="hljs-punctuation">::</span>LexEpub;
+<pre class="hljs"><code class="language-rust"><span class="hljs-keyword">use</span> lexepub<span class="hljs-operator">::</span>LexEpub;
 
 <span class="hljs-comment">#[tokio::main]</span>
-<span class="hljs-keyword">async</span> <span class="hljs-keyword">fn</span> <span class="hljs-title function_">main</span>() <span class="hljs-punctuation">-&gt;</span> Result<span class="hljs-punctuation">&lt;</span>(), Box<span class="hljs-punctuation">&lt;</span>dyn std<span class="hljs-punctuation">::</span>error<span class="hljs-punctuation">::</span>Error<span class="hljs-punctuation">&gt;&gt;</span> {
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">fn</span> <span class="hljs-title function_">main</span>() <span class="hljs-operator">-&gt;</span> Result<span class="hljs-operator">&lt;</span>(), Box<span class="hljs-operator">&lt;</span>dyn std<span class="hljs-operator">::</span>error<span class="hljs-operator">::</span>Error<span class="hljs-operator">&gt;&gt;</span> {
     <span class="hljs-comment">// Instantiate a new parser against a local file.</span>
-    <span class="hljs-keyword">let</span> <span class="hljs-keyword">mut</span> epub <span class="hljs-punctuation">=</span> LexEpub<span class="hljs-punctuation">::</span><span class="hljs-title function_">open</span>(<span class="hljs-string">&quot;book.epub&quot;</span>).<span class="hljs-keyword">await</span><span class="hljs-punctuation">?</span>;
+    <span class="hljs-keyword">let</span> <span class="hljs-keyword">mut</span> epub <span class="hljs-operator">=</span> LexEpub<span class="hljs-operator">::</span><span class="hljs-title function_">open</span>(<span class="hljs-string">&quot;book.epub&quot;</span>).<span class="hljs-keyword">await</span><span class="hljs-operator">?</span>;
     
     <span class="hljs-comment">// Asynchronously resolve and extract OPF metadata.</span>
-    <span class="hljs-keyword">let</span> metadata <span class="hljs-punctuation">=</span> epub.<span class="hljs-title function_">get_metadata</span>().<span class="hljs-keyword">await</span><span class="hljs-punctuation">?</span>;
+    <span class="hljs-keyword">let</span> metadata <span class="hljs-operator">=</span> epub.<span class="hljs-title function_">get_metadata</span>().<span class="hljs-keyword">await</span><span class="hljs-operator">?</span>;
     
     <span class="hljs-comment">// Output the detected EPUB version.</span>
-    println<span class="hljs-punctuation">!</span>(<span class="hljs-string">&quot;Detected EPUB version: {:?}&quot;</span>, metadata.<span class="hljs-attr">version</span>);
+    println<span class="hljs-operator">!</span>(<span class="hljs-string">&quot;Detected EPUB version: {:?}&quot;</span>, metadata.<span class="hljs-attr">version</span>);
     <span class="hljs-title function_">Ok</span>(())
 }
 </code></pre>
@@ -787,11 +791,11 @@ wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuat
 <li><code>cover_image_sync()</code></li>
 </ul>
 <h2 id="quick-start-convenience-functions" class="docmd-heading"><a href="#quick-start-convenience-functions" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>Convenience functions</h2>
-<pre class="hljs"><code class="language-rust"><span class="hljs-keyword">use</span> lexepub<span class="hljs-punctuation">::</span>{extract_ast, extract_text_only, get_metadata};
+<pre class="hljs"><code class="language-rust"><span class="hljs-keyword">use</span> lexepub<span class="hljs-operator">::</span>{extract_ast, extract_text_only, get_metadata};
 
-<span class="hljs-keyword">let</span> text <span class="hljs-punctuation">=</span> <span class="hljs-title function_">extract_text_only</span>(<span class="hljs-string">&quot;book.epub&quot;</span>).<span class="hljs-keyword">await</span><span class="hljs-punctuation">?</span>;
-<span class="hljs-keyword">let</span> ast <span class="hljs-punctuation">=</span> <span class="hljs-title function_">extract_ast</span>(<span class="hljs-string">&quot;book.epub&quot;</span>).<span class="hljs-keyword">await</span><span class="hljs-punctuation">?</span>;
-<span class="hljs-keyword">let</span> metadata <span class="hljs-punctuation">=</span> <span class="hljs-title function_">get_metadata</span>(<span class="hljs-string">&quot;book.epub&quot;</span>).<span class="hljs-keyword">await</span><span class="hljs-punctuation">?</span>;
+<span class="hljs-keyword">let</span> text <span class="hljs-operator">=</span> <span class="hljs-title function_">extract_text_only</span>(<span class="hljs-string">&quot;book.epub&quot;</span>).<span class="hljs-keyword">await</span><span class="hljs-operator">?</span>;
+<span class="hljs-keyword">let</span> ast <span class="hljs-operator">=</span> <span class="hljs-title function_">extract_ast</span>(<span class="hljs-string">&quot;book.epub&quot;</span>).<span class="hljs-keyword">await</span><span class="hljs-operator">?</span>;
+<span class="hljs-keyword">let</span> metadata <span class="hljs-operator">=</span> <span class="hljs-title function_">get_metadata</span>(<span class="hljs-string">&quot;book.epub&quot;</span>).<span class="hljs-keyword">await</span><span class="hljs-operator">?</span>;
 </code></pre>
 <h2 id="quick-start-css-behavior-in-ast-mode" class="docmd-heading"><a href="#quick-start-css-behavior-in-ast-mode" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>CSS behavior in AST mode</h2>
 <p>When you call <code>extract_ast()</code>, LexePub reads <code>text/css</code> resources from the OPF manifest, parses them, and applies declarations onto AST elements.</p>
@@ -933,13 +937,13 @@ wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuat
             <div class="page-footer-actions">
               
               
-                <span class="git-last-updated" data-timestamp="1786691395000">
+                <span class="git-last-updated" data-timestamp="1787022898000">
                   <svg class="git-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <polyline points="12 6 12 12 16 14"></polyline>
                   </svg>
                   <span class="git-label">Last updated:</span>
-                  <span class="git-time" data-timestamp="1786691395000"></span>
+                  <span class="git-time" data-timestamp="1787022898000"></span>
                   
                   <div class="git-commit-tooltip" role="tooltip">
                     <div class="git-tooltip-title">Recent commits</div>
@@ -952,10 +956,10 @@ wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuat
                             
                           </div>
                           <div class="git-commit-details">
-                            <div class="git-commit-message" title="Merge pull request #38 from NellowTCS/dependabot/npm_and_yarn/Demo/fs-extra-11.4.0">Merge pull request #38 from NellowTCS...</div>
+                            <div class="git-commit-message" title="Merge pull request #55 from NellowTCS/dependabot/npm_and_yarn/Docs/docmd/core-0.9.2">Merge pull request #55 from NellowTCS...</div>
                             <div class="git-commit-meta">
                               <span class="git-commit-author">NellowTCS</span>
-                              <span class="git-commit-date" data-timestamp="1786691395000"></span>
+                              <span class="git-commit-date" data-timestamp="1787022898000"></span>
                             </div>
                           </div>
                         </li>
@@ -986,13 +990,14 @@ wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuat
         </div>
       </div>
       
-      <script src="../../assets/js/docmd-main.js?v=msslxxf1"></script>
+      <script src="../../assets/js/docmd-main.js?v=msy3b4g4"></script>
       
-      <script src="../../assets/js/docmd-git.js?v=msslxxf1"></script>
-      <script src="../../assets/js/docmd-image-lightbox.js?v=msslxxf1" ></script>
-<script src="../../assets/js/vendor/minisearch.js?v=msslxxf1" ></script>
-<script src="../../assets/js/docmd-search.js?v=msslxxf1" ></script>
-<script src="../../assets/js/docmd-git.js?v=msslxxf1" type="module"></script>
+      <script src="../../assets/js/docmd-git.js?v=msy3b4g4"></script>
+      <script src="../../assets/js/docmd-image-lightbox.js?v=msy3b4g4" ></script>
+<script src="../../assets/js/vendor/minisearch.js?v=msy3b4g4" ></script>
+<script src="../../assets/js/docmd-search.js?v=msy3b4g4" ></script>
+<script src="../../assets/js/docmd-git.js?v=msy3b4g4" type="module"></script>
+<script src="../../assets/js/docmd-ai.js?v=msy3b4g4" type="module"></script>
 
   <!-- Search Modal (Injected by @docmd/plugin-search) -->
   <div id="docmd-search-modal" class="docmd-search-modal" style="display: none;" data-show-confidence="false" data-show-filters="true"
@@ -1068,6 +1073,7 @@ wasm<span class="hljs-punctuation">-</span>pack build <span class="hljs-punctuat
     </script>
 
 <script>window.__git_config={"repo":null,"branch":"main","editLink":false,"lastUpdated":true,"commitHistory":true,"maxCommits":5,"dateFormat":"relative"};window.__git_i18n={"lastUpdated":"Last updated","recentCommits":"Recent commits","viewCommitHistory":"View commit history","editOnGitHub":"Edit on GitHub","editOnGitLab":"Edit on GitLab","editOnBitbucket":"Edit on Bitbucket","editThisPage":"Edit this page","justNow":"just now","minutesAgo":"{n}m ago","hoursAgo":"{n}h ago","daysAgo":"{n}d ago"}</script>
+<div id="docmd-ai-root"></div><script>window.__docmd_ai_config={"endpoint":"","cloud":{},"captcha":true,"position":"bottom-center","siteTitle":"LexePub","siteBase":"/lexepub/docs/","siteUrl":"https://nellowtcs.me/lexepub/docs","versions":null,"i18n":null,"navigation":[{"title":"Home","path":"/","icon":"home"},{"title":"Getting Started","icon":"rocket","collapsible":false,"children":[{"title":"Quick Start","path":"/getting-started/quickstart/","icon":"play"}]},{"title":"Adapters","icon":"code","children":[{"title":"C/C++","path":"/adapters/c/","icon":"terminal"},{"title":"Rust","path":"/adapters/rust/","icon":"box"},{"title":"WASM","path":"/adapters/wasm/","icon":"cpu"}]},{"title":"GitHub","path":"https://github.com/NellowTCS/lexepub","icon":"github","external":true}],"searchCapabilities":{"keyword":true,"semantic":false},"isWorkspace":false,"workspaceProjects":[]};</script>
       
       
       

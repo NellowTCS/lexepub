@@ -1,11 +1,11 @@
-okf_version: 0.8.17
+okf_version: 0.9.2
 bundle:
   name: lexepub
   title: LexePub
   description: ""
   url: "https://nellowtcs.me/lexepub/docs"
   generated_by: "@docmd/plugin-okf"
-  generated_at: "2026-08-14T07:10:23.965Z"
+  generated_at: "2026-08-18T03:15:24.019Z"
   default_type: concept
 stats:
   concepts: 5

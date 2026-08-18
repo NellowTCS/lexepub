@@ -4,10 +4,10 @@ title: "C/C++ Adapter"
 description: "Integration layer for native applications via Diplomat"
 source: "https://nellowtcs.me/lexepub/docs/adapters/c/"
 path: /adapters/c/
-updated: 2026-08-14
+updated: 2026-08-18
 okf:
   generated_by: "@docmd/plugin-okf"
-  generated_at: "2026-08-14T07:10:23.961Z"
+  generated_at: "2026-08-18T03:15:24.016Z"
 ---
 ---
 title: "C/C++ Adapter"
