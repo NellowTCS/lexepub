@@ -582,7 +582,7 @@ impl LexEpub {
         let stylesheet = crate::core::css::Stylesheet::parse(&css_text);
 
         let mut chapters = Vec::new();
-        let parser = crate::core::html_parser::ChapterParser::new();
+        let parser = crate::core::html_parser::ChapterParser::new().with_ast();
         for item_id in spine {
             if let Some(href) = metadata.manifest.get(&item_id) {
                 let full_path = opf_base.join(&href.0);
