@@ -39,7 +39,7 @@ var DocmdAIAssistant = (() => {
     DocmdAIAssistantUI: () => DocmdAIAssistantUI
   });
 
-  // ../../../node_modules/.pnpm/docmd-assistant@0.1.14/node_modules/docmd-assistant/dist/index.js
+  // ../../../node_modules/.pnpm/docmd-assistant@0.1.15/node_modules/docmd-assistant/dist/index.js
   function parseAssistantOutput(raw, knownToolNames) {
     if (!raw || typeof raw !== "string") {
       return { cleanText: "", extractedToolCalls: [] };
@@ -66,34 +66,48 @@ var DocmdAIAssistant = (() => {
     text = text.replace(/\]<\][a-zA-Z0-9_\-]+\[>\[/gi, "");
     text = text.replace(/<\/?(?:[a-zA-Z0-9_\-]+:)?(?:think|thought|reasoning|reflection|plan)\b[^>]*>/gi, "");
     const toolTagRegex = /<(?:[a-zA-Z0-9_\-]+:)?(tool_call|function_call|tool|action|request|invoke)\b([^>]*)>([\s\S]*?)<\/(?:[a-zA-Z0-9_\-]+:)?\1>/gi;
-    text = text.replace(toolTagRegex, (_match, _tag, attrs, body) => {
+    text = text.replace(toolTagRegex, (match, tag, attrs, body) => {
       const nameMatch = attrs.match(/name=["']([^"']+)["']/i);
       if (nameMatch) {
         const toolName = nameMatch[1].trim();
+        if (!knownToolNames || knownToolNames.length === 0 || knownToolNames.includes(toolName)) {
+          let args = {};
+          try {
+            args = JSON.parse(body.trim());
+          } catch {
+            args = { query: body.trim() };
+          }
+          extractedToolCalls.push({ name: toolName, args });
+          return "";
+        }
+        return match;
+      }
+      const initialCount = extractedToolCalls.length;
+      tryParseToolJson(body, extractedToolCalls, knownToolNames);
+      if (extractedToolCalls.length > initialCount) {
+        return "";
+      }
+      if (tag.toLowerCase() === "tool_call" || tag.toLowerCase() === "function_call") {
+        return "";
+      }
+      return match;
+    });
+    const inlineFunctionTagRegex = /<function\s*=\s*["']?([a-zA-Z0-9_\-]+)["']?>([\s\S]*?)<\/function>/gi;
+    text = text.replace(inlineFunctionTagRegex, (match, toolName, body) => {
+      const cleanName = toolName.trim();
+      if (!knownToolNames || knownToolNames.length === 0 || knownToolNames.includes(cleanName)) {
         let args = {};
         try {
           args = JSON.parse(body.trim());
         } catch {
           args = { query: body.trim() };
         }
-        extractedToolCalls.push({ name: toolName, args });
-      } else {
-        tryParseToolJson(body, extractedToolCalls);
+        extractedToolCalls.push({ name: cleanName, args });
+        return "";
       }
-      return "";
+      return match;
     });
-    const inlineFunctionTagRegex = /<function\s*=\s*["']?([a-zA-Z0-9_\-]+)["']?>([\s\S]*?)<\/function>/gi;
-    text = text.replace(inlineFunctionTagRegex, (_match, toolName, body) => {
-      let args = {};
-      try {
-        args = JSON.parse(body.trim());
-      } catch {
-        args = { query: body.trim() };
-      }
-      extractedToolCalls.push({ name: toolName.trim(), args });
-      return "";
-    });
-    const mdToolRegex = /```(?:tool_call|function_call|tool|action|json:tool|json)?\s*\n([\s\S]*?)```/gi;
+    const mdToolRegex = /```(?:tool_call|function_call|action|json:tool|json)?\s*\n([\s\S]*?)```/gi;
     text = text.replace(mdToolRegex, (_match, body) => {
       const initialCount = extractedToolCalls.length;
       tryParseToolJson(body, extractedToolCalls, knownToolNames);
@@ -102,16 +116,20 @@ var DocmdAIAssistant = (() => {
       }
       return _match;
     });
-    const bracketToolRegex = /\[?(?:TOOL[_\s]?CALL|FUNCTION[_\s]?CALL|TOOL|CALL|ACTION):\s*([a-zA-Z0-9_\-]+)\s*(?:\(([\s\S]*?)\)|(\{[\s\S]*?\})|([\s\S]*?))\]?/gi;
-    text = text.replace(bracketToolRegex, (_match, toolName, parenArgs, braceArgs, plainArgs) => {
-      const rawArgs = parenArgs !== void 0 ? parenArgs : braceArgs || plainArgs || "";
-      const args = parseFunctionalArgs(rawArgs);
-      extractedToolCalls.push({ name: toolName.trim(), args });
-      return "";
+    const bracketToolRegex = /\[(?:TOOL[_\s]?CALL|FUNCTION[_\s]?CALL|TOOL|CALL|ACTION):\s*([a-zA-Z0-9_\-]+)\s*(?:\(([\s\S]*?)\)|(\{[\s\S]*?\})|([\s\S]*?))\]/gi;
+    text = text.replace(bracketToolRegex, (match, toolName, parenArgs, braceArgs, plainArgs) => {
+      const cleanName = toolName.trim();
+      if (!knownToolNames || knownToolNames.length === 0 || knownToolNames.includes(cleanName)) {
+        const rawArgs = parenArgs !== void 0 ? parenArgs : braceArgs || plainArgs || "";
+        const args = parseFunctionalArgs(rawArgs);
+        extractedToolCalls.push({ name: cleanName, args });
+        return "";
+      }
+      return match;
     });
     if (knownToolNames && knownToolNames.length > 0) {
       for (const toolName of knownToolNames) {
-        const funcRegex = new RegExp(`(?:call:)?\\b${toolName}\\s*\\(([\\s\\S]*?)\\)`, "g");
+        const funcRegex = new RegExp(`(?:call:|invoke:)?\\b${toolName}\\s*\\(([\\s\\S]*?)\\)`, "g");
         text = text.replace(funcRegex, (_match, innerArgs) => {
           let args = {};
           const trimmed = innerArgs.trim();
@@ -130,7 +148,7 @@ var DocmdAIAssistant = (() => {
       }
     }
     text = extractAndStripJsonObjects(text, extractedToolCalls, knownToolNames);
-    text = text.replace(/<\/?(?:[a-zA-Z0-9_\-]+:)?(?:tool_call|function_call|tool|action|request|invoke)\b[^>]*>/gi, "");
+    text = text.replace(/<\/?(?:[a-zA-Z0-9_\-]+:)?(?:tool_call|function_call|invoke)\b[^>]*>/gi, "");
     text = text.replace(/```(\w+)(?:[ \t]+|\r?\n)?([\s\S]*?)```/g, (_match, lang, code) => {
       const trimmedCode = code.replace(/^\s*\n?/, "");
       return "```" + lang + "\n" + trimmedCode + "```";
@@ -230,22 +248,6 @@ var DocmdAIAssistant = (() => {
     if (parsed.function && typeof parsed.function === "object") {
       return processParsedToolObject(parsed.function, targetArray, knownToolNames);
     }
-    const name = parsed.name || parsed.tool || parsed.action || parsed.function_name;
-    let args = parsed.parameters || parsed.arguments || parsed.args || parsed.input || parsed.action_input;
-    if (name && typeof name === "string") {
-      const toolName = name.trim();
-      if (typeof args === "string") {
-        try {
-          args = JSON.parse(args);
-        } catch {
-          args = { query: args };
-        }
-      } else if (!args || typeof args !== "object") {
-        args = {};
-      }
-      targetArray.push({ name: toolName, args });
-      return true;
-    }
     if (knownToolNames && knownToolNames.length > 0) {
       for (const toolName of knownToolNames) {
         if (parsed[toolName] !== void 0) {
@@ -262,6 +264,26 @@ var DocmdAIAssistant = (() => {
           targetArray.push({ name: toolName, args: toolArgs });
           return true;
         }
+      }
+    }
+    const rawName = parsed.name || parsed.tool || parsed.action || parsed.function_name;
+    if (rawName && typeof rawName === "string") {
+      const toolName = rawName.trim();
+      const isKnown = knownToolNames && knownToolNames.length > 0 ? knownToolNames.includes(toolName) : false;
+      const hasExplicitToolSignature = parsed.type === "function" || parsed.function_name !== void 0 || parsed.tool !== void 0 || parsed.action_input !== void 0 || parsed.name !== void 0 && (parsed.arguments !== void 0 || parsed.parameters !== void 0 || parsed.input !== void 0);
+      if (isKnown || !knownToolNames && hasExplicitToolSignature) {
+        let args = parsed.parameters || parsed.arguments || parsed.args || parsed.input || parsed.action_input;
+        if (typeof args === "string") {
+          try {
+            args = JSON.parse(args);
+          } catch {
+            args = { query: args };
+          }
+        } else if (!args || typeof args !== "object") {
+          args = {};
+        }
+        targetArray.push({ name: toolName, args });
+        return true;
       }
     }
     return false;
@@ -320,7 +342,7 @@ var DocmdAIAssistant = (() => {
     }
     return results;
   }
-  var ENGINE_VERSION = typeof process !== "undefined" && "0.1.14" ? "0.1.14" : "0.1.14";
+  var ENGINE_VERSION = typeof process !== "undefined" && "0.1.15" ? "0.1.15" : "0.1.15";
   var DEFAULT_SYSTEM_PROMPT = `You are docmd assistant \u2014 a professional, precise, and concise technical AI assistant for this documentation site.
 
 CRITICAL CONSTRAINTS & BEHAVIORAL RULES:
@@ -587,23 +609,29 @@ ${additionalPrompt}`;
         const toolCallsToExecute = [];
         if (res.message?.toolCalls && res.message.toolCalls.length > 0) {
           for (const tc of res.message.toolCalls) {
-            toolCallsToExecute.push({
-              id: tc.id || `call_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-              name: tc.name,
-              args: tc.input || {}
-            });
+            if (this.tools.has(tc.name)) {
+              toolCallsToExecute.push({
+                id: tc.id || `call_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+                name: tc.name,
+                args: tc.input || {}
+              });
+            }
           }
         } else if (parsed.extractedToolCalls.length > 0) {
           for (const tc of parsed.extractedToolCalls) {
-            toolCallsToExecute.push({
-              id: `call_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-              name: tc.name,
-              args: tc.args || {}
-            });
+            if (this.tools.has(tc.name)) {
+              toolCallsToExecute.push({
+                id: `call_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+                name: tc.name,
+                args: tc.args || {}
+              });
+            }
           }
         }
-        if (toolCallsToExecute.length === 0) {
+        if (parsed.cleanText || rawContent) {
           finalReplyText = parsed.cleanText || rawContent;
+        }
+        if (toolCallsToExecute.length === 0) {
           break;
         }
         conversationMessages.push({
@@ -694,23 +722,29 @@ ${additionalPrompt}`;
         const toolCallsToExecute = [];
         if (res.message?.toolCalls && res.message.toolCalls.length > 0) {
           for (const tc of res.message.toolCalls) {
-            toolCallsToExecute.push({
-              id: tc.id || `call_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-              name: tc.name,
-              args: tc.input || {}
-            });
+            if (this.tools.has(tc.name)) {
+              toolCallsToExecute.push({
+                id: tc.id || `call_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+                name: tc.name,
+                args: tc.input || {}
+              });
+            }
           }
         } else if (parsed.extractedToolCalls.length > 0) {
           for (const tc of parsed.extractedToolCalls) {
-            toolCallsToExecute.push({
-              id: `call_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
-              name: tc.name,
-              args: tc.args || {}
-            });
+            if (this.tools.has(tc.name)) {
+              toolCallsToExecute.push({
+                id: `call_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+                name: tc.name,
+                args: tc.args || {}
+              });
+            }
           }
         }
-        if (toolCallsToExecute.length === 0) {
+        if (parsed.cleanText || streamBuffer) {
           finalAccumulatedText = parsed.cleanText || streamBuffer;
+        }
+        if (toolCallsToExecute.length === 0) {
           callbacks.onChunk?.(finalAccumulatedText);
           this.emit("chunk", finalAccumulatedText);
           break;
@@ -831,23 +865,29 @@ ${additionalPrompt}`;
           for (const tc of data.tool_calls) {
             const toolName = tc.name || tc.function?.name;
             const toolArgs = typeof tc.arguments === "string" ? JSON.parse(tc.arguments) : tc.arguments || tc.args || {};
-            toolCallsToExecute.push({
-              id: tc.id || `call_${Date.now()}`,
-              name: toolName,
-              args: toolArgs
-            });
+            if (toolName && this.tools.has(toolName)) {
+              toolCallsToExecute.push({
+                id: tc.id || `call_${Date.now()}`,
+                name: toolName,
+                args: toolArgs
+              });
+            }
           }
         } else if (parsed.extractedToolCalls.length > 0) {
           for (const tc of parsed.extractedToolCalls) {
-            toolCallsToExecute.push({
-              id: `call_${Date.now()}`,
-              name: tc.name,
-              args: tc.args || {}
-            });
+            if (tc.name && this.tools.has(tc.name)) {
+              toolCallsToExecute.push({
+                id: `call_${Date.now()}`,
+                name: tc.name,
+                args: tc.args || {}
+              });
+            }
           }
         }
+        if (parsed.cleanText || rawReply) {
+          finalReply = parsed.cleanText || rawReply;
+        }
         if (toolCallsToExecute.length === 0) {
-          finalReply = parsed.cleanText || rawReply || "No response returned.";
           break;
         }
         if (currentHistory.length === 0 || currentHistory[currentHistory.length - 1]?.text !== originalUserQuery) {
@@ -1094,23 +1134,31 @@ Based strictly on the documentation search results above, answer the user's ques
         const toolCallsToExecute = [];
         if (sseToolCalls.length > 0) {
           for (const tc of sseToolCalls) {
-            toolCallsToExecute.push({
-              id: tc.id || `call_${Date.now()}`,
-              name: tc.name || tc.function?.name,
-              args: typeof tc.arguments === "string" ? JSON.parse(tc.arguments) : tc.arguments || tc.args || {}
-            });
+            const toolName = tc.name || tc.function?.name;
+            const toolArgs = typeof tc.arguments === "string" ? JSON.parse(tc.arguments) : tc.arguments || tc.args || {};
+            if (toolName && this.tools.has(toolName)) {
+              toolCallsToExecute.push({
+                id: tc.id || `call_${Date.now()}`,
+                name: toolName,
+                args: toolArgs
+              });
+            }
           }
         } else if (parsed.extractedToolCalls.length > 0) {
           for (const tc of parsed.extractedToolCalls) {
-            toolCallsToExecute.push({
-              id: `call_${Date.now()}`,
-              name: tc.name,
-              args: tc.args || {}
-            });
+            if (tc.name && this.tools.has(tc.name)) {
+              toolCallsToExecute.push({
+                id: `call_${Date.now()}`,
+                name: tc.name,
+                args: tc.args || {}
+              });
+            }
           }
         }
+        if (parsed.cleanText || streamReplyText) {
+          finalReply = parsed.cleanText || streamReplyText;
+        }
         if (toolCallsToExecute.length === 0) {
-          finalReply = parsed.cleanText || streamReplyText || "No response returned.";
           if (allowTools) {
             callbacks.onChunk?.(finalReply);
             this.emit("chunk", finalReply);
@@ -1350,7 +1398,11 @@ Based strictly on the documentation search results above, answer the user's ques
       this.container = null;
       this.isDrawerOpened = false;
       this.isPending = false;
-      const cfg = window.__docmd_ai_config || window.__DOCMD_AI_CONFIG__ || {};
+      const rawCfg = window.__docmd_ai_config || window.__DOCMD_AI_CONFIG__;
+      if (!rawCfg || rawCfg.enabled === false || rawCfg.assistant === false || rawCfg.chat === false) {
+        return;
+      }
+      const cfg = rawCfg;
       this.projectId = cfg.projectId || cfg.siteId || cfg.cloud?.projectId || cfg.cloud?.siteId || "default";
       this.isUnconfigured = (!cfg.projectId || cfg.projectId === "default") && !cfg.apiKey && !cfg.baseURL;
       const initialSystemPrompt = this.buildSystemPrompt();
@@ -1413,7 +1465,9 @@ Based strictly on the documentation search results above, answer the user's ques
     }
     mount() {
       if (document.getElementById("docmd-ai-plugin-root")) return;
-      const cfg = window.__docmd_ai_config || {};
+      const rawCfg = window.__docmd_ai_config || window.__DOCMD_AI_CONFIG__;
+      if (!rawCfg || rawCfg.enabled === false || rawCfg.assistant === false || rawCfg.chat === false) return;
+      const cfg = rawCfg;
       const i18n = window.__DOCMD_AI_I18N__ || {};
       const pos = cfg.position || "bottom-center";
       const placeholder = cfg.placeholder || i18n["ai.inputPlaceholder"] || "Ask AI Assistant...";
@@ -1974,8 +2028,16 @@ ${formattedHits}`;
                 if (msgs) msgs.scrollTop = msgs.scrollHeight;
               }
             },
-            onChunk: (delta) => {
-              accumulatedText = delta;
+            onChunk: (chunk) => {
+              if (chunk) {
+                if (!accumulatedText) {
+                  accumulatedText = chunk;
+                } else if (chunk.startsWith(accumulatedText)) {
+                  accumulatedText = chunk;
+                } else {
+                  accumulatedText += chunk;
+                }
+              }
               if (statusWrap) {
                 statusWrap.style.display = "none";
               }

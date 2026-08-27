@@ -4,10 +4,10 @@ title: LexePub
 description: "High-performance, memory-efficient EPUB parsing for multiple runtimes"
 source: "https://nellowtcs.me/lexepub/docs/"
 path: /
-updated: 2026-08-26
+updated: 2026-08-27
 okf:
   generated_by: "@docmd/plugin-okf"
-  generated_at: "2026-08-26T19:08:36.840Z"
+  generated_at: "2026-08-27T03:33:35.266Z"
 ---
 ---
 title: "LexePub"
@@ -37,7 +37,7 @@ Written in async Rust at the core, exported to C/C++ via Diplomat and JavaScript
 :::
 
 ::: card Strict Metadata Validation
-Automatically detects EPUB versions (2.0 vs 3.0), resolves OPF manifest links, and validates required metadata structure according to the standards. 
+Automatically detects EPUB versions (2.0 vs 3.0), resolves OPF manifest links, and validates required metadata structure according to the standards.
 :::
 
 ::: card CSS-Aware AST

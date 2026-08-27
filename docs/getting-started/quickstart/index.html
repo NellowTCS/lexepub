@@ -10,7 +10,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <meta name="generator" content="docmd v0.9.3">
+    <meta name="generator" content="docmd v0.9.4">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <script>
@@ -104,11 +104,11 @@
     
     
 
-    <link id="site-favicon" rel="icon" href="../../assets/favicon.ico?v=mtagvrzs">
-    <link rel="stylesheet" href="../../assets/css/docmd-main.css?v=mtagvrzs">
+    <link id="site-favicon" rel="icon" href="../../assets/favicon.ico?v=mtayx6h9">
+    <link rel="stylesheet" href="../../assets/css/docmd-main.css?v=mtayx6h9">
     
-    <link rel="stylesheet" href="../../assets/css/docmd-highlight-light.css?v=mtagvrzs" id="hljs-light" >
-    <link rel="stylesheet" href="../../assets/css/docmd-highlight-dark.css?v=mtagvrzs" id="hljs-dark" disabled>
+    <link rel="stylesheet" href="../../assets/css/docmd-highlight-light.css?v=mtayx6h9" id="hljs-light" >
+    <link rel="stylesheet" href="../../assets/css/docmd-highlight-dark.css?v=mtayx6h9" id="hljs-dark" disabled>
     
     
 <meta name="description" content="Get started parsing EPUB files with LexEpub">
@@ -124,10 +124,10 @@
 
 
 
-<link rel="stylesheet" href="../../assets/css/docmd-theme-ruby.css?v=mtagvrzs" >
-<link rel="stylesheet" href="../../assets/css/docmd-git.css?v=mtagvrzs" >
-<link rel="stylesheet" href="../../assets/css/docmd-openapi.css?v=mtagvrzs" >
-<link rel="stylesheet" href="../../assets/css/docmd-ai.css?v=mtagvrzs" >
+<link rel="stylesheet" href="../../assets/css/docmd-theme-ruby.css?v=mtayx6h9" >
+<link rel="stylesheet" href="../../assets/css/docmd-git.css?v=mtayx6h9" >
+<link rel="stylesheet" href="../../assets/css/docmd-openapi.css?v=mtayx6h9" >
+<link rel="stylesheet" href="../../assets/css/docmd-ai.css?v=mtayx6h9" >
 
     
     
@@ -633,7 +633,7 @@
             <div class="content-layout">
               <div class="main-content">
                 <div class="docmd-breadcrumbs-row">
-                  <div id="docmd-raw-markdown" data-content="---%0Atitle%3A%20%22Quick%20Start%22%0Adescription%3A%20%22Get%20started%20parsing%20EPUB%20files%20with%20LexEpub%22%0A---%0A%0A%23%20Quick%20start%0A%0AThis%20guide%20outlines%20how%20to%20configure%20your%20project%20to%20use%20LexEpub.%20It%20assumes%20you%20are%20setting%20up%20the%20Rust%20adapter%20inside%20a%20standard%20Cargo%20project.%0A%0AFor%20other%20language%20adapters%2C%20refer%20to%3A%0A%0A-%20%5BRust%20Adapter%5D(%2Fadapters%2Frust%2Findex)%0A-%20%5BC%2FC%2B%2B%20Adapter%5D(%2Fadapters%2Fc%2Findex)%0A-%20%5BWASM%20Adapter%5D(%2Fadapters%2Fwasm%2Findex)%0A%0A%23%23%20Installation%0A%0AAdd%20the%20core%20library%20to%20your%20Rust%20dependencies%20in%20%60Cargo.toml%60%3A%0A%0A%60%60%60toml%0A%5Bdependencies%5D%0Alexepub%20%3D%20%220.1.1%22%0Atokio%20%3D%20%7B%20version%20%3D%20%221%22%2C%20features%20%3D%20%5B%22full%22%5D%20%7D%0A%60%60%60%0A%0AOptional%20features%3A%0A%0A%60%60%60toml%0Alexepub%20%3D%20%7B%20version%20%3D%20%220.1.1%22%2C%20features%20%3D%20%5B%22c-ffi%22%2C%20%22wasm%22%5D%20%7D%0A%60%60%60%0A%0A%23%23%20Useful%20Commands%0A%0AFrom%20the%20repository%20root%3A%0A%0A%60%60%60bash%0Acargo%20fmt%0Acargo%20clippy%20-p%20lexepub%20--all-targets%20--features%20c-ffi%20--%20-D%20warnings%0Acargo%20check%20-p%20lexepub%20--features%20c-ffi%0Acargo%20check%20-p%20lexepub%20--target%20wasm32-unknown-unknown%0A%60%60%60%0A%0AIf%20you%20are%20building%20demo%20WASM%20output%3A%0A%0A%60%60%60bash%0Acd%20lexepub%0Awasm-pack%20build%20--release%20--target%20web%20--out-dir%20%2Fworkspaces%2Flexepub%2FDemo%2Fsrc%2Fwasm%20--out-name%20lexepub%0A%60%60%60%0A%0A%23%23%20Basic%20usage%0A%0AThe%20fundamental%20entry%20point%20for%20parsing%20is%20the%20%60LexEpub%60%20struct.%20Here%20is%20how%20you%20initialize%20the%20parser%20and%20request%20standard%20metadata%3A%0A%0A%60%60%60rust%0Ause%20lexepub%3A%3ALexEpub%3B%0A%0A%23%5Btokio%3A%3Amain%5D%0Aasync%20fn%20main()%20-%3E%20Result%3C()%2C%20Box%3Cdyn%20std%3A%3Aerror%3A%3AError%3E%3E%20%7B%0A%20%20%20%20%2F%2F%20Instantiate%20a%20new%20parser%20against%20a%20local%20file.%0A%20%20%20%20let%20mut%20epub%20%3D%20LexEpub%3A%3Aopen(%22book.epub%22).await%3F%3B%0A%20%20%20%20%0A%20%20%20%20%2F%2F%20Asynchronously%20resolve%20and%20extract%20OPF%20metadata.%0A%20%20%20%20let%20metadata%20%3D%20epub.get_metadata().await%3F%3B%0A%20%20%20%20%0A%20%20%20%20%2F%2F%20Output%20the%20detected%20EPUB%20version.%0A%20%20%20%20println!(%22Detected%20EPUB%20version%3A%20%7B%3A%3F%7D%22%2C%20metadata.version)%3B%0A%20%20%20%20Ok(())%0A%7D%0A%60%60%60%0A%0A%23%23%20Core%20async%20methods%0A%0AUse%20these%20methods%20for%20most%20workflows%3A%0A%0A-%20%60extract_text_only()%60%20for%20plain%20chapter%20text.%0A-%20%60extract_ast()%60%20for%20chapter%20data%20with%20parsed%20AST.%0A-%20%60extract_chapters_stream()%60%20for%20stream-based%20chapter%20processing.%0A-%20%60total_word_count()%60%20and%20%60total_char_count()%60%20for%20aggregate%20analysis.%0A-%20%60has_cover()%60%20and%20%60cover_image()%60%20for%20cover%20lookup%2Fextraction.%0A-%20%60get_toc()%60%20for%20chapter-title-aware%20table%20of%20contents%20entries.%0A-%20%60resolve_chapter_resource_path()%60%20and%20%60read_chapter_resource()%60%20for%20chapter-relative%20internal%20resources.%0A-%20%60read_resource()%60%20for%20direct%20internal%20EPUB%20resource%20reads.%0A%0A%23%23%20Sync%20wrappers%0A%0AFor%20non-async%20contexts%2C%20%60LexEpub%60%20also%20exposes%20sync%20wrappers%3A%0A%0A-%20%60open_sync()%60%0A-%20%60get_metadata_sync()%60%0A-%20%60validate_metadata_sync()%60%0A-%20%60total_word_count_sync()%60%0A-%20%60total_char_count_sync()%60%0A-%20%60has_cover_sync()%60%0A-%20%60cover_image_sync()%60%0A%0A%23%23%20Convenience%20functions%0A%0A%60%60%60rust%0Ause%20lexepub%3A%3A%7Bextract_ast%2C%20extract_text_only%2C%20get_metadata%7D%3B%0A%0Alet%20text%20%3D%20extract_text_only(%22book.epub%22).await%3F%3B%0Alet%20ast%20%3D%20extract_ast(%22book.epub%22).await%3F%3B%0Alet%20metadata%20%3D%20get_metadata(%22book.epub%22).await%3F%3B%0A%60%60%60%0A%0A%23%23%20CSS%20behavior%20in%20AST%20mode%0A%0AWhen%20you%20call%20%60extract_ast()%60%2C%20LexePub%20reads%20%60text%2Fcss%60%20resources%20from%20the%20OPF%20manifest%2C%20parses%20them%2C%20and%20applies%20declarations%20onto%20AST%20elements.%0A%0A-%20AST%20styles%20are%20available%20in%20%60AstNode%3A%3AElement.styles%60.%0A-%20Inline%20%60style%60%20attributes%20are%20merged%20too.%0A-%20Selector%20matching%20is%20intentionally%20EPUB-focused%20(tag%2C%20class%2C%20id%2C%20grouped%20selectors).%0A%0A%3A%3A%3A%20callout%20tip%0AThe%20%60open%60%20invocation%20guarantees%20that%20the%20underlying%20archive%20structure%20is%20verified%20without%20fully%20loading%20the%20uncompressed%20data%20into%20memory.%20Check%20the%20adapter%20documentation%20for%20advanced%20usage%20regarding%20streams.%0A%3A%3A%3A%0A%0A%23%23%20Where%20to%20go%20next%0A%0A-%20Rust%20adapter%20details%3A%20%5BRust%20Adapter%5D(%2Fadapters%2Frust%2Findex)%0A-%20Browser%2FJS%20integration%3A%20%5BWASM%20Adapter%5D(%2Fadapters%2Fwasm%2Findex)%0A-%20Native%20C%2FC%2B%2B%20integration%3A%20%5BC%2FC%2B%2B%20Adapter%5D(%2Fadapters%2Fc%2Findex)%0A" style="display: none;"></div>
+                  <div id="docmd-raw-markdown" data-content="---%0Atitle%3A%20%22Quick%20Start%22%0Adescription%3A%20%22Get%20started%20parsing%20EPUB%20files%20with%20LexEpub%22%0A---%0A%0A%23%20Quick%20start%0A%0AThis%20guide%20outlines%20how%20to%20configure%20your%20project%20to%20use%20LexEpub.%20It%20assumes%20you%20are%20setting%20up%20the%20Rust%20adapter%20inside%20a%20standard%20Cargo%20project.%0A%0AFor%20other%20language%20adapters%2C%20refer%20to%3A%0A%0A-%20%5BRust%20Adapter%5D(%2Fadapters%2Frust%2Findex)%0A-%20%5BC%2FC%2B%2B%20Adapter%5D(%2Fadapters%2Fc%2Findex)%0A-%20%5BWASM%20Adapter%5D(%2Fadapters%2Fwasm%2Findex)%0A%0A%23%23%20Installation%0A%0AAdd%20the%20core%20library%20to%20your%20Rust%20dependencies%20in%20%60Cargo.toml%60%3A%0A%0A%60%60%60toml%0A%5Bdependencies%5D%0Alexepub%20%3D%20%220.1.2%22%0Atokio%20%3D%20%7B%20version%20%3D%20%221%22%2C%20features%20%3D%20%5B%22full%22%5D%20%7D%0A%60%60%60%0A%0AOptional%20features%3A%0A%0A%60%60%60toml%0Alexepub%20%3D%20%7B%20version%20%3D%20%220.1.2%22%2C%20features%20%3D%20%5B%22c-ffi%22%2C%20%22wasm%22%5D%20%7D%0A%60%60%60%0A%0A%23%23%20Useful%20Commands%0A%0AFrom%20the%20repository%20root%3A%0A%0A%60%60%60bash%0Acargo%20fmt%0Acargo%20clippy%20-p%20lexepub%20--all-targets%20--features%20c-ffi%20--%20-D%20warnings%0Acargo%20check%20-p%20lexepub%20--features%20c-ffi%0Acargo%20check%20-p%20lexepub%20--target%20wasm32-unknown-unknown%0A%60%60%60%0A%0AIf%20you%20are%20building%20demo%20WASM%20output%3A%0A%0A%60%60%60bash%0Acd%20lexepub%0Awasm-pack%20build%20--release%20--target%20web%20--out-dir%20%2Fworkspaces%2Flexepub%2FDemo%2Fsrc%2Fwasm%20--out-name%20lexepub%0A%60%60%60%0A%0A%23%23%20Basic%20usage%0A%0AThe%20fundamental%20entry%20point%20for%20parsing%20is%20the%20%60LexEpub%60%20struct.%20Here%20is%20how%20you%20initialize%20the%20parser%20and%20request%20standard%20metadata%3A%0A%0A%60%60%60rust%0Ause%20lexepub%3A%3ALexEpub%3B%0A%0A%23%5Btokio%3A%3Amain%5D%0Aasync%20fn%20main()%20-%3E%20Result%3C()%2C%20Box%3Cdyn%20std%3A%3Aerror%3A%3AError%3E%3E%20%7B%0A%20%20%20%20%2F%2F%20Instantiate%20a%20new%20parser%20against%20a%20local%20file.%0A%20%20%20%20let%20mut%20epub%20%3D%20LexEpub%3A%3Aopen(%22book.epub%22).await%3F%3B%0A%0A%20%20%20%20%2F%2F%20Asynchronously%20resolve%20and%20extract%20OPF%20metadata.%0A%20%20%20%20let%20metadata%20%3D%20epub.get_metadata().await%3F%3B%0A%0A%20%20%20%20%2F%2F%20Output%20the%20detected%20EPUB%20version.%0A%20%20%20%20println!(%22Detected%20EPUB%20version%3A%20%7B%3A%3F%7D%22%2C%20metadata.version)%3B%0A%20%20%20%20Ok(())%0A%7D%0A%60%60%60%0A%0A%23%23%20Core%20async%20methods%0A%0AUse%20these%20methods%20for%20most%20workflows%3A%0A%0A-%20%60extract_text_only()%60%20for%20plain%20chapter%20text.%0A-%20%60extract_ast()%60%20for%20chapter%20data%20with%20parsed%20AST.%0A-%20%60extract_chapters_stream()%60%20for%20stream-based%20chapter%20processing.%0A-%20%60total_word_count()%60%20and%20%60total_char_count()%60%20for%20aggregate%20analysis.%0A-%20%60has_cover()%60%20and%20%60cover_image()%60%20for%20cover%20lookup%2Fextraction.%0A-%20%60get_toc()%60%20for%20chapter-title-aware%20table%20of%20contents%20entries.%0A-%20%60resolve_chapter_resource_path()%60%20and%20%60read_chapter_resource()%60%20for%20chapter-relative%20internal%20resources.%0A-%20%60read_resource()%60%20for%20direct%20internal%20EPUB%20resource%20reads.%0A%0A%23%23%20Sync%20wrappers%0A%0AFor%20non-async%20contexts%2C%20%60LexEpub%60%20also%20exposes%20sync%20wrappers%3A%0A%0A-%20%60open_sync()%60%0A-%20%60get_metadata_sync()%60%0A-%20%60validate_metadata_sync()%60%0A-%20%60total_word_count_sync()%60%0A-%20%60total_char_count_sync()%60%0A-%20%60has_cover_sync()%60%0A-%20%60cover_image_sync()%60%0A%0A%23%23%20Convenience%20functions%0A%0A%60%60%60rust%0Ause%20lexepub%3A%3A%7Bextract_ast%2C%20extract_text_only%2C%20get_metadata%7D%3B%0A%0Alet%20text%20%3D%20extract_text_only(%22book.epub%22).await%3F%3B%0Alet%20ast%20%3D%20extract_ast(%22book.epub%22).await%3F%3B%0Alet%20metadata%20%3D%20get_metadata(%22book.epub%22).await%3F%3B%0A%60%60%60%0A%0A%23%23%20CSS%20behavior%20in%20AST%20mode%0A%0AWhen%20you%20call%20%60extract_ast()%60%2C%20LexePub%20reads%20%60text%2Fcss%60%20resources%20from%20the%20OPF%20manifest%2C%20parses%20them%2C%20and%20applies%20declarations%20onto%20AST%20elements.%0A%0A-%20AST%20styles%20are%20available%20in%20%60AstNode%3A%3AElement.styles%60.%0A-%20Inline%20%60style%60%20attributes%20are%20merged%20too.%0A-%20Selector%20matching%20is%20intentionally%20EPUB-focused%20(tag%2C%20class%2C%20id%2C%20grouped%20selectors).%0A%0A%3A%3A%3A%20callout%20tip%0AThe%20%60open%60%20invocation%20guarantees%20that%20the%20underlying%20archive%20structure%20is%20verified%20without%20fully%20loading%20the%20uncompressed%20data%20into%20memory.%20Check%20the%20adapter%20documentation%20for%20advanced%20usage%20regarding%20streams.%0A%3A%3A%3A%0A%0A%23%23%20Where%20to%20go%20next%0A%0A-%20Rust%20adapter%20details%3A%20%5BRust%20Adapter%5D(%2Fadapters%2Frust%2Findex)%0A-%20Browser%2FJS%20integration%3A%20%5BWASM%20Adapter%5D(%2Fadapters%2Fwasm%2Findex)%0A-%20Native%20C%2FC%2B%2B%20integration%3A%20%5BC%2FC%2B%2B%20Adapter%5D(%2Fadapters%2Fc%2Findex)%0A" style="display: none;"></div>
                   
                     <nav aria-label="breadcrumb" class="docmd-breadcrumbs">
                       <ol>
@@ -733,11 +733,11 @@
 <h2 id="quick-start-installation" class="docmd-heading"><a href="#quick-start-installation" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>Installation</h2>
 <p>Add the core library to your Rust dependencies in <code>Cargo.toml</code>:</p>
 <pre class="hljs"><code class="language-toml">[dependencies]
-lexepub <span class="hljs-operator">=</span> <span class="hljs-string">&quot;0.1.1&quot;</span>
+lexepub <span class="hljs-operator">=</span> <span class="hljs-string">&quot;0.1.2&quot;</span>
 tokio <span class="hljs-operator">=</span> { version <span class="hljs-operator">=</span> <span class="hljs-string">&quot;1&quot;</span>, features <span class="hljs-operator">=</span> [<span class="hljs-string">&quot;full&quot;</span>] }
 </code></pre>
 <p>Optional features:</p>
-<pre class="hljs"><code class="language-toml">lexepub <span class="hljs-operator">=</span> { version <span class="hljs-operator">=</span> <span class="hljs-string">&quot;0.1.1&quot;</span>, features <span class="hljs-operator">=</span> [<span class="hljs-string">&quot;c-ffi&quot;</span>, <span class="hljs-string">&quot;wasm&quot;</span>] }
+<pre class="hljs"><code class="language-toml">lexepub <span class="hljs-operator">=</span> { version <span class="hljs-operator">=</span> <span class="hljs-string">&quot;0.1.2&quot;</span>, features <span class="hljs-operator">=</span> [<span class="hljs-string">&quot;c-ffi&quot;</span>, <span class="hljs-string">&quot;wasm&quot;</span>] }
 </code></pre>
 <h2 id="quick-start-useful-commands" class="docmd-heading"><a href="#quick-start-useful-commands" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>Useful Commands</h2>
 <p>From the repository root:</p>
@@ -758,10 +758,10 @@ wasm<span class="hljs-operator">-</span>pack build <span class="hljs-operator">-
 <span class="hljs-keyword">async</span> <span class="hljs-keyword">fn</span> <span class="hljs-title function_">main</span>() <span class="hljs-operator">-&gt;</span> Result<span class="hljs-operator">&lt;</span>(), Box<span class="hljs-operator">&lt;</span>dyn std<span class="hljs-operator">::</span>error<span class="hljs-operator">::</span>Error<span class="hljs-operator">&gt;&gt;</span> {
     <span class="hljs-comment">// Instantiate a new parser against a local file.</span>
     <span class="hljs-keyword">let</span> <span class="hljs-keyword">mut</span> epub <span class="hljs-operator">=</span> LexEpub<span class="hljs-operator">::</span><span class="hljs-title function_">open</span>(<span class="hljs-string">&quot;book.epub&quot;</span>).<span class="hljs-keyword">await</span><span class="hljs-operator">?</span>;
-    
+
     <span class="hljs-comment">// Asynchronously resolve and extract OPF metadata.</span>
     <span class="hljs-keyword">let</span> metadata <span class="hljs-operator">=</span> epub.<span class="hljs-title function_">get_metadata</span>().<span class="hljs-keyword">await</span><span class="hljs-operator">?</span>;
-    
+
     <span class="hljs-comment">// Output the detected EPUB version.</span>
     println<span class="hljs-operator">!</span>(<span class="hljs-string">&quot;Detected EPUB version: {:?}&quot;</span>, metadata.<span class="hljs-attr">version</span>);
     <span class="hljs-title function_">Ok</span>(())
@@ -937,13 +937,13 @@ wasm<span class="hljs-operator">-</span>pack build <span class="hljs-operator">-
             <div class="page-footer-actions">
               
               
-                <span class="git-last-updated" data-timestamp="1787771290000">
+                <span class="git-last-updated" data-timestamp="1787801588000">
                   <svg class="git-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <polyline points="12 6 12 12 16 14"></polyline>
                   </svg>
                   <span class="git-label">Last updated:</span>
-                  <span class="git-time" data-timestamp="1787771290000"></span>
+                  <span class="git-time" data-timestamp="1787801588000"></span>
                   
                   <div class="git-commit-tooltip" role="tooltip">
                     <div class="git-tooltip-title">Recent commits</div>
@@ -956,10 +956,10 @@ wasm<span class="hljs-operator">-</span>pack build <span class="hljs-operator">-
                             
                           </div>
                           <div class="git-commit-details">
-                            <div class="git-commit-message" title="Merge pull request #57 from NellowTCS/dependabot/npm_and_yarn/Docs/docmd/core-0.9.3">Merge pull request #57 from NellowTCS...</div>
+                            <div class="git-commit-message" title="Merge pull request #58 from NellowTCS/v0.1.2">Merge pull request #58 from NellowTCS...</div>
                             <div class="git-commit-meta">
                               <span class="git-commit-author">NellowTCS</span>
-                              <span class="git-commit-date" data-timestamp="1787771290000"></span>
+                              <span class="git-commit-date" data-timestamp="1787801588000"></span>
                             </div>
                           </div>
                         </li>
@@ -990,14 +990,14 @@ wasm<span class="hljs-operator">-</span>pack build <span class="hljs-operator">-
         </div>
       </div>
       
-      <script src="../../assets/js/docmd-main.js?v=mtagvrzs"></script>
+      <script src="../../assets/js/docmd-main.js?v=mtayx6h9"></script>
       
-      <script src="../../assets/js/docmd-git.js?v=mtagvrzs"></script>
-      <script src="../../assets/js/docmd-image-lightbox.js?v=mtagvrzs" ></script>
-<script src="../../assets/js/vendor/minisearch.js?v=mtagvrzs" ></script>
-<script src="../../assets/js/docmd-search.js?v=mtagvrzs" ></script>
-<script src="../../assets/js/docmd-git.js?v=mtagvrzs" ></script>
-<script src="../../assets/js/docmd-ai.js?v=mtagvrzs" ></script>
+      <script src="../../assets/js/docmd-git.js?v=mtayx6h9"></script>
+      <script src="../../assets/js/docmd-image-lightbox.js?v=mtayx6h9" ></script>
+<script src="../../assets/js/vendor/minisearch.js?v=mtayx6h9" ></script>
+<script src="../../assets/js/docmd-search.js?v=mtayx6h9" ></script>
+<script src="../../assets/js/docmd-git.js?v=mtayx6h9" ></script>
+<script src="../../assets/js/docmd-ai.js?v=mtayx6h9" ></script>
 
   <!-- Search Modal (Injected by @docmd/plugin-search) -->
   <div id="docmd-search-modal" class="docmd-search-modal" style="display: none;" data-show-confidence="false" data-show-filters="true"

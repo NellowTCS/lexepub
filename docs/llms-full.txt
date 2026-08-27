@@ -264,18 +264,18 @@ wasm-pack build --target web
 import init, { WasmEpubExtractor } from "./pkg/lexepub.js";
 
 async function run(arrayBuffer) {
-	await init();
+  await init();
 
-	const ex = new WasmEpubExtractor();
-	await ex.load_from_bytes(new Uint8Array(arrayBuffer));
+  const ex = new WasmEpubExtractor();
+  await ex.load_from_bytes(new Uint8Array(arrayBuffer));
 
-	const metadata = await ex.get_metadata();
-	const chapter = await ex.get_chapter(0);
-	const textChapters = await ex.get_chapters_text();
+  const metadata = await ex.get_metadata();
+  const chapter = await ex.get_chapter(0);
+  const textChapters = await ex.get_chapters_text();
 
-	console.log(metadata);
-	console.log(chapter);
-	console.log(textChapters.length);
+  console.log(metadata);
+  console.log(chapter);
+  console.log(textChapters.length);
 }
 ```
 
@@ -288,9 +288,9 @@ async function run(arrayBuffer) {
 
 - Filesystem-path loading is intentionally not exposed in browser-oriented WASM flows; byte loading is the primary entrypoint.
 - Linked resources inside EPUB archives can be rendered by combining:
-	- normalized `src`/`href` from AST,
-	- `resolve_chapter_resource_path(...)`, and
-	- `get_chapter_resource(...)` or `get_resource(...)`.
+  - normalized `src`/`href` from AST,
+  - `resolve_chapter_resource_path(...)`, and
+  - `get_chapter_resource(...)` or `get_resource(...)`.
 
 
 ---
@@ -318,14 +318,14 @@ Add the core library to your Rust dependencies in `Cargo.toml`:
 
 ```toml
 [dependencies]
-lexepub = "0.1.1"
+lexepub = "0.1.2"
 tokio = { version = "1", features = ["full"] }
 ```
 
 Optional features:
 
 ```toml
-lexepub = { version = "0.1.1", features = ["c-ffi", "wasm"] }
+lexepub = { version = "0.1.2", features = ["c-ffi", "wasm"] }
 ```
 
 ## Useful Commands
@@ -357,10 +357,10 @@ use lexepub::LexEpub;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Instantiate a new parser against a local file.
     let mut epub = LexEpub::open("book.epub").await?;
-    
+
     // Asynchronously resolve and extract OPF metadata.
     let metadata = epub.get_metadata().await?;
-    
+
     // Output the detected EPUB version.
     println!("Detected EPUB version: {:?}", metadata.version);
     Ok(())
@@ -453,7 +453,7 @@ Written in async Rust at the core, exported to C/C++ via Diplomat and JavaScript
 :::
 
 ::: card Strict Metadata Validation
-Automatically detects EPUB versions (2.0 vs 3.0), resolves OPF manifest links, and validates required metadata structure according to the standards. 
+Automatically detects EPUB versions (2.0 vs 3.0), resolves OPF manifest links, and validates required metadata structure according to the standards.
 :::
 
 ::: card CSS-Aware AST

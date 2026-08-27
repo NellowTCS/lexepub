@@ -10,7 +10,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <meta name="generator" content="docmd v0.9.3">
+    <meta name="generator" content="docmd v0.9.4">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <script>
@@ -104,11 +104,11 @@
     
     
 
-    <link id="site-favicon" rel="icon" href="../../assets/favicon.ico?v=mtagvrzs">
-    <link rel="stylesheet" href="../../assets/css/docmd-main.css?v=mtagvrzs">
+    <link id="site-favicon" rel="icon" href="../../assets/favicon.ico?v=mtayx6h9">
+    <link rel="stylesheet" href="../../assets/css/docmd-main.css?v=mtayx6h9">
     
-    <link rel="stylesheet" href="../../assets/css/docmd-highlight-light.css?v=mtagvrzs" id="hljs-light" >
-    <link rel="stylesheet" href="../../assets/css/docmd-highlight-dark.css?v=mtagvrzs" id="hljs-dark" disabled>
+    <link rel="stylesheet" href="../../assets/css/docmd-highlight-light.css?v=mtayx6h9" id="hljs-light" >
+    <link rel="stylesheet" href="../../assets/css/docmd-highlight-dark.css?v=mtayx6h9" id="hljs-dark" disabled>
     
     
 <meta name="description" content="Cross-platform bindings for browsers and Node.js environments">
@@ -124,10 +124,10 @@
 
 
 
-<link rel="stylesheet" href="../../assets/css/docmd-theme-ruby.css?v=mtagvrzs" >
-<link rel="stylesheet" href="../../assets/css/docmd-git.css?v=mtagvrzs" >
-<link rel="stylesheet" href="../../assets/css/docmd-openapi.css?v=mtagvrzs" >
-<link rel="stylesheet" href="../../assets/css/docmd-ai.css?v=mtagvrzs" >
+<link rel="stylesheet" href="../../assets/css/docmd-theme-ruby.css?v=mtayx6h9" >
+<link rel="stylesheet" href="../../assets/css/docmd-git.css?v=mtayx6h9" >
+<link rel="stylesheet" href="../../assets/css/docmd-openapi.css?v=mtayx6h9" >
+<link rel="stylesheet" href="../../assets/css/docmd-ai.css?v=mtayx6h9" >
 
     
     
@@ -633,7 +633,7 @@
             <div class="content-layout">
               <div class="main-content">
                 <div class="docmd-breadcrumbs-row">
-                  <div id="docmd-raw-markdown" data-content="---%0Atitle%3A%20%22WASM%20Adapter%22%0Adescription%3A%20%22Cross-platform%20bindings%20for%20browsers%20and%20Node.js%20environments%22%0A---%0A%0A%23%20WebAssembly%20Adapter%0A%0ALexePub%20exposes%20async%20EPUB%20parsing%20to%20JavaScript%20and%20TypeScript%20through%20%60wasm-bindgen%60.%0A%0A%23%23%20Publishing%20and%20Setup%0A%0ABuild%20locally%20using%20%60wasm-pack%60%3A%0A%0A%60%60%60bash%0A%23%20Build%20the%20artifact%20for%20web%20invocation%0Awasm-pack%20build%20--target%20web%0A%60%60%60%0A%0A%23%23%20API%20reference%0A%0A%60WasmEpubExtractor%60%20methods%3A%0A%0A-%20%60new()%60%0A-%20%60load_from_bytes(uint8Array)%60%0A-%20%60get_metadata()%60%0A-%20%60get_metadata_json()%60%0A-%20%60get_metadata_is_valid()%60%0A-%20%60get_chapter_count()%60%0A-%20%60get_toc()%60%0A-%20%60get_toc_json()%60%0A-%20%60resolve_chapter_resource_path(chapterIndex%2C%20href)%60%0A-%20%60get_resource(path)%60%0A-%20%60get_chapter_resource(chapterIndex%2C%20href)%60%0A-%20%60get_title()%60%0A-%20%60get_chapters_text()%60%0A-%20%60get_chapters_text_json()%60%0A-%20%60get_chapter(index)%60%0A-%20%60get_chapter_json(index)%60%0A-%20%60get_chapter_text(index)%60%0A-%20%60get_total_word_count()%60%0A-%20%60get_total_char_count()%60%0A-%20%60has_cover()%60%0A-%20%60get_cover_image()%60%0A-%20%60get_cover_image_len()%60%0A-%20%60get_cover_image_format()%60%0A%0A%23%23%20Example%0A%0A%60%60%60js%0Aimport%20init%2C%20%7B%20WasmEpubExtractor%20%7D%20from%20%22.%2Fpkg%2Flexepub.js%22%3B%0A%0Aasync%20function%20run(arrayBuffer)%20%7B%0A%09await%20init()%3B%0A%0A%09const%20ex%20%3D%20new%20WasmEpubExtractor()%3B%0A%09await%20ex.load_from_bytes(new%20Uint8Array(arrayBuffer))%3B%0A%0A%09const%20metadata%20%3D%20await%20ex.get_metadata()%3B%0A%09const%20chapter%20%3D%20await%20ex.get_chapter(0)%3B%0A%09const%20textChapters%20%3D%20await%20ex.get_chapters_text()%3B%0A%0A%09console.log(metadata)%3B%0A%09console.log(chapter)%3B%0A%09console.log(textChapters.length)%3B%0A%7D%0A%60%60%60%0A%0A%23%23%20CSS%20and%20AST%0A%0A-%20%60get_chapter(index)%60%20returns%20parsed%20chapter%20data%20generated%20by%20the%20Rust%20core.%0A-%20During%20AST%20extraction%2C%20manifest%20CSS%20resources%20are%20applied%20and%20reflected%20in%20element%20%60styles%60%20fields.%0A%0A%23%23%20Notes%0A%0A-%20Filesystem-path%20loading%20is%20intentionally%20not%20exposed%20in%20browser-oriented%20WASM%20flows%3B%20byte%20loading%20is%20the%20primary%20entrypoint.%0A-%20Linked%20resources%20inside%20EPUB%20archives%20can%20be%20rendered%20by%20combining%3A%0A%09-%20normalized%20%60src%60%2F%60href%60%20from%20AST%2C%0A%09-%20%60resolve_chapter_resource_path(...)%60%2C%20and%0A%09-%20%60get_chapter_resource(...)%60%20or%20%60get_resource(...)%60.%0A" style="display: none;"></div>
+                  <div id="docmd-raw-markdown" data-content="---%0Atitle%3A%20%22WASM%20Adapter%22%0Adescription%3A%20%22Cross-platform%20bindings%20for%20browsers%20and%20Node.js%20environments%22%0A---%0A%0A%23%20WebAssembly%20Adapter%0A%0ALexePub%20exposes%20async%20EPUB%20parsing%20to%20JavaScript%20and%20TypeScript%20through%20%60wasm-bindgen%60.%0A%0A%23%23%20Publishing%20and%20Setup%0A%0ABuild%20locally%20using%20%60wasm-pack%60%3A%0A%0A%60%60%60bash%0A%23%20Build%20the%20artifact%20for%20web%20invocation%0Awasm-pack%20build%20--target%20web%0A%60%60%60%0A%0A%23%23%20API%20reference%0A%0A%60WasmEpubExtractor%60%20methods%3A%0A%0A-%20%60new()%60%0A-%20%60load_from_bytes(uint8Array)%60%0A-%20%60get_metadata()%60%0A-%20%60get_metadata_json()%60%0A-%20%60get_metadata_is_valid()%60%0A-%20%60get_chapter_count()%60%0A-%20%60get_toc()%60%0A-%20%60get_toc_json()%60%0A-%20%60resolve_chapter_resource_path(chapterIndex%2C%20href)%60%0A-%20%60get_resource(path)%60%0A-%20%60get_chapter_resource(chapterIndex%2C%20href)%60%0A-%20%60get_title()%60%0A-%20%60get_chapters_text()%60%0A-%20%60get_chapters_text_json()%60%0A-%20%60get_chapter(index)%60%0A-%20%60get_chapter_json(index)%60%0A-%20%60get_chapter_text(index)%60%0A-%20%60get_total_word_count()%60%0A-%20%60get_total_char_count()%60%0A-%20%60has_cover()%60%0A-%20%60get_cover_image()%60%0A-%20%60get_cover_image_len()%60%0A-%20%60get_cover_image_format()%60%0A%0A%23%23%20Example%0A%0A%60%60%60js%0Aimport%20init%2C%20%7B%20WasmEpubExtractor%20%7D%20from%20%22.%2Fpkg%2Flexepub.js%22%3B%0A%0Aasync%20function%20run(arrayBuffer)%20%7B%0A%20%20await%20init()%3B%0A%0A%20%20const%20ex%20%3D%20new%20WasmEpubExtractor()%3B%0A%20%20await%20ex.load_from_bytes(new%20Uint8Array(arrayBuffer))%3B%0A%0A%20%20const%20metadata%20%3D%20await%20ex.get_metadata()%3B%0A%20%20const%20chapter%20%3D%20await%20ex.get_chapter(0)%3B%0A%20%20const%20textChapters%20%3D%20await%20ex.get_chapters_text()%3B%0A%0A%20%20console.log(metadata)%3B%0A%20%20console.log(chapter)%3B%0A%20%20console.log(textChapters.length)%3B%0A%7D%0A%60%60%60%0A%0A%23%23%20CSS%20and%20AST%0A%0A-%20%60get_chapter(index)%60%20returns%20parsed%20chapter%20data%20generated%20by%20the%20Rust%20core.%0A-%20During%20AST%20extraction%2C%20manifest%20CSS%20resources%20are%20applied%20and%20reflected%20in%20element%20%60styles%60%20fields.%0A%0A%23%23%20Notes%0A%0A-%20Filesystem-path%20loading%20is%20intentionally%20not%20exposed%20in%20browser-oriented%20WASM%20flows%3B%20byte%20loading%20is%20the%20primary%20entrypoint.%0A-%20Linked%20resources%20inside%20EPUB%20archives%20can%20be%20rendered%20by%20combining%3A%0A%20%20-%20normalized%20%60src%60%2F%60href%60%20from%20AST%2C%0A%20%20-%20%60resolve_chapter_resource_path(...)%60%2C%20and%0A%20%20-%20%60get_chapter_resource(...)%60%20or%20%60get_resource(...)%60.%0A" style="display: none;"></div>
                   
                     <nav aria-label="breadcrumb" class="docmd-breadcrumbs">
                       <ol>
@@ -760,18 +760,18 @@ wasm<span class="hljs-operator">-</span>pack build <span class="hljs-operator">-
 <pre class="hljs"><code class="language-js"><span class="hljs-keyword">import</span> init, { WasmEpubExtractor } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;./pkg/lexepub.js&quot;</span>;
 
 <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">run</span>(arrayBuffer) {
-	<span class="hljs-keyword">await</span> <span class="hljs-title function_">init</span>();
+  <span class="hljs-keyword">await</span> <span class="hljs-title function_">init</span>();
 
-	<span class="hljs-keyword">const</span> ex <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title function_">WasmEpubExtractor</span>();
-	<span class="hljs-keyword">await</span> ex.<span class="hljs-title function_">load_from_bytes</span>(<span class="hljs-keyword">new</span> <span class="hljs-title function_">Uint8Array</span>(arrayBuffer));
+  <span class="hljs-keyword">const</span> ex <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title function_">WasmEpubExtractor</span>();
+  <span class="hljs-keyword">await</span> ex.<span class="hljs-title function_">load_from_bytes</span>(<span class="hljs-keyword">new</span> <span class="hljs-title function_">Uint8Array</span>(arrayBuffer));
 
-	<span class="hljs-keyword">const</span> metadata <span class="hljs-operator">=</span> <span class="hljs-keyword">await</span> ex.<span class="hljs-title function_">get_metadata</span>();
-	<span class="hljs-keyword">const</span> chapter <span class="hljs-operator">=</span> <span class="hljs-keyword">await</span> ex.<span class="hljs-title function_">get_chapter</span>(<span class="hljs-number">0</span>);
-	<span class="hljs-keyword">const</span> textChapters <span class="hljs-operator">=</span> <span class="hljs-keyword">await</span> ex.<span class="hljs-title function_">get_chapters_text</span>();
+  <span class="hljs-keyword">const</span> metadata <span class="hljs-operator">=</span> <span class="hljs-keyword">await</span> ex.<span class="hljs-title function_">get_metadata</span>();
+  <span class="hljs-keyword">const</span> chapter <span class="hljs-operator">=</span> <span class="hljs-keyword">await</span> ex.<span class="hljs-title function_">get_chapter</span>(<span class="hljs-number">0</span>);
+  <span class="hljs-keyword">const</span> textChapters <span class="hljs-operator">=</span> <span class="hljs-keyword">await</span> ex.<span class="hljs-title function_">get_chapters_text</span>();
 
-	console.<span class="hljs-title function_">log</span>(metadata);
-	console.<span class="hljs-title function_">log</span>(chapter);
-	console.<span class="hljs-title function_">log</span>(textChapters.<span class="hljs-attr">length</span>);
+  console.<span class="hljs-title function_">log</span>(metadata);
+  console.<span class="hljs-title function_">log</span>(chapter);
+  console.<span class="hljs-title function_">log</span>(textChapters.<span class="hljs-attr">length</span>);
 }
 </code></pre>
 <h2 id="webassembly-adapter-css-and-ast" class="docmd-heading"><a href="#webassembly-adapter-css-and-ast" class="heading-anchor" aria-label="Permalink to this section"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link2-icon lucide-link-2"><path d="M9 17H7A5 5 0 0 1 7 7h2m6 0h2a5 5 0 1 1 0 10h-2m-7-5h8"/></svg></a>CSS and AST</h2>
@@ -881,13 +881,13 @@ wasm<span class="hljs-operator">-</span>pack build <span class="hljs-operator">-
             <div class="page-footer-actions">
               
               
-                <span class="git-last-updated" data-timestamp="1787771290000">
+                <span class="git-last-updated" data-timestamp="1787801588000">
                   <svg class="git-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <polyline points="12 6 12 12 16 14"></polyline>
                   </svg>
                   <span class="git-label">Last updated:</span>
-                  <span class="git-time" data-timestamp="1787771290000"></span>
+                  <span class="git-time" data-timestamp="1787801588000"></span>
                   
                   <div class="git-commit-tooltip" role="tooltip">
                     <div class="git-tooltip-title">Recent commits</div>
@@ -900,10 +900,10 @@ wasm<span class="hljs-operator">-</span>pack build <span class="hljs-operator">-
                             
                           </div>
                           <div class="git-commit-details">
-                            <div class="git-commit-message" title="Merge pull request #57 from NellowTCS/dependabot/npm_and_yarn/Docs/docmd/core-0.9.3">Merge pull request #57 from NellowTCS...</div>
+                            <div class="git-commit-message" title="Merge pull request #58 from NellowTCS/v0.1.2">Merge pull request #58 from NellowTCS...</div>
                             <div class="git-commit-meta">
                               <span class="git-commit-author">NellowTCS</span>
-                              <span class="git-commit-date" data-timestamp="1787771290000"></span>
+                              <span class="git-commit-date" data-timestamp="1787801588000"></span>
                             </div>
                           </div>
                         </li>
@@ -934,14 +934,14 @@ wasm<span class="hljs-operator">-</span>pack build <span class="hljs-operator">-
         </div>
       </div>
       
-      <script src="../../assets/js/docmd-main.js?v=mtagvrzs"></script>
+      <script src="../../assets/js/docmd-main.js?v=mtayx6h9"></script>
       
-      <script src="../../assets/js/docmd-git.js?v=mtagvrzs"></script>
-      <script src="../../assets/js/docmd-image-lightbox.js?v=mtagvrzs" ></script>
-<script src="../../assets/js/vendor/minisearch.js?v=mtagvrzs" ></script>
-<script src="../../assets/js/docmd-search.js?v=mtagvrzs" ></script>
-<script src="../../assets/js/docmd-git.js?v=mtagvrzs" ></script>
-<script src="../../assets/js/docmd-ai.js?v=mtagvrzs" ></script>
+      <script src="../../assets/js/docmd-git.js?v=mtayx6h9"></script>
+      <script src="../../assets/js/docmd-image-lightbox.js?v=mtayx6h9" ></script>
+<script src="../../assets/js/vendor/minisearch.js?v=mtayx6h9" ></script>
+<script src="../../assets/js/docmd-search.js?v=mtayx6h9" ></script>
+<script src="../../assets/js/docmd-git.js?v=mtayx6h9" ></script>
+<script src="../../assets/js/docmd-ai.js?v=mtayx6h9" ></script>
 
   <!-- Search Modal (Injected by @docmd/plugin-search) -->
   <div id="docmd-search-modal" class="docmd-search-modal" style="display: none;" data-show-confidence="false" data-show-filters="true"

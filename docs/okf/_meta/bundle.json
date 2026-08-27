@@ -1,12 +1,12 @@
 {
-  "okf_version": "0.9.3",
+  "okf_version": "0.9.4",
   "bundle": {
     "name": "lexepub",
     "title": "LexePub",
     "description": "",
     "url": "https://nellowtcs.me/lexepub/docs",
     "generated_by": "@docmd/plugin-okf",
-    "generated_at": "2026-08-26T19:08:36.840Z",
+    "generated_at": "2026-08-27T03:33:35.266Z",
     "default_type": "concept"
   },
   "stats": {

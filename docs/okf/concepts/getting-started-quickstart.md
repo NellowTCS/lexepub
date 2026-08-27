@@ -4,10 +4,10 @@ title: "Quick Start"
 description: "Get started parsing EPUB files with LexEpub"
 source: "https://nellowtcs.me/lexepub/docs/getting-started/quickstart/"
 path: /getting-started/quickstart/
-updated: 2026-08-26
+updated: 2026-08-27
 okf:
   generated_by: "@docmd/plugin-okf"
-  generated_at: "2026-08-26T19:08:36.839Z"
+  generated_at: "2026-08-27T03:33:35.265Z"
 ---
 ---
 title: "Quick Start"
@@ -30,14 +30,14 @@ Add the core library to your Rust dependencies in `Cargo.toml`:
 
 ```toml
 [dependencies]
-lexepub = "0.1.1"
+lexepub = "0.1.2"
 tokio = { version = "1", features = ["full"] }
 ```
 
 Optional features:
 
 ```toml
-lexepub = { version = "0.1.1", features = ["c-ffi", "wasm"] }
+lexepub = { version = "0.1.2", features = ["c-ffi", "wasm"] }
 ```
 
 ## Useful Commands
@@ -69,10 +69,10 @@ use lexepub::LexEpub;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Instantiate a new parser against a local file.
     let mut epub = LexEpub::open("book.epub").await?;
-    
+
     // Asynchronously resolve and extract OPF metadata.
     let metadata = epub.get_metadata().await?;
-    
+
     // Output the detected EPUB version.
     println!("Detected EPUB version: {:?}", metadata.version);
     Ok(())

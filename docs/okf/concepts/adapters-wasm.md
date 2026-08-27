@@ -4,10 +4,10 @@ title: "WASM Adapter"
 description: "Cross-platform bindings for browsers and Node.js environments"
 source: "https://nellowtcs.me/lexepub/docs/adapters/wasm/"
 path: /adapters/wasm/
-updated: 2026-08-26
+updated: 2026-08-27
 okf:
   generated_by: "@docmd/plugin-okf"
-  generated_at: "2026-08-26T19:08:36.839Z"
+  generated_at: "2026-08-27T03:33:35.265Z"
 ---
 ---
 title: "WASM Adapter"
@@ -61,18 +61,18 @@ wasm-pack build --target web
 import init, { WasmEpubExtractor } from "./pkg/lexepub.js";
 
 async function run(arrayBuffer) {
-	await init();
+  await init();
 
-	const ex = new WasmEpubExtractor();
-	await ex.load_from_bytes(new Uint8Array(arrayBuffer));
+  const ex = new WasmEpubExtractor();
+  await ex.load_from_bytes(new Uint8Array(arrayBuffer));
 
-	const metadata = await ex.get_metadata();
-	const chapter = await ex.get_chapter(0);
-	const textChapters = await ex.get_chapters_text();
+  const metadata = await ex.get_metadata();
+  const chapter = await ex.get_chapter(0);
+  const textChapters = await ex.get_chapters_text();
 
-	console.log(metadata);
-	console.log(chapter);
-	console.log(textChapters.length);
+  console.log(metadata);
+  console.log(chapter);
+  console.log(textChapters.length);
 }
 ```
 
@@ -85,6 +85,6 @@ async function run(arrayBuffer) {
 
 - Filesystem-path loading is intentionally not exposed in browser-oriented WASM flows; byte loading is the primary entrypoint.
 - Linked resources inside EPUB archives can be rendered by combining:
-	- normalized `src`/`href` from AST,
-	- `resolve_chapter_resource_path(...)`, and
-	- `get_chapter_resource(...)` or `get_resource(...)`.
+  - normalized `src`/`href` from AST,
+  - `resolve_chapter_resource_path(...)`, and
+  - `get_chapter_resource(...)` or `get_resource(...)`.

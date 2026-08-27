@@ -10,7 +10,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <meta name="generator" content="docmd v0.9.3">
+    <meta name="generator" content="docmd v0.9.4">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <script>
@@ -104,11 +104,11 @@
     
     
 
-    <link id="site-favicon" rel="icon" href="./assets/favicon.ico?v=mtagvrzs">
-    <link rel="stylesheet" href="./assets/css/docmd-main.css?v=mtagvrzs">
+    <link id="site-favicon" rel="icon" href="./assets/favicon.ico?v=mtayx6h9">
+    <link rel="stylesheet" href="./assets/css/docmd-main.css?v=mtayx6h9">
     
-    <link rel="stylesheet" href="./assets/css/docmd-highlight-light.css?v=mtagvrzs" id="hljs-light" >
-    <link rel="stylesheet" href="./assets/css/docmd-highlight-dark.css?v=mtagvrzs" id="hljs-dark" disabled>
+    <link rel="stylesheet" href="./assets/css/docmd-highlight-light.css?v=mtayx6h9" id="hljs-light" >
+    <link rel="stylesheet" href="./assets/css/docmd-highlight-dark.css?v=mtayx6h9" id="hljs-dark" disabled>
     
     
 <meta name="description" content="High-performance, memory-efficient EPUB parsing for multiple runtimes">
@@ -124,10 +124,10 @@
 
 
 
-<link rel="stylesheet" href="./assets/css/docmd-theme-ruby.css?v=mtagvrzs" >
-<link rel="stylesheet" href="./assets/css/docmd-git.css?v=mtagvrzs" >
-<link rel="stylesheet" href="./assets/css/docmd-openapi.css?v=mtagvrzs" >
-<link rel="stylesheet" href="./assets/css/docmd-ai.css?v=mtagvrzs" >
+<link rel="stylesheet" href="./assets/css/docmd-theme-ruby.css?v=mtayx6h9" >
+<link rel="stylesheet" href="./assets/css/docmd-git.css?v=mtayx6h9" >
+<link rel="stylesheet" href="./assets/css/docmd-openapi.css?v=mtayx6h9" >
+<link rel="stylesheet" href="./assets/css/docmd-ai.css?v=mtayx6h9" >
 
     
     
@@ -633,7 +633,7 @@
             <div class="content-layout">
               <div class="main-content">
                 <div class="docmd-breadcrumbs-row">
-                  <div id="docmd-raw-markdown" data-content="---%0Atitle%3A%20%22LexePub%22%0Adescription%3A%20%22High-performance%2C%20memory-efficient%20EPUB%20parsing%20for%20multiple%20runtimes%22%0A---%0A%0A**LexePub**%20is%20a%20robust%20parser%20and%20extractor%20for%20EPUB%20files.%20It%20provides%20asynchronous%20streaming%2C%20metadata%20validation%2C%20and%20asset%20extraction%20across%20Rust%2C%20C%2FC%2B%2B%2C%20and%20WebAssembly%20from%20a%20single%20core%20implementation.%0A%0A%3A%3A%3A%20callout%20tip%0ALexePub%20focuses%20heavily%20on%20minimizing%20memory%20footprint.%20You%20can%20stream%20chapter%20extraction%20and%20still%20get%20structured%20AST%20output%20with%20CSS%20styles%20applied.%0A%3A%3A%3A%0A%0A%23%23%20What%20it%20solves%0A%0AYou&#039;re%20building%20an%20e-reader%20or%20book%20management%20system%20that%20needs%20to%20process%20EPUB%20files%20efficiently.%20Normally%2C%20that%20means%20loading%20massive%20archives%20entirely%20into%20memory%2C%20dealing%20with%20OPF%20manifest%20edge%20cases%2C%20or%20juggling%20different%20APIs%20for%20each%20runtime.%0A%0ALexePub%20replaces%20that%20with%20one%20core%20parser%20and%20thin%20language%20adapters.%20Parse%20once%20using%20memory-safe%20async%20streams%2C%20then%20consume%20the%20same%20chapter%2Fmetadata%20behavior%20from%20Rust%2C%20WASM%2C%20and%20C%2FC%2B%2B.%0A%0A%23%23%20Features%0A%0A%3A%3A%3A%20card%20Streaming-Friendly%20Core%0ARead%20chapters%20sequentially%20and%20process%20content%20without%20requiring%20full-book%20materialization%20in%20memory.%0A%3A%3A%3A%0A%0A%3A%3A%3A%20card%20Multi-Platform%20Adapters%0AWritten%20in%20async%20Rust%20at%20the%20core%2C%20exported%20to%20C%2FC%2B%2B%20via%20Diplomat%20and%20JavaScript%2FTypeScript%20via%20WebAssembly.%0A%3A%3A%3A%0A%0A%3A%3A%3A%20card%20Strict%20Metadata%20Validation%0AAutomatically%20detects%20EPUB%20versions%20(2.0%20vs%203.0)%2C%20resolves%20OPF%20manifest%20links%2C%20and%20validates%20required%20metadata%20structure%20according%20to%20the%20standards.%20%0A%3A%3A%3A%0A%0A%3A%3A%3A%20card%20CSS-Aware%20AST%0AManifest%20CSS%20resources%20are%20parsed%20and%20applied%20to%20chapter%20AST%20nodes.%20Styles%20are%20merged%20into%20each%20element&#039;s%20%60styles%60%20map.%0A%3A%3A%3A%0A%0A%3A%3A%3A%20card%20Resource%20%2B%20TOC%20Utilities%0AResolve%20chapter-relative%20links%2C%20load%20internal%20EPUB%20resources%20(images%2Fassets)%2C%20and%20consume%20normalized%20TOC%20entries%20with%20chapter%20titles.%0A%3A%3A%3A%0A%0A%23%23%20Adapter%20parity%0A%0ALexePub%20tries%20to%20have%20parity%20between%20adapters%2C%20C%2FC%2B%2B%2C%20WASM%2C%20and%20Rust.%0A%0A-%20Metadata%20APIs%20(structured%20%2B%20JSON%20%2B%20validation)%0A-%20Chapter%20APIs%20(text%20%2B%20AST%20%2B%20per-chapter%20lookup)%0A-%20TOC%20APIs%20(chapter%20titles%20%2B%20href%2Findex%20mapping)%0A-%20Resource%20APIs%20(resolve%20chapter%20href%2C%20read%20internal%20EPUB%20bytes)%0A-%20Cover%20APIs%20(presence%2C%20bytes%2Fjson%20bytes%2C%20mime%2C%20length)%0A%0AThe%20data%20transport%20differs%20by%20runtime%20(native%20structs%20vs%20JS%20objects%20vs%20C%20writeables)%2C%20however!%0A%0A%23%23%20API%20overview%0A%0A-%20Rust%20adapter%3A%20async%20API%20plus%20sync%20wrappers%20where%20relevant.%0A-%20WASM%20adapter%3A%20async%20JS-facing%20API%20from%20%60wasm-bindgen%60.%0A-%20C%2FC%2B%2B%20adapter%3A%20Diplomat-generated%20API%20using%20%60DiplomatWriteable%60%20for%20structured%20outputs.%0A%0AFor%20complete%20setup%20instructions%2C%20see%20%5BQuick%20Start%5D(%2Fgetting-started%2Fquickstart).%0AFor%20runtime-specific%20APIs%2C%20see%3A%0A%0A-%20%5BRust%20Adapter%5D(%2Fadapters%2Frust%2Findex)%0A-%20%5BC%2FC%2B%2B%20Adapter%5D(%2Fadapters%2Fc%2Findex)%0A-%20%5BWASM%20Adapter%5D(%2Fadapters%2Fwasm%2Findex)%0A" style="display: none;"></div>
+                  <div id="docmd-raw-markdown" data-content="---%0Atitle%3A%20%22LexePub%22%0Adescription%3A%20%22High-performance%2C%20memory-efficient%20EPUB%20parsing%20for%20multiple%20runtimes%22%0A---%0A%0A**LexePub**%20is%20a%20robust%20parser%20and%20extractor%20for%20EPUB%20files.%20It%20provides%20asynchronous%20streaming%2C%20metadata%20validation%2C%20and%20asset%20extraction%20across%20Rust%2C%20C%2FC%2B%2B%2C%20and%20WebAssembly%20from%20a%20single%20core%20implementation.%0A%0A%3A%3A%3A%20callout%20tip%0ALexePub%20focuses%20heavily%20on%20minimizing%20memory%20footprint.%20You%20can%20stream%20chapter%20extraction%20and%20still%20get%20structured%20AST%20output%20with%20CSS%20styles%20applied.%0A%3A%3A%3A%0A%0A%23%23%20What%20it%20solves%0A%0AYou&#039;re%20building%20an%20e-reader%20or%20book%20management%20system%20that%20needs%20to%20process%20EPUB%20files%20efficiently.%20Normally%2C%20that%20means%20loading%20massive%20archives%20entirely%20into%20memory%2C%20dealing%20with%20OPF%20manifest%20edge%20cases%2C%20or%20juggling%20different%20APIs%20for%20each%20runtime.%0A%0ALexePub%20replaces%20that%20with%20one%20core%20parser%20and%20thin%20language%20adapters.%20Parse%20once%20using%20memory-safe%20async%20streams%2C%20then%20consume%20the%20same%20chapter%2Fmetadata%20behavior%20from%20Rust%2C%20WASM%2C%20and%20C%2FC%2B%2B.%0A%0A%23%23%20Features%0A%0A%3A%3A%3A%20card%20Streaming-Friendly%20Core%0ARead%20chapters%20sequentially%20and%20process%20content%20without%20requiring%20full-book%20materialization%20in%20memory.%0A%3A%3A%3A%0A%0A%3A%3A%3A%20card%20Multi-Platform%20Adapters%0AWritten%20in%20async%20Rust%20at%20the%20core%2C%20exported%20to%20C%2FC%2B%2B%20via%20Diplomat%20and%20JavaScript%2FTypeScript%20via%20WebAssembly.%0A%3A%3A%3A%0A%0A%3A%3A%3A%20card%20Strict%20Metadata%20Validation%0AAutomatically%20detects%20EPUB%20versions%20(2.0%20vs%203.0)%2C%20resolves%20OPF%20manifest%20links%2C%20and%20validates%20required%20metadata%20structure%20according%20to%20the%20standards.%0A%3A%3A%3A%0A%0A%3A%3A%3A%20card%20CSS-Aware%20AST%0AManifest%20CSS%20resources%20are%20parsed%20and%20applied%20to%20chapter%20AST%20nodes.%20Styles%20are%20merged%20into%20each%20element&#039;s%20%60styles%60%20map.%0A%3A%3A%3A%0A%0A%3A%3A%3A%20card%20Resource%20%2B%20TOC%20Utilities%0AResolve%20chapter-relative%20links%2C%20load%20internal%20EPUB%20resources%20(images%2Fassets)%2C%20and%20consume%20normalized%20TOC%20entries%20with%20chapter%20titles.%0A%3A%3A%3A%0A%0A%23%23%20Adapter%20parity%0A%0ALexePub%20tries%20to%20have%20parity%20between%20adapters%2C%20C%2FC%2B%2B%2C%20WASM%2C%20and%20Rust.%0A%0A-%20Metadata%20APIs%20(structured%20%2B%20JSON%20%2B%20validation)%0A-%20Chapter%20APIs%20(text%20%2B%20AST%20%2B%20per-chapter%20lookup)%0A-%20TOC%20APIs%20(chapter%20titles%20%2B%20href%2Findex%20mapping)%0A-%20Resource%20APIs%20(resolve%20chapter%20href%2C%20read%20internal%20EPUB%20bytes)%0A-%20Cover%20APIs%20(presence%2C%20bytes%2Fjson%20bytes%2C%20mime%2C%20length)%0A%0AThe%20data%20transport%20differs%20by%20runtime%20(native%20structs%20vs%20JS%20objects%20vs%20C%20writeables)%2C%20however!%0A%0A%23%23%20API%20overview%0A%0A-%20Rust%20adapter%3A%20async%20API%20plus%20sync%20wrappers%20where%20relevant.%0A-%20WASM%20adapter%3A%20async%20JS-facing%20API%20from%20%60wasm-bindgen%60.%0A-%20C%2FC%2B%2B%20adapter%3A%20Diplomat-generated%20API%20using%20%60DiplomatWriteable%60%20for%20structured%20outputs.%0A%0AFor%20complete%20setup%20instructions%2C%20see%20%5BQuick%20Start%5D(%2Fgetting-started%2Fquickstart).%0AFor%20runtime-specific%20APIs%2C%20see%3A%0A%0A-%20%5BRust%20Adapter%5D(%2Fadapters%2Frust%2Findex)%0A-%20%5BC%2FC%2B%2B%20Adapter%5D(%2Fadapters%2Fc%2Findex)%0A-%20%5BWASM%20Adapter%5D(%2Fadapters%2Fwasm%2Findex)%0A" style="display: none;"></div>
                   
                     <nav aria-label="breadcrumb" class="docmd-breadcrumbs">
                       <ol>
@@ -818,13 +818,13 @@ For runtime-specific APIs, see:</p>
             <div class="page-footer-actions">
               
               
-                <span class="git-last-updated" data-timestamp="1787771290000">
+                <span class="git-last-updated" data-timestamp="1787801588000">
                   <svg class="git-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <polyline points="12 6 12 12 16 14"></polyline>
                   </svg>
                   <span class="git-label">Last updated:</span>
-                  <span class="git-time" data-timestamp="1787771290000"></span>
+                  <span class="git-time" data-timestamp="1787801588000"></span>
                   
                   <div class="git-commit-tooltip" role="tooltip">
                     <div class="git-tooltip-title">Recent commits</div>
@@ -837,10 +837,10 @@ For runtime-specific APIs, see:</p>
                             
                           </div>
                           <div class="git-commit-details">
-                            <div class="git-commit-message" title="Merge pull request #57 from NellowTCS/dependabot/npm_and_yarn/Docs/docmd/core-0.9.3">Merge pull request #57 from NellowTCS...</div>
+                            <div class="git-commit-message" title="Merge pull request #58 from NellowTCS/v0.1.2">Merge pull request #58 from NellowTCS...</div>
                             <div class="git-commit-meta">
                               <span class="git-commit-author">NellowTCS</span>
-                              <span class="git-commit-date" data-timestamp="1787771290000"></span>
+                              <span class="git-commit-date" data-timestamp="1787801588000"></span>
                             </div>
                           </div>
                         </li>
@@ -871,14 +871,14 @@ For runtime-specific APIs, see:</p>
         </div>
       </div>
       
-      <script src="./assets/js/docmd-main.js?v=mtagvrzs"></script>
+      <script src="./assets/js/docmd-main.js?v=mtayx6h9"></script>
       
-      <script src="./assets/js/docmd-git.js?v=mtagvrzs"></script>
-      <script src="./assets/js/docmd-image-lightbox.js?v=mtagvrzs" ></script>
-<script src="./assets/js/vendor/minisearch.js?v=mtagvrzs" ></script>
-<script src="./assets/js/docmd-search.js?v=mtagvrzs" ></script>
-<script src="./assets/js/docmd-git.js?v=mtagvrzs" ></script>
-<script src="./assets/js/docmd-ai.js?v=mtagvrzs" ></script>
+      <script src="./assets/js/docmd-git.js?v=mtayx6h9"></script>
+      <script src="./assets/js/docmd-image-lightbox.js?v=mtayx6h9" ></script>
+<script src="./assets/js/vendor/minisearch.js?v=mtayx6h9" ></script>
+<script src="./assets/js/docmd-search.js?v=mtayx6h9" ></script>
+<script src="./assets/js/docmd-git.js?v=mtayx6h9" ></script>
+<script src="./assets/js/docmd-ai.js?v=mtayx6h9" ></script>
 
   <!-- Search Modal (Injected by @docmd/plugin-search) -->
   <div id="docmd-search-modal" class="docmd-search-modal" style="display: none;" data-show-confidence="false" data-show-filters="true"
