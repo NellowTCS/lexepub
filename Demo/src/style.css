@@ -9,7 +9,7 @@ body {
 }
 
 header {
-  background: linear-gradient(90deg, #2196F3, #21CBF3);
+  background: linear-gradient(90deg, #2196f3, #21cbf3);
   color: white;
   padding: 0.8rem;
   display: flex;
@@ -49,7 +49,7 @@ header {
 }
 
 button {
-  background-color: #2196F3;
+  background-color: #2196f3;
   color: white;
   border: none;
   padding: 0.5rem 1rem;
@@ -59,7 +59,7 @@ button {
 }
 
 button:hover {
-  background-color: #1976D2;
+  background-color: #1976d2;
 }
 
 button:disabled {
@@ -152,7 +152,7 @@ input[type="number"] {
 }
 
 .toc-header {
-  background-color: #2196F3;
+  background-color: #2196f3;
   color: white;
   padding: 1rem;
   display: flex;
@@ -199,7 +199,7 @@ input[type="number"] {
 }
 
 .library-header {
-  background-color: #2196F3;
+  background-color: #2196f3;
   color: white;
   padding: 1rem;
   display: flex;

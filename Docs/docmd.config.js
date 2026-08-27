@@ -15,9 +15,9 @@ module.exports = {
   },
   plugins: {
     sitemap: {
-      defaultChangefreq: 'weekly',
-      defaultPriority: 0.8
-    }
+      defaultChangefreq: "weekly",
+      defaultPriority: 0.8,
+    },
   },
   search: true,
   minify: true,
@@ -31,7 +31,11 @@ module.exports = {
       icon: "rocket",
       collapsible: false,
       children: [
-        { title: "Quick Start", path: "/getting-started/quickstart", icon: "play" },
+        {
+          title: "Quick Start",
+          path: "/getting-started/quickstart",
+          icon: "play",
+        },
       ],
     },
     {
@@ -43,7 +47,12 @@ module.exports = {
         { title: "WASM", path: "/adapters/wasm/", icon: "cpu" },
       ],
     },
-    { title: "GitHub", path: "https://github.com/NellowTCS/lexepub", icon: "github", external: true },
+    {
+      title: "GitHub",
+      path: "https://github.com/NellowTCS/lexepub",
+      icon: "github",
+      external: true,
+    },
   ],
   footer: "Built with docmd.",
 };

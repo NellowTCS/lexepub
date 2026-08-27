@@ -5,7 +5,12 @@ export const __wbg_wasmepubextractor_free: (a: number, b: number) => void;
 export const wasmepubextractor_get_chapter: (a: number, b: number) => any;
 export const wasmepubextractor_get_chapter_count: (a: number) => any;
 export const wasmepubextractor_get_chapter_json: (a: number, b: number) => any;
-export const wasmepubextractor_get_chapter_resource: (a: number, b: number, c: number, d: number) => any;
+export const wasmepubextractor_get_chapter_resource: (
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+) => any;
 export const wasmepubextractor_get_chapter_text: (a: number, b: number) => any;
 export const wasmepubextractor_get_chapters_text: (a: number) => any;
 export const wasmepubextractor_get_chapters_text_json: (a: number) => any;
@@ -15,7 +20,11 @@ export const wasmepubextractor_get_cover_image_len: (a: number) => any;
 export const wasmepubextractor_get_metadata: (a: number) => any;
 export const wasmepubextractor_get_metadata_is_valid: (a: number) => any;
 export const wasmepubextractor_get_metadata_json: (a: number) => any;
-export const wasmepubextractor_get_resource: (a: number, b: number, c: number) => any;
+export const wasmepubextractor_get_resource: (
+  a: number,
+  b: number,
+  c: number,
+) => any;
 export const wasmepubextractor_get_title: (a: number) => any;
 export const wasmepubextractor_get_toc: (a: number) => any;
 export const wasmepubextractor_get_toc_json: (a: number) => any;
@@ -24,11 +33,30 @@ export const wasmepubextractor_get_total_word_count: (a: number) => any;
 export const wasmepubextractor_has_cover: (a: number) => any;
 export const wasmepubextractor_load_from_bytes: (a: number, b: any) => any;
 export const wasmepubextractor_new: () => number;
-export const wasmepubextractor_resolve_chapter_resource_path: (a: number, b: number, c: number, d: number) => any;
-export const wasm_bindgen__convert__closures_____invoke__h64d2f1ae602a501f: (a: number, b: number, c: any) => [number, number];
-export const wasm_bindgen__convert__closures_____invoke__h022fdcc8ac41b2bf: (a: number, b: number, c: any, d: any) => void;
+export const wasmepubextractor_resolve_chapter_resource_path: (
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+) => any;
+export const wasm_bindgen__convert__closures_____invoke__h64d2f1ae602a501f: (
+  a: number,
+  b: number,
+  c: any,
+) => [number, number];
+export const wasm_bindgen__convert__closures_____invoke__h022fdcc8ac41b2bf: (
+  a: number,
+  b: number,
+  c: any,
+  d: any,
+) => void;
 export const __wbindgen_malloc: (a: number, b: number) => number;
-export const __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
+export const __wbindgen_realloc: (
+  a: number,
+  b: number,
+  c: number,
+  d: number,
+) => number;
 export const __wbindgen_exn_store: (a: number) => void;
 export const __externref_table_alloc: () => number;
 export const __wbindgen_externrefs: WebAssembly.Table;

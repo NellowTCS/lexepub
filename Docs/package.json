@@ -3,11 +3,25 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "make-pretty": "prettier . --write",
+    "make-pretty:check": "prettier . --check",
     "dev": "docmd dev",
     "build": "docmd build",
     "preview": "npx serve site"
   },
   "dependencies": {
-    "@docmd/core": "^0.9.3"
+    "@docmd/core": "^0.9.4"
+  },
+  "devDependencies": {
+    "@eslint/css": "^1.4.0",
+    "@eslint/js": "10.0.1",
+    "@eslint/json": "^2.0.1",
+    "@eslint/markdown": "^8.0.3",
+    "eslint": "10.9.1",
+    "eslint-config-prettier": "10.1.8",
+    "globals": "17.11.0",
+    "prettier": "3.9.6"
   }
 }

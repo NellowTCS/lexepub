@@ -10,12 +10,12 @@
 function getDB() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open("htmlreader-db", 1);
-    request.onupgradeneeded = e => {
+    request.onupgradeneeded = (e) => {
       const db = e.target.result;
       db.createObjectStore("handles", { keyPath: "name" });
     };
-    request.onsuccess = e => resolve(e.target.result);
-    request.onerror = e => reject(e.target.error);
+    request.onsuccess = (e) => resolve(e.target.result);
+    request.onerror = (e) => reject(e.target.error);
   });
 }
 
@@ -32,7 +32,8 @@ export async function storeLibraryHandle(handle) {
     const store = tx.objectStore("handles");
     store.put({ name: "library", handle });
     tx.oncomplete = () => resolve();
-    tx.onabort = tx.onerror = e => reject(tx.error || (e && e.target && e.target.error));
+    tx.onabort = tx.onerror = (e) =>
+      reject(tx.error || (e && e.target && e.target.error));
   });
 }
 
@@ -52,6 +53,6 @@ export async function getStoredLibraryHandle() {
     const store = tx.objectStore("handles");
     const req = store.get("library");
     req.onsuccess = () => resolve(req.result ? req.result.handle : null);
-    req.onerror = e => reject(e.target.error);
+    req.onerror = (e) => reject(e.target.error);
   });
 }
