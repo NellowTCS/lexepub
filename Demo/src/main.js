@@ -1,50 +1,56 @@
-import { openBook, openBuiltinBook, prevPage, nextPage, goToPage, toggleToc, closeToc } from "./book";
+import {
+  openBook,
+  openBuiltinBook,
+  prevPage,
+  nextPage,
+  goToPage,
+  toggleToc,
+  closeToc,
+} from "./book";
 import { openLibrary, handleLibraryFiles, toggleLibrary } from "./library";
 
 /***** DOM Elements *****/
-const openButton = document.getElementById('open-button');
-const openDemoButton = document.getElementById('open-demo-button');
-const demoBookSelect = document.getElementById('demo-book-select');
-const fileInput = document.getElementById('file-input');
-const libraryInput = document.getElementById('library-input');
-const libraryButton = document.getElementById('library-button');
-const closeLibraryButton = document.getElementById('close-library');
-const tocButton = document.getElementById('toc-button');
-const closeTocButton = document.getElementById('close-toc');
-const prevButton = document.getElementById('prev-button');
-const nextButton = document.getElementById('next-button');
-const currentPageInput = document.getElementById('current-page');
-const overlay = document.getElementById('overlay');
-const loadingMessage = document.getElementById('loading-message');
-const errorMessage = document.getElementById('error-message');
-const errorText = document.getElementById('error-text');
-const closeErrorButton = document.getElementById('close-error');
-
-
+const openButton = document.getElementById("open-button");
+const openDemoButton = document.getElementById("open-demo-button");
+const demoBookSelect = document.getElementById("demo-book-select");
+const fileInput = document.getElementById("file-input");
+const libraryInput = document.getElementById("library-input");
+const libraryButton = document.getElementById("library-button");
+const closeLibraryButton = document.getElementById("close-library");
+const tocButton = document.getElementById("toc-button");
+const closeTocButton = document.getElementById("close-toc");
+const prevButton = document.getElementById("prev-button");
+const nextButton = document.getElementById("next-button");
+const currentPageInput = document.getElementById("current-page");
+const overlay = document.getElementById("overlay");
+const loadingMessage = document.getElementById("loading-message");
+const errorMessage = document.getElementById("error-message");
+const errorText = document.getElementById("error-text");
+const closeErrorButton = document.getElementById("close-error");
 
 /***** Event Listeners *****/
-openButton.addEventListener('click', () => fileInput.click());
-openDemoButton.addEventListener('click', () => {
+openButton.addEventListener("click", () => fileInput.click());
+openDemoButton.addEventListener("click", () => {
   const selected = demoBookSelect.value;
   if (!selected) return;
   openBuiltinBook(selected);
 });
-fileInput.addEventListener('change', openBook);
-prevButton.addEventListener('click', prevPage);
-nextButton.addEventListener('click', nextPage);
-currentPageInput.addEventListener('change', goToPage);
-tocButton.addEventListener('click', toggleToc);
-closeTocButton.addEventListener('click', toggleToc);
-libraryButton.addEventListener('click', openLibrary);
-closeLibraryButton.addEventListener('click', () => toggleLibrary(false));
-overlay.addEventListener('click', () => {
+fileInput.addEventListener("change", openBook);
+prevButton.addEventListener("click", prevPage);
+nextButton.addEventListener("click", nextPage);
+currentPageInput.addEventListener("change", goToPage);
+tocButton.addEventListener("click", toggleToc);
+closeTocButton.addEventListener("click", toggleToc);
+libraryButton.addEventListener("click", openLibrary);
+closeLibraryButton.addEventListener("click", () => toggleLibrary(false));
+overlay.addEventListener("click", () => {
   closeToc();
   toggleLibrary(false);
   hideError();
 });
-closeErrorButton.addEventListener('click', hideError);
+closeErrorButton.addEventListener("click", hideError);
 // Fallback: multiple file input for library import
-libraryInput.addEventListener('change', handleLibraryFiles);
+libraryInput.addEventListener("change", handleLibraryFiles);
 
 /**
  * Show the global loading message/overlay.
@@ -52,7 +58,7 @@ libraryInput.addEventListener('change', handleLibraryFiles);
  * Makes the loadingMessage element visible by adding the CSS `show` class.
  */
 export function showLoading() {
-  loadingMessage.classList.add('show');
+  loadingMessage.classList.add("show");
 }
 
 /**
@@ -61,7 +67,7 @@ export function showLoading() {
  * Removes the 'show' CSS class from the loading message element to hide the loading UI.
  */
 export function hideLoading() {
-  loadingMessage.classList.remove('show');
+  loadingMessage.classList.remove("show");
 }
 
 /**
@@ -73,7 +79,7 @@ export function hideLoading() {
  */
 export function showError(message) {
   errorText.textContent = message;
-  errorMessage.classList.add('show');
+  errorMessage.classList.add("show");
 }
 
 /**
@@ -82,5 +88,5 @@ export function showError(message) {
  * Removes the 'show' class from the error message element so the error overlay is hidden.
  */
 export function hideError() {
-  errorMessage.classList.remove('show');
+  errorMessage.classList.remove("show");
 }

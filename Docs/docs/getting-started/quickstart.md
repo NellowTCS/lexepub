@@ -19,14 +19,14 @@ Add the core library to your Rust dependencies in `Cargo.toml`:
 
 ```toml
 [dependencies]
-lexepub = "0.1.1"
+lexepub = "0.1.2"
 tokio = { version = "1", features = ["full"] }
 ```
 
 Optional features:
 
 ```toml
-lexepub = { version = "0.1.1", features = ["c-ffi", "wasm"] }
+lexepub = { version = "0.1.2", features = ["c-ffi", "wasm"] }
 ```
 
 ## Useful Commands
@@ -58,10 +58,10 @@ use lexepub::LexEpub;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Instantiate a new parser against a local file.
     let mut epub = LexEpub::open("book.epub").await?;
-    
+
     // Asynchronously resolve and extract OPF metadata.
     let metadata = epub.get_metadata().await?;
-    
+
     // Output the detected EPUB version.
     println!("Detected EPUB version: {:?}", metadata.version);
     Ok(())

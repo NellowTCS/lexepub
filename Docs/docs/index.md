@@ -26,7 +26,7 @@ Written in async Rust at the core, exported to C/C++ via Diplomat and JavaScript
 :::
 
 ::: card Strict Metadata Validation
-Automatically detects EPUB versions (2.0 vs 3.0), resolves OPF manifest links, and validates required metadata structure according to the standards. 
+Automatically detects EPUB versions (2.0 vs 3.0), resolves OPF manifest links, and validates required metadata structure according to the standards.
 :::
 
 ::: card CSS-Aware AST

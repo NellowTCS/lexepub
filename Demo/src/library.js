@@ -1,5 +1,5 @@
 import { storeLibraryHandle, getStoredLibraryHandle } from "./indexedDB";
-import { openBookFromEntry } from "./book"
+import { openBookFromEntry } from "./book";
 import initLexEpub, { WasmEpubExtractor } from "./wasm/lexepub.js";
 import { showError } from "./main";
 
@@ -13,9 +13,9 @@ async function ensureWasmReady() {
 }
 
 /***** DOM Elements *****/
-const libraryContainer = document.getElementById('library-container');
-const libraryContent = document.getElementById('library-content');
-const overlay = document.getElementById('overlay');
+const libraryContainer = document.getElementById("library-container");
+const libraryContent = document.getElementById("library-content");
+const overlay = document.getElementById("overlay");
 
 /**
  * Open the user's EPUB library: get or prompt for a directory, scan for .epub files, display them, and open the library UI.
@@ -32,9 +32,9 @@ export async function openLibrary() {
     let dirHandle = await getStoredLibraryHandle();
     if (!dirHandle) {
       // If no stored handle, prompt user
-      if (!('showDirectoryPicker' in window)) {
+      if (!("showDirectoryPicker" in window)) {
         // Fallback: trigger multiple file input flow
-        document.getElementById('library-input')?.click();
+        document.getElementById("library-input")?.click();
         return;
       }
       dirHandle = await window.showDirectoryPicker();
@@ -42,22 +42,25 @@ export async function openLibrary() {
     }
     // Permissions for persisted handles can be lost between sessions
     if (dirHandle.queryPermission && dirHandle.requestPermission) {
-      const perm = await dirHandle.queryPermission({ mode: 'read' });
-      if (perm !== 'granted') {
-        const res = await dirHandle.requestPermission({ mode: 'read' });
-        if (res !== 'granted') throw new Error('Read permission was denied for the library directory.');
+      const perm = await dirHandle.queryPermission({ mode: "read" });
+      if (perm !== "granted") {
+        const res = await dirHandle.requestPermission({ mode: "read" });
+        if (res !== "granted")
+          throw new Error(
+            "Read permission was denied for the library directory.",
+          );
       }
     }
     const files = [];
     for await (const entry of dirHandle.values()) {
-      if (entry.kind === 'file' && entry.name.endsWith('.epub')) {
+      if (entry.kind === "file" && entry.name.endsWith(".epub")) {
         files.push(entry);
       }
     }
     displayLibraryGrid(files);
     toggleLibrary(true);
   } catch (err) {
-    showError('Failed to open library: ' + err.message);
+    showError("Failed to open library: " + err.message);
   }
 }
 
@@ -82,10 +85,10 @@ export function handleLibraryFiles(e) {
  * @return {Promise<void>}
  */
 async function displayLibraryGrid(fileEntries) {
-  libraryContent.innerHTML = '';
+  libraryContent.innerHTML = "";
   if (fileEntries.length === 0) {
-    const msg = document.createElement('div');
-    msg.textContent = 'No EPUB files found.';
+    const msg = document.createElement("div");
+    msg.textContent = "No EPUB files found.";
     libraryContent.appendChild(msg);
     return;
   }
@@ -108,22 +111,23 @@ async function displayLibraryGrid(fileEntries) {
  * @return {HTMLElement} A '.library-item' element containing an image ('.library-cover') and title ('.library-title').
  */
 async function createLibraryItem(fileEntry) {
-  const item = document.createElement('div');
-  item.className = 'library-item';
-  const img = document.createElement('img');
-  img.className = 'library-cover';
-  img.src = '';
-  const titleDiv = document.createElement('div');
-  titleDiv.className = 'library-title';
+  const item = document.createElement("div");
+  item.className = "library-item";
+  const img = document.createElement("img");
+  img.className = "library-cover";
+  img.src = "";
+  const titleDiv = document.createElement("div");
+  titleDiv.className = "library-title";
   titleDiv.textContent = fileEntry.name;
   item.appendChild(img);
   item.appendChild(titleDiv);
 
   try {
     // If using the File System Access API:
-    const file = (typeof fileEntry.getFile === 'function')
-                  ? await fileEntry.getFile()
-                  : fileEntry;
+    const file =
+      typeof fileEntry.getFile === "function"
+        ? await fileEntry.getFile()
+        : fileEntry;
 
     const arrayBuffer = await file.arrayBuffer();
 
@@ -138,19 +142,20 @@ async function createLibraryItem(fileEntry) {
 
     if (await extractor.has_cover()) {
       const coverBytes = await extractor.get_cover_image();
-      const mime = (await extractor.get_cover_image_format()) || 'image/jpeg';
+      const mime = (await extractor.get_cover_image_format()) || "image/jpeg";
       const coverBlob = new Blob([coverBytes], { type: mime });
       img.src = URL.createObjectURL(coverBlob);
     } else {
       // Use a generic placeholder if no cover
-      img.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAMAAACahl6sAAAAM1BMVEX///+hoaGcnJzPz8/Nzc3FxcXn5+fQ0NDy8vL29vbw8PDv7+/d3d2+vr6UlJSakGz1AAACNklEQVR4nO3d2ZKDIBAFUa8El//+uvLFT6qkSpknG/JpLve86o3QF8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD8S/w66a8vEcn8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ5+n/wP2S/3mmugUsAAAAASUVORK5CYII=';
+      img.src =
+        "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAMAAACahl6sAAAAM1BMVEX///+hoaGcnJzPz8/Nzc3FxcXn5+fQ0NDy8vL29vbw8PDv7+/d3d2+vr6UlJSakGz1AAACNklEQVR4nO3d2ZKDIBAFUa8El//+uvLFT6qkSpknG/JpLve86o3QF8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD8S/w66a8vEcn8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ58n8eHS6HQ5+n/wP2S/3mmugUsAAAAASUVORK5CYII=";
     }
   } catch (err) {
-    console.error('Error loading cover for', fileEntry.name, err);
+    console.error("Error loading cover for", fileEntry.name, err);
   }
 
   // No { once: true } so user can try again if there's an error
-  item.addEventListener('click', () => {
+  item.addEventListener("click", () => {
     openBookFromEntry(fileEntry);
   });
 
@@ -164,13 +169,13 @@ async function createLibraryItem(fileEntry) {
  */
 export function toggleLibrary(forceOpen) {
   if (forceOpen === true) {
-    libraryContainer.classList.add('open');
-    overlay.classList.add('open');
+    libraryContainer.classList.add("open");
+    overlay.classList.add("open");
   } else if (forceOpen === false) {
-    libraryContainer.classList.remove('open');
-    overlay.classList.remove('open');
+    libraryContainer.classList.remove("open");
+    overlay.classList.remove("open");
   } else {
-    libraryContainer.classList.toggle('open');
-    overlay.classList.toggle('open');
+    libraryContainer.classList.toggle("open");
+    overlay.classList.toggle("open");
   }
 }

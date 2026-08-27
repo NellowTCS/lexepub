@@ -17,6 +17,7 @@ on:
 jobs:
   publish-npm:
     runs-on: ubuntu-latest
+    environment: release
     permissions:
       id-token: write
       contents: read
@@ -35,7 +36,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Build WASM adapter
@@ -50,5 +51,3 @@ jobs:
           else
             npm publish --access public --provenance
           fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
