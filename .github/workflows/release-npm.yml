@@ -43,6 +43,10 @@ jobs:
         run: wasm-pack build --target web
         working-directory: lexepub
 
+      - name: Fix package.json
+        working-directory: lexepub/pkg
+        run: npm pkg fix
+
       - name: Publish to npm
         working-directory: lexepub/pkg
         run: |
