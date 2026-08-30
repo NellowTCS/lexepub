@@ -717,9 +717,9 @@ dependencies = [
 
 [[package]]
 name = "diplomat"
-version = "0.16.0"
+version = "0.16.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "26fdfa02eb9a2e1ff82a375524be1ce9fd50ae63787f5737da6951b25d21e857"
+checksum = "f8b37a6cea72eb6df5143d3e091d4c34cb0cf4046dd1ddcc082988886fe1f809"
 dependencies = [
  "diplomat_core",
  "proc-macro2",
