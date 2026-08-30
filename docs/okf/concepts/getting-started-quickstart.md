@@ -4,10 +4,10 @@ title: "Quick Start"
 description: "Get started parsing EPUB files with LexEpub"
 source: "https://nellowtcs.me/lexepub/docs/getting-started/quickstart/"
 path: /getting-started/quickstart/
-updated: 2026-08-27
+updated: 2026-08-30
 okf:
   generated_by: "@docmd/plugin-okf"
-  generated_at: "2026-08-27T03:42:57.294Z"
+  generated_at: "2026-08-30T21:00:11.541Z"
 ---
 ---
 title: "Quick Start"
