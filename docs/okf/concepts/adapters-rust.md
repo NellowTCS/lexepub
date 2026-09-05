@@ -4,10 +4,10 @@ title: "Rust Adapter"
 description: "Native asynchronous integration for Rust developers"
 source: "https://nellowtcs.me/lexepub/docs/adapters/rust/"
 path: /adapters/rust/
-updated: 2026-08-30
+updated: 2026-09-05
 okf:
   generated_by: "@docmd/plugin-okf"
-  generated_at: "2026-08-30T21:00:11.539Z"
+  generated_at: "2026-09-05T22:00:18.827Z"
 ---
 ---
 title: "Rust Adapter"
