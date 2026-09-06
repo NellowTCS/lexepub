@@ -38,7 +38,7 @@
     "@eslint/js": "^10.0.1",
     "@eslint/json": "^2.0.1",
     "@eslint/markdown": "^8.0.3",
-    "babel-jest": "^30.4.1",
+    "babel-jest": "^30.5.1",
     "eslint": "^10.9.1",
     "eslint-config-prettier": "10.1.8",
     "fs-extra": "^11.4.0",
