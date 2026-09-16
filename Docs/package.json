@@ -12,7 +12,7 @@
     "preview": "npx serve site"
   },
   "dependencies": {
-    "@docmd/core": "^0.9.4"
+    "@docmd/core": "^0.9.5"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
