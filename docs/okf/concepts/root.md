@@ -4,10 +4,10 @@ title: LexePub
 description: "High-performance, memory-efficient EPUB parsing for multiple runtimes"
 source: "https://nellowtcs.me/lexepub/docs/"
 path: /
-updated: 2026-09-11
+updated: 2026-09-16
 okf:
   generated_by: "@docmd/plugin-okf"
-  generated_at: "2026-09-11T00:20:09.470Z"
+  generated_at: "2026-09-16T18:51:48.641Z"
 ---
 ---
 title: "LexePub"
