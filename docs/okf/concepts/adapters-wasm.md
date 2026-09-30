@@ -4,10 +4,10 @@ title: "WASM Adapter"
 description: "Cross-platform bindings for browsers and Node.js environments"
 source: "https://nellowtcs.me/lexepub/docs/adapters/wasm/"
 path: /adapters/wasm/
-updated: 2026-09-21
+updated: 2026-09-30
 okf:
   generated_by: "@docmd/plugin-okf"
-  generated_at: "2026-09-21T14:11:33.536Z"
+  generated_at: "2026-09-30T17:42:31.603Z"
 ---
 ---
 title: "WASM Adapter"
