@@ -7,7 +7,7 @@ path: /getting-started/quickstart/
 updated: 2026-09-30
 okf:
   generated_by: "@docmd/plugin-okf"
-  generated_at: "2026-09-30T19:03:02.135Z"
+  generated_at: "2026-09-30T19:05:24.673Z"
 ---
 ---
 title: "Quick Start"
