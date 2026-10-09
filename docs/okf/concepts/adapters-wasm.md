@@ -7,7 +7,7 @@ path: /adapters/wasm/
 updated: 2026-10-09
 okf:
   generated_by: "@docmd/plugin-okf"
-  generated_at: "2026-10-09T11:20:56.173Z"
+  generated_at: "2026-10-09T11:21:56.222Z"
 ---
 ---
 title: "WASM Adapter"
