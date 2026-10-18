@@ -45,7 +45,7 @@ serde_json = "1.0.149"
 thiserror = "2.0.18"
 bytes = "1.11.1"
 embassy-executor = { version = "0.10.0", optional = true }
-html-escape = "0.2"
+html-escape = "0.3"
 
 [dev-dependencies]
 criterion = "0.8.2"
