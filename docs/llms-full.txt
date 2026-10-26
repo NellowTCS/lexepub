@@ -4,7 +4,7 @@
 
 ---
 
-## [C/C++ Adapter](https://nellowtcs.me/lexepub/docs/adapters/c/)
+## [C/C++ Adapter](https://nellowtcs.me/lexepub/docs/adapters/c/) (Adapters)
 
 ---
 title: "C/C++ Adapter"
@@ -123,7 +123,7 @@ diplomat-tool c include/
 
 ---
 
-## [Rust Adapter](https://nellowtcs.me/lexepub/docs/adapters/rust/)
+## [Rust Adapter](https://nellowtcs.me/lexepub/docs/adapters/rust/) (Adapters)
 
 ---
 title: "Rust Adapter"
@@ -210,7 +210,7 @@ The core module also exposes high-level analysis entry points:
 
 ---
 
-## [WASM Adapter](https://nellowtcs.me/lexepub/docs/adapters/wasm/)
+## [WASM Adapter](https://nellowtcs.me/lexepub/docs/adapters/wasm/) (Adapters)
 
 ---
 title: "WASM Adapter"
@@ -295,7 +295,7 @@ async function run(arrayBuffer) {
 
 ---
 
-## [Quick Start](https://nellowtcs.me/lexepub/docs/getting-started/quickstart/)
+## [Quick Start](https://nellowtcs.me/lexepub/docs/getting-started/quickstart/) (Getting Started)
 
 ---
 title: "Quick Start"
