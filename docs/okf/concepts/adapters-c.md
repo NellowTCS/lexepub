@@ -7,7 +7,7 @@ path: /adapters/c/
 updated: 2026-10-26
 okf:
   generated_by: "@docmd/plugin-okf"
-  generated_at: "2026-10-26T18:13:02.623Z"
+  generated_at: "2026-10-26T18:14:22.909Z"
 ---
 ---
 title: "C/C++ Adapter"
